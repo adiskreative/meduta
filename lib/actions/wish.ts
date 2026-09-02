@@ -48,6 +48,7 @@ export async function submitWish(
     },
   });
 
+  revalidatePath(`/u/${invitation.slug}`);
   return { success: true, message: "Ucapan berhasil terkirim." };
 }
 
