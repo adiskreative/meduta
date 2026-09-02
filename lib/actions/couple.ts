@@ -80,8 +80,8 @@ export async function saveCouple(
     data: {
       data: {
         ...currentData,
-        groom,
-        bride,
+        groom: groom.data,
+        bride: bride.data,
       } as object,
     },
   });
