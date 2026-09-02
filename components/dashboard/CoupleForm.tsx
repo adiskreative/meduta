@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Save, Eye } from "lucide-react";
 import { saveCouple, CoupleState } from "@/lib/actions/couple";
+import PhotoUploader from "./PhotoUploader";
 
 type PersonValues = {
   name?: string;
@@ -111,7 +112,6 @@ function PersonCard({
     { name: "childOf", label: "Anak ke-" },
     { name: "parentName", label: "Nama orang tua" },
     { name: "instagram", label: "Instagram (opsional)" },
-    { name: "photoUrl", label: "URL foto profil" },
   ];
 
   function fieldError(field: string): boolean {
@@ -147,6 +147,22 @@ function PersonCard({
             )}
           </div>
         ))}
+
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-zinc-700">
+            Foto profil
+          </span>
+          <PhotoUploader
+            fieldId={`${prefix}.photoUrl`}
+            currentUrl={values.photoUrl}
+          />
+          <input
+            type="hidden"
+            id={`${prefix}.photoUrl`}
+            name={`${prefix}.photoUrl`}
+            defaultValue={values.photoUrl ?? ""}
+          />
+        </div>
 
         <div>
           <label
