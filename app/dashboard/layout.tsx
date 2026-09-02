@@ -13,5 +13,5 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return <DashboardShell>{children}</DashboardShell>;
+  return <DashboardShell isAdmin={session.user.role === "ADMIN"}>{children}</DashboardShell>;
 }

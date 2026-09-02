@@ -89,9 +89,11 @@ const navSections: { title: string; items: NavItem[] }[] = [
 export default function Sidebar({
   open,
   onClose,
+  isAdmin = false,
 }: {
   open: boolean;
   onClose: () => void;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -157,6 +159,29 @@ export default function Sidebar({
               </ul>
             </div>
           ))}
+          {isAdmin && (
+            <div>
+              <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+                Admin
+              </p>
+              <ul className="space-y-0.5">
+                <li>
+                  <Link
+                    href="/admin"
+                    onClick={onClose}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                      pathname.startsWith("/admin")
+                        ? "bg-rose-50 font-medium text-rose-700"
+                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                    }`}
+                  >
+                    <UserCog className="h-4.5 w-4.5 shrink-0" />
+                    <span>Admin Panel</span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
         </nav>
 
         <div className="border-t border-zinc-200 p-3">

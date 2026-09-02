@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient, Role } from "../generated/prisma/client";
+import bcrypt from "bcryptjs";
 import "dotenv/config";
 
 const adapter = new PrismaPg({
@@ -8,7 +9,34 @@ const adapter = new PrismaPg({
 
 const prisma = new PrismaClient({ adapter });
 
+async function createAdmin() {
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    console.warn(
+      "ADMIN_EMAIL/ADMIN_PASSWORD belum di-set di .env. Akun admin tidak dibuat.",
+    );
+    return;
+  }
+
+  const hashed = await bcrypt.hash(password, 10);
+  await prisma.user.upsert({
+    where: { email },
+    update: { role: Role.ADMIN, name: process.env.ADMIN_NAME || "Admin", password: hashed },
+    create: {
+      email,
+      password: hashed,
+      name: process.env.ADMIN_NAME || "Admin",
+      role: Role.ADMIN,
+    },
+  });
+  console.log(`Akun admin siap: ${email}`);
+}
+
 async function main() {
+  await createAdmin();
+
   const templates = [
     {
       name: "Elegant Classic",
