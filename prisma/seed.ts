@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, Role } from "../generated/prisma/client";
+import { PrismaClient, Role, AssetType } from "../generated/prisma/client";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 
@@ -69,7 +69,89 @@ async function main() {
     });
   }
 
+  await seedAssets();
+
   console.log("Seed selesai: 3 template berhasil dibuat.");
+}
+
+// Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.
+// Idempotent: dibuat hanya bila nama aset belum ada.
+async function seedAssets() {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) {
+    console.warn("ADMIN_EMAIL belum di-set. Aset contoh tidak dibuat.");
+    return;
+  }
+
+  const admin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (!admin) return;
+
+  const sampleAssets = [
+    {
+      name: "Bunga corner kiri (contoh)",
+      type: AssetType.DECOR,
+      url: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=300&q=60",
+    },
+    {
+      name: "Bingkai foto (contoh)",
+      type: AssetType.FRAME,
+      url: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=300&q=60",
+    },
+  ];
+
+  const created: string[] = [];
+  for (const asset of sampleAssets) {
+    const exists = await prisma.templateAsset.findFirst({
+      where: { name: asset.name },
+      select: { id: true },
+    });
+    if (!exists) {
+      const record = await prisma.templateAsset.create({
+        data: {
+          adminId: admin.id,
+          name: asset.name,
+          type: asset.type,
+          url: asset.url,
+          thumbnail: asset.url,
+          meta: {},
+        },
+      });
+      created.push(record.id);
+    }
+  }
+
+  // Pasang satu dekorasi contoh (bunga pojok kiri atas) pada template floral.
+  const floral = await prisma.template.findUnique({
+    where: { componentKey: "floral" },
+  });
+  const asset = await prisma.templateAsset.findFirst({
+    where: { name: "Bunga corner kiri (contoh)" },
+  });
+
+  if (floral && asset) {
+    const hasDecor = await prisma.templateDecoration.findFirst({
+      where: { templateId: floral.id, assetId: asset.id },
+      select: { id: true },
+    });
+    if (!hasDecor) {
+      await prisma.templateDecoration.create({
+        data: {
+          templateId: floral.id,
+          assetId: asset.id,
+          placement: "floating",
+          layer: "decor",
+          zIndex: 5,
+          position: { x: 0, y: 0 },
+          size: { width: 120, height: 120 },
+          rotated: 0,
+        },
+      });
+    }
+  }
+
+  if (created.length > 0) {
+    console.log(`Aset contoh dibuat: ${created.length}.`);
+  }
 }
 
 main()
