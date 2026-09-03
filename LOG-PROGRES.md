@@ -1,8 +1,10 @@
 # Meduta — Log Progres
 
-> Terakhir diperbarui: 03 Sep 2026, 13:52 WIB
+> Terakhir diperbarui: 03 Sep 2026
 > Branch: `feature/initial-setup`
 > Server: `http://localhost:3000` (PID server perlu dijalankan ulang)
+
+> Status: Langkah 2 & 3 admin (CRUD template, aset, dekorasi) + renderer dekorasi & seed aset contoh sudah dikerjakan (belum di-commit per update terakhir).
 
 ---
 
@@ -20,6 +22,8 @@
 | 8 | `a5b0ce8` | feat(upload): tambah upload foto mempelai ke Supabase Storage |
 | 9 | `8c3504e` | docs: tambah rancangan arsitektur template dan aset desain |
 | 10 | `19747e7` | feat(admin): tambah sistem role admin, guard route, dan panel admin |
+
+> **CATATAN**: Commit `19747e7` sebelumnya tercatat sebagai #10, tapi log aktual menunjukkan urutan commit menyusul setelah `8da2aba` (docs: log progres). Karena LOG ini diedit sendiri, urutan #11 dst mengikuti commit terakhir yang terverifikasi di `git log`. Fitur **Admin CRUD Template** (commit #11) **belum di-commit** per update terakhir.
 
 ---
 
@@ -88,19 +92,42 @@
 - Dashboard admin: ringkasan hitungan template/user/undangan
 - Seed admin dari env (`ADMIN_EMAIL` / `ADMIN_PASSWORD`)
 
+### Admin CRUD Template (`/admin/templates`)
+- List semua template (dengan thumbnail, badge premium, jumlah undangan pemakai)
+- Tambah template baru (`/admin/templates/new`)
+- Edit template (`/admin/templates/[id]`) — nama, thumbnail, componentKey, isPremium
+- Hapus template (dengan konfirmasi; diblokir bila masih dipakai undangan)
+- Validasi Zod: nama ≥3, thumbnail URL valid & wajib, componentKey unik + format `a-z0-9-`
+- Server action `admin-template.ts` dengan guard role ADMIN sendiri
+
+### Admin Kelola Aset Desain (`/admin/assets`)
+- Model `TemplateAsset` + enum `AssetType` (IMAGE/FRAME/DECOR/BACKGROUND/MUSIC/GALLERY)
+- Upload file ke Supabase Storage bucket `templates` (10MB; gambar atau musik), otomatis buat bucket bila service key terisi
+- Tambah aset dari URL eksternal (+ optional thumbnail)
+- Hapus aset (diblokir bila masih dipakai dekorasi)
+- Ringkasan jumlah aset per tipe
+- Server action `admin-asset.ts` dengan guard role ADMIN sendiri
+
+### Admin Dekorasi Template (`/admin/templates/[id]/decorations`)
+- Model `TemplateDecoration` — penempatan aset pada sebuah template
+- Pilih aset + set `placement` (floating/cover/section), `layer` (decor/frame), `zIndex`, rotasi, `position` (x,y), `size` (width,height)
+- Daftar dekorasi terpasang (thumbnail + detail posisi) & hapus
+- Tombol "Dekorasi" di list template + hitungan dekorasi per template
+- Server action `admin-decoration.ts` dengan guard role ADMIN sendiri
+
+### Renderer Dekorasi (langkah 5 arsitektur)
+- `DecorationLayer` — melapisi aset dekorasi (posisi/size/zIndex/rotasi, pointer-events-none) di atas konten
+- `TemplateRenderer` membungkus komponen + `DecorationLayer`
+- `TemplateProps.decorations?: Decoration[]` + helper `mapDecorations` di `lib/decoration.ts`
+- Halaman publik `/u/[slug]` & preview `/preview/[key]` mengambil dekorasi template (beserta aset) dan meneruskannya
+
+### Seed Aset Contoh (langkah 7)
+- `seedAssets()` di `prisma/seed.ts` — 2 aset contoh (DECOR bungga, FRAME bingkai) + 1 dekorasi di template floral
+- Idempotent (hanya dibuat bila nama aset belum ada)
+
 ---
 
 ## Yang Belum / Next Steps
-
-### Langkah 2: Admin CRUD Template
-- `/admin/templates` — daftar, tambah, ubah, hapus template
-- Form edit: nama, thumbnail, componentKey, isPremium
-- Halaman detail template
-
-### Langkah 3: Admin Kelola Aset Desain
-- `/admin/assets` — upload & kelola aset (foto, bingkai, bunga, background, musik)
-- `/admin/templates/[id]/decorations` — tempatkan aset di template (posisi, ukuran, z-index)
-- Schema `TemplateAsset` + `TemplateDecoration` (lihat `docs/arsitektur-template-aset.md`)
 
 ### Halaman yang Belum Dibuat
 - `/dashboard/cerita-cinta` (sidebar sudah ada link, halaman belum)
@@ -153,6 +180,11 @@ npm run db:seed
 app/
   admin/layout.tsx        # guard role ADMIN
   admin/page.tsx          # ringkasan admin
+  admin/assets/page.tsx   # kelola aset desain
+  admin/templates/page.tsx        # daftar template (CRUD)
+  admin/templates/new/page.tsx     # tambah template
+  admin/templates/[id]/page.tsx    # edit template
+  admin/templates/[id]/decorations/page.tsx # tempatkan aset di template
   dashboard/layout.tsx    # guard login + pass isAdmin
   dashboard/page.tsx      # overview
   preview/[key]/page.tsx  # pratinjau template asli
@@ -161,13 +193,19 @@ app/
 
 components/
   admin/AdminShell.tsx         # shell admin (sidebar + header)
+  admin/TemplateForm.tsx       # form create/edit template (client)
+  admin/DeleteTemplateButton.tsx # tombol hapus template + konfirmasi
+  admin/AssetForm.tsx          # form tambah aset (upload / URL)
+  admin/DecorationForm.tsx     # form tambah dekorasi
+  admin/DeleteButton.tsx       # tombol hapus generik + konfirmasi
   dashboard/CoupleForm.tsx     # form mempelai + upload foto
   dashboard/PhotoUploader.tsx  # upload ke Supabase
   dashboard/Sidebar.tsx        # sidebar (admin link visible untuk admin)
   landing/TemplateCard.tsx     # kartu template di landing page
   templates/
-    index.tsx                  # registry componentKey → komponen
-    types.ts                   # TemplateProps + InvitationView
+    index.tsx                  # registry componentKey → komponen (+ DecorationLayer)
+    types.ts                   # TemplateProps + InvitationView + Decoration
+    DecorationLayer.tsx        # lapisan aset dekorasi (posisi/z/rotasi)
     ClassicTemplate.tsx         # template classic
     MinimalTemplate.tsx         # template minimal
     FloralTemplate.tsx          # template floral
@@ -175,20 +213,24 @@ components/
     RsvpForm.tsx                # form submit RSVP (client)
     WishList.tsx                # tampilan daftar ucapan
 
-lib/
+  lib/
   auth.ts                # NextAuth config + callbacks
   prisma.ts              # Prisma client
-  supabase.ts            # Supabase client helper
+  supabase.ts            # Supabase client helper (+ bucket templates)
   invitation-data.ts     # InvitationData type + helper
+  decoration.ts          # mapDecorations → Decoration[]
   actions/
     auth.ts, couple.ts, event.ts, general.ts
     guest.ts, rsvp.ts, template.ts, wish.ts
     rsvp-visitor.ts      # RSVP publik (tanpa login)
     upload.ts            # upload avatar ke Supabase
+    admin-template.ts    # CRUD template (guard ADMIN)
+    admin-asset.ts       # CRUD aset desain (guard ADMIN)
+    admin-decoration.ts  # CRUD dekorasi template (guard ADMIN)
 
 prisma/
-  schema.prisma          # DB schema (User, Invitation, Guest, Wish, Template, Transaction)
-  seed.ts                # seed 3 template + akun admin
+  schema.prisma          # DB schema (+ TemplateAsset, TemplateDecoration, AssetType)
+  seed.ts                # seed 3 template + aset/dekorasi contoh + akun admin
 ```
 
 ---
@@ -196,7 +238,8 @@ prisma/
 ## Catatan Teknis
 
 - **Dev server**: `npm run dev` → `http://localhost:3000`. Filesystem lambat (network drive?), kompilasi pertama ~50s, selanjutnya ~11s.
-- **Build**: `npm run build` lolos. Route `/admin` sudah terdaftar.
+- **Build**: `npm run build` lolos. Route `/admin/templates`, `/admin/templates/new`, `/admin/templates/[id]`, `/admin/templates/[id]/decorations`, dan `/admin/assets` sudah terdaftar.
+- **Schema**: `TemplateAsset`, `TemplateDecoration`, dan enum `AssetType` ditambahkan; DB di-sync via `prisma db push` (PostgreSQL Supabase).
 - **Bug fixed**: `couple.ts` sebelumnya menyimpan objek zod result, sudah diperbaiki menyimpan `groom.data` / `bride.data`.
 - **`.agents/`, `.claude/`, `.windsurf/`**: tidak sengaja ter-commit di commit terakhir. Bisa dihapus dari repo dengan `git rm -r --cached .agents .claude .windsurf` lalu commit.
-- **Supabase Storage**: bucket `avatars` belum dibuat. Server action `uploadAvatar` akan otomatis buat bila `SUPABASE_SERVICE_ROLE_KEY` terisi.
+- **Supabase Storage**: bucket `avatars` (foto mempelai) & `templates` (aset desain) — belum dibuat manual. Server action `uploadAvatar` / `createAssetFromUpload` otomatis buat bucket bila `SUPABASE_SERVICE_ROLE_KEY` terisi.
