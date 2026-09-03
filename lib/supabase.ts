@@ -16,3 +16,4 @@ export function getSupabaseAdmin() {
 }
 
 export const SUPABASE_BUCKET = "avatars";
+export const SUPABASE_ASSET_BUCKET = "templates";

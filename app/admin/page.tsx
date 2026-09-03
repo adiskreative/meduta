@@ -5,10 +5,11 @@ import { prisma } from "@/lib/prisma";
 export const metadata = { title: "Admin Panel | Meduta" };
 
 export default async function AdminOverviewPage() {
-  const [templateCount, userCount, invitationCount] = await Promise.all([
+  const [templateCount, userCount, invitationCount, assetCount] = await Promise.all([
     prisma.template.count(),
     prisma.user.count(),
     prisma.invitation.count(),
+    prisma.templateAsset.count(),
   ]);
 
   return (
@@ -24,7 +25,7 @@ export default async function AdminOverviewPage() {
         <StatCard icon={Palette} label="Template" value={templateCount} />
         <StatCard icon={FileText} label="Undangan" value={invitationCount} />
         <StatCard icon={Users} label="Pengguna" value={userCount} />
-        <StatCard icon={Images} label="Aset Desain" value={0} />
+        <StatCard icon={Images} label="Aset Desain" value={assetCount} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
