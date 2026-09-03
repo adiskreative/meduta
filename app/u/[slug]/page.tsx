@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getEventName } from "@/lib/invitation-data";
+import { mapDecorations } from "@/lib/decoration";
 import TemplateRenderer from "@/components/templates";
 import type { InvitationData } from "@/lib/invitation-data";
 
@@ -38,7 +39,16 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
   const invitation = await prisma.invitation.findUnique({
     where: { slug },
     include: {
-      template: { select: { componentKey: true, name: true } },
+      template: {
+        select: {
+          componentKey: true,
+          name: true,
+          decorations: {
+            include: { asset: { select: { url: true } } },
+            orderBy: { zIndex: "asc" },
+          },
+        },
+      },
     },
   });
 
@@ -46,6 +56,8 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
 
   const data = (invitation.data ?? {}) as InvitationData;
   const guestName = to ? decodeURIComponent(to).replace(/-/g, " ") : undefined;
+
+  const decorations = mapDecorations(invitation.template.decorations);
 
   const wishes =
     invitation.status === "published"
@@ -72,6 +84,7 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
         data={data}
         isPublished={invitation.status === "published"}
         wishes={wishes.map((w) => ({ ...w, createdAt: w.createdAt.toISOString() }))}
+        decorations={decorations}
       />
     </div>
   );

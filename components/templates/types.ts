@@ -61,6 +61,17 @@ export type WishItem = {
   createdAt: string;
 };
 
+export type Decoration = {
+  id: string;
+  assetUrl: string;
+  placement: string; // floating | cover | section
+  layer: string; // decor | frame
+  zIndex: number;
+  position: { x?: number; y?: number } | null;
+  size: { width?: number; height?: number } | null;
+  rotated: number | null;
+};
+
 export type TemplateProps = {
   invitationId: string;
   slug: string;
@@ -68,6 +79,7 @@ export type TemplateProps = {
   data: InvitationView;
   isPublished: boolean;
   wishes?: WishItem[];
+  decorations?: Decoration[];
 };
 
 export function formatDate(date?: string): string {

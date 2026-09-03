@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { X } from "lucide-react";
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
+import { mapDecorations } from "@/lib/decoration";
 import TemplateRenderer from "@/components/templates";
 import type { InvitationView } from "@/components/templates/types";
 
@@ -76,6 +78,17 @@ export default async function PreviewPage({ params }: Props) {
   const { key } = await params;
   if (!VALID.has(key)) notFound();
 
+  const template = await prisma.template.findUnique({
+    where: { componentKey: key },
+    select: {
+      decorations: {
+        include: { asset: { select: { url: true } } },
+        orderBy: { zIndex: "asc" },
+      },
+    },
+  });
+  const decorations = mapDecorations(template?.decorations ?? []);
+
   return (
     <div className="relative">
       <div className="sticky top-0 z-50 flex items-center justify-between border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur">
@@ -101,6 +114,7 @@ export default async function PreviewPage({ params }: Props) {
         data={sampleData}
         isPublished
         wishes={sampleWishes}
+        decorations={decorations}
       />
     </div>
   );
