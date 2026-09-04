@@ -24,6 +24,13 @@ enum AssetType {
   GALLERY
 }
 
+enum NotificationType {
+  RSVP
+  WISH
+  TRANSACTION
+  SYSTEM
+}
+
 model User {
   id               String          @id @default(cuid())
   email            String          @unique
@@ -40,6 +47,7 @@ model User {
   transactions     Transaction[]
   assets           TemplateAsset[]
   createdTemplates Template[]
+  notifications    Notification[]
 }
 
 model Account {
@@ -149,6 +157,7 @@ model Guest {
   invitationId String
   invitation   Invitation @relation(fields: [invitationId], references: [id])
   name         String
+  email        String?
   uniqueLink   String     @unique
   rsvpStatus   String? // hadir | tidak_hadir | belum_konfirmasi
   guestCount   Int?
@@ -182,4 +191,19 @@ model Transaction {
   createdAt   DateTime @default(now())
 
   @@index([userId])
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+  type       NotificationType @default(SYSTEM)
+  title      String
+  body       String?
+  link       String?
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
 }
