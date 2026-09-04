@@ -125,23 +125,28 @@
 - `seedAssets()` di `prisma/seed.ts` — 2 aset contoh (DECOR bungga, FRAME bingkai) + 1 dekorasi di template floral
 - Idempotent (hanya dibuat bila nama aset belum ada)
 
+### Halaman Dashboard Konten (cerita, galeri, musik, kado)
+- `/dashboard/cerita-cinta` — timeline kisah (date/title/description), list dinamis add-remove
+- `/dashboard/galeri` — galeri foto (url + caption) dengan preview thumbnail
+- `/dashboard/background-music` — set URL musik latar (musikUrl)
+- `/dashboard/kado-nikah` — daftar rekening/e-wallet (provider, name, accountNumber, holderName)
+- Server action `lib/actions/content.ts` (saveStory/saveGallery/saveMusic/saveGifts) menyimpan ke `Invitation.data`
+
+### Halaman Dashboard Akun & Sistem (akun, transaksi, notifikasi)
+- `/dashboard/akun` — ubah nama/email (cek duplikat) + ganti password (verifikasi password lama, bcrypt)
+- `/dashboard/transaksi` — daftar riwayat `Transaction` user (badge status pending/success/failed, format Rupiah)
+- `/dashboard/notifikasi` — empty state siap menerima notifikasi (sistem notifikasi belum ada)
+- Server action `lib/actions/account.ts` (updateProfile/changePassword)
+
 ---
 
 ## Yang Belum / Next Steps
-
-### Halaman yang Belum Dibuat
-- `/dashboard/cerita-cinta` (sidebar sudah ada link, halaman belum)
-- `/dashboard/galeri` (sidebar sudah ada link, halaman belum)
-- `/dashboard/background-music` (sidebar sudah ada link, halaman belum)
-- `/dashboard/kado-nikah` (sidebar sudah ada link, halaman belum)
-- `/dashboard/transaksi` (sidebar sudah ada link, halaman belum)
-- `/dashboard/notifikasi` (sidebar sudah ada link, halaman belum)
-- `/dashboard/akun` (sidebar sudah ada link, halaman belum)
 
 ### Integrasi
 - Pembayaran Midtrans (schema `Transaction` + `midtransId` sudah ada, env kosong)
 - Import CSV/Excel tamu (tombol sudah ada tapi disabled)
 - Email integration untuk kirim undangan
+- Sistem notifikasi (halaman `/dashboard/notifikasi` sudah ada, backend belum)
 
 ---
 
@@ -201,6 +206,11 @@ components/
   dashboard/CoupleForm.tsx     # form mempelai + upload foto
   dashboard/PhotoUploader.tsx  # upload ke Supabase
   dashboard/Sidebar.tsx        # sidebar (admin link visible untuk admin)
+  dashboard/StoryForm.tsx      # form cerita cinta (list dinamis)
+  dashboard/GalleryForm.tsx    # form galeri foto (list dinamis + preview)
+  dashboard/GiftForm.tsx       # form kado nikah (list dinamis)
+  dashboard/MusicForm.tsx      # form musik latar
+  dashboard/AccountForm.tsx    # form profil + ganti password
   landing/TemplateCard.tsx     # kartu template di landing page
   templates/
     index.tsx                  # registry componentKey → komponen (+ DecorationLayer)
@@ -224,6 +234,8 @@ components/
     guest.ts, rsvp.ts, template.ts, wish.ts
     rsvp-visitor.ts      # RSVP publik (tanpa login)
     upload.ts            # upload avatar ke Supabase
+    content.ts           # save story/gallery/music/gifts
+    account.ts           # updateProfile / changePassword
     admin-template.ts    # CRUD template (guard ADMIN)
     admin-asset.ts       # CRUD aset desain (guard ADMIN)
     admin-decoration.ts  # CRUD dekorasi template (guard ADMIN)
@@ -238,7 +250,7 @@ prisma/
 ## Catatan Teknis
 
 - **Dev server**: `npm run dev` → `http://localhost:3000`. Filesystem lambat (network drive?), kompilasi pertama ~50s, selanjutnya ~11s.
-- **Build**: `npm run build` lolos. Route `/admin/templates`, `/admin/templates/new`, `/admin/templates/[id]`, `/admin/templates/[id]/decorations`, dan `/admin/assets` sudah terdaftar.
+- **Build**: `npm run build` lolos. Seluruh route `/dashboard/*` (termasuk 7 halaman baru: akun, background-music, cerita-cinta, galeri, kado-nikah, notifikasi, transaksi) sudah terdaftar.
 - **Schema**: `TemplateAsset`, `TemplateDecoration`, dan enum `AssetType` ditambahkan; DB di-sync via `prisma db push` (PostgreSQL Supabase).
 - **Bug fixed**: `couple.ts` sebelumnya menyimpan objek zod result, sudah diperbaiki menyimpan `groom.data` / `bride.data`.
 - **`.agents/`, `.claude/`, `.windsurf/`**: tidak sengaja ter-commit di commit terakhir. Bisa dihapus dari repo dengan `git rm -r --cached .agents .claude .windsurf` lalu commit.
