@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import LoginForm from "@/components/auth/LoginForm";
+import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 
 export const metadata: Metadata = {
   title: "Masuk | Meduta",
@@ -37,13 +38,15 @@ export default function LoginPage() {
             <div className="h-px flex-1 bg-zinc-200" />
           </div>
 
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a
-            href="/api/auth/signin/google?callbackUrl=/dashboard"
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+          <Suspense
+            fallback={
+              <div className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-500">
+                Memuat...
+              </div>
+            }
           >
-            Lanjutkan dengan Google
-          </a>
+            <GoogleLoginButton />
+          </Suspense>
         </div>
       </div>
     </div>
