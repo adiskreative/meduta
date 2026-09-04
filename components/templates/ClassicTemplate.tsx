@@ -1,7 +1,8 @@
-import { Mail, MapPin, Clock, Heart, Music } from "lucide-react";
+import { CalendarDays, MapPin, Clock, Heart, Music, Quote, Landmark } from "lucide-react";
 import WishForm from "./WishForm";
 import WishList from "./WishList";
 import RsvpForm from "./RsvpForm";
+import CopyButton from "./CopyButton";
 import {
   formatDate,
   formatTime,
@@ -25,6 +26,9 @@ export default function ClassicTemplate({
   const groom = data.groom;
   const bride = data.bride;
   const events = data.events ?? [];
+  const story = data.story ?? [];
+  const gallery = data.gallery ?? [];
+  const gifts = data.gifts ?? [];
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-[#faf7f2] text-zinc-900">
@@ -36,21 +40,6 @@ export default function ClassicTemplate({
         guestName={guestName}
       />
 
-      <MainEvent
-        eventDate={data.eventDate}
-        eventTime={data.eventTime}
-        venueName={data.venueName}
-        location={data.location}
-        locationMap={data.locationMap}
-      />
-
-      <RsvpSection
-        invitationId={invitationId}
-        guestName={guestName}
-        accentClass={ACCENT}
-        borderClass={BORDER}
-      />
-
       {groom?.name || bride?.name ? (
         <Couple
           groom={groom}
@@ -59,7 +48,28 @@ export default function ClassicTemplate({
         />
       ) : null}
 
+      <MainEvent
+        eventDate={data.eventDate}
+        eventTime={data.eventTime}
+        venueName={data.venueName}
+        location={data.location}
+        locationMap={data.locationMap}
+      />
+
+      {story.length > 0 ? <StorySection story={story} /> : null}
+
+      {gallery.length > 0 ? <GallerySection gallery={gallery} /> : null}
+
       {events.length > 0 ? <AdditionalEvents events={events} /> : null}
+
+      {gifts.length > 0 ? <GiftsSection gifts={gifts} /> : null}
+
+      <RsvpSection
+        invitationId={invitationId}
+        guestName={guestName}
+        accentClass={ACCENT}
+        borderClass={BORDER}
+      />
 
       {data.customMessage ? (
         <MessageSection text={data.customMessage} />
@@ -161,7 +171,7 @@ function MainEvent({
       <div className="mx-auto mt-10 grid max-w-xl grid-cols-1 gap-6 sm:grid-cols-3">
         {eventDate && (
           <InfoCard
-            icon={<Mail className="h-5 w-5" />}
+            icon={<CalendarDays className="h-5 w-5" />}
             label={formatDate(eventDate)}
           />
         )}
@@ -315,9 +325,10 @@ function AdditionalEvents({
 
 function MessageSection({ text }: { text: string }) {
   return (
-    <section className="w-full max-w-3xl px-6 py-16 text-center">
-      <div className="mx-auto max-w-lg rounded-3xl border border-zinc-200 bg-white p-8">
-        <Music className="mx-auto mb-4 h-6 w-6 text-rose-500" />
+    <section id="pesan" className="w-full max-w-3xl px-6 py-16 text-center">
+      <p className="text-xs uppercase tracking-[0.25em] text-rose-500">Ucapan &amp; Doa</p>
+      <div className="mx-auto mt-6 max-w-lg rounded-3xl border border-zinc-200 bg-white p-8">
+        <Quote className="mx-auto mb-4 h-6 w-6 text-rose-500" />
         <p className="whitespace-pre-line font-serif text-lg leading-relaxed text-zinc-700">
           {text}
         </p>
@@ -337,6 +348,118 @@ function MusicSection({ url }: { url: string }) {
       >
         <Music className="h-4 w-4" /> Putar Musik
       </a>
+    </section>
+  );
+}
+
+function StorySection({
+  story,
+}: {
+  story: NonNullable<TemplateProps["data"]["story"]>;
+}) {
+  return (
+    <section id="cerita" className="w-full max-w-3xl px-6 py-16 text-center">
+      <p className="text-xs uppercase tracking-[0.25em] text-rose-500">Cerita Kami</p>
+      <h2 className="mt-2 font-serif text-3xl text-zinc-900">Perjalanan Cinta</h2>
+      <div className="mx-auto mt-10 max-w-xl space-y-8 text-left">
+        {story.map((item, index) => (
+          <div key={item.id} className="relative pl-8">
+            {index < story.length - 1 && (
+              <span className="absolute left-[7px] top-6 h-full w-px bg-rose-200" />
+            )}
+            <span className="absolute left-0 top-1.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-rose-300 bg-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+            </span>
+            <p className="text-xs uppercase tracking-widest text-rose-500">
+              {item.date ? formatDate(item.date) : "Momen"}
+            </p>
+            <h3 className="mt-1 font-semibold text-zinc-900">{item.title ?? ""}</h3>
+            {item.description && (
+              <p className="mt-1 whitespace-pre-line text-sm text-zinc-600">
+                {item.description}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GallerySection({
+  gallery,
+}: {
+  gallery: NonNullable<TemplateProps["data"]["gallery"]>;
+}) {
+  return (
+    <section id="galeri" className="w-full max-w-3xl bg-[#f4ede6] px-6 py-16 text-center">
+      <p className="text-xs uppercase tracking-[0.25em] text-rose-500">Galeri Foto</p>
+      <h2 className="mt-2 font-serif text-3xl text-zinc-900">Momen Berharga</h2>
+      <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
+        {gallery.map((item) => (
+          <figure
+            key={item.id}
+            className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={item.url}
+              alt={item.caption ?? "Foto galeri"}
+              className="aspect-[4/5] w-full object-cover"
+            />
+            {item.caption && (
+              <figcaption className="px-4 py-3 text-left text-sm text-zinc-600">
+                {item.caption}
+              </figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GiftsSection({
+  gifts,
+}: {
+  gifts: NonNullable<TemplateProps["data"]["gifts"]>;
+}) {
+  return (
+    <section id="kado" className="w-full max-w-3xl px-6 py-16 text-center">
+      <p className="text-xs uppercase tracking-[0.25em] text-rose-500">Tanda Kasih</p>
+      <h2 className="mt-2 font-serif text-3xl text-zinc-900">Kado Nikah</h2>
+      <p className="mx-auto mt-3 max-w-md text-sm text-zinc-500">
+        Doa restu Anda adalah hadiah terbaik. Jika ingin memberi tanda kasih, Anda dapat
+        mengirimkannya melalui salah satu rekening berikut.
+      </p>
+      <div className="mx-auto mt-10 grid max-w-xl grid-cols-1 gap-4 sm:grid-cols-2">
+        {gifts.map((g) => (
+          <div
+            key={g.id}
+            className="rounded-2xl border border-zinc-200 bg-white p-6 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+                <Landmark className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-semibold text-zinc-900">{g.provider}</p>
+                {g.name && <p className="text-xs text-zinc-500">{g.name}</p>}
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-zinc-500">No. Rekening</p>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <p className="font-mono text-lg font-semibold text-zinc-900">
+                {g.accountNumber}
+              </p>
+              <CopyButton text={g.accountNumber} />
+            </div>
+            {g.holderName && (
+              <p className="mt-2 text-sm text-zinc-600">a.n. {g.holderName}</p>
+            )}
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

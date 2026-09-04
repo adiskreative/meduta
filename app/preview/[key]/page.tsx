@@ -57,6 +57,32 @@ const sampleData: InvitationView = {
       locationMap: "https://maps.google.com/?q=Jakarta",
     },
   ],
+  story: [
+    {
+      id: "st1",
+      date: "2019-02-14T00:00:00Z",
+      title: "Pertama Bertemu",
+      description:
+        "Kami bertemu melalui seorang sahabat dan langsung merasa nyambung sejak percakapan pertama.",
+    },
+    {
+      id: "st2",
+      date: "2023-08-17T00:00:00Z",
+      title: "Lamaran",
+      description:
+        "Setelah berjalan beberapa tahun, kami melangkah ke jenjang yang lebih serius dengan lamaran yang sakral.",
+    },
+  ],
+  gallery: [
+    { id: "g1", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=60", caption: "Pre-wedding di Pantai" },
+    { id: "g2", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60", caption: "Hari Akad" },
+    { id: "g3", url: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=60", caption: "Resepsi" },
+    { id: "g4", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=600&q=60", caption: "Bersama Keluarga" },
+  ],
+  gifts: [
+    { id: "kf1", provider: "BRI", name: "Bank Rakyat Indonesia", accountNumber: "1234 5678 9012", holderName: "Andi Pratama" },
+    { id: "kf2", provider: "BCA", name: "Bank Central Asia", accountNumber: "9876 5432 1098", holderName: "Reni Kartika" },
+  ],
 };
 
 const sampleWishes = [
