@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/lib/notifications";
 
 const rsvpSchema = z.object({
   guestName: z.string().min(2, "Nama minimal 2 karakter").max(120).trim(),
@@ -79,6 +80,20 @@ export async function submitRsvp(
       ? "Terima kasih, konfirmasi kehadiran Anda telah tercatat."
       : "Terima kasih, ketidakhadiran Anda telah kami catat.";
   }
+
+  await createNotification({
+    userId: invitation.userId,
+    type: "RSVP",
+    title:
+      status === "CONFIRMED"
+        ? `${guestName} mengonfirmasi kehadiran`
+        : `${guestName} berhalangan hadir`,
+    body:
+      status === "CONFIRMED"
+        ? `Tamu ${guestName} akan hadir${guestCount ? ` (${guestCount} orang)` : ""}.`
+        : `Tamu ${guestName} tidak dapat hadir.`,
+    link: "/dashboard/rsvp",
+  });
 
   revalidatePath(`/u/${invitation.slug}`);
   return { success: true, message, submitted: true };
