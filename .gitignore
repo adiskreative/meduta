@@ -30,6 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# dev server stdout/stderr logs
+.dev-*.log
+
+# OAuth client secrets (Google, dll) — jangan pernah commit
+client_secret_*.json
+
 # env files (can opt-in for committing if needed)
 .env
 .env.*
