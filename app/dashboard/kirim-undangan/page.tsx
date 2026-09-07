@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import SendInvitationForm from "@/components/dashboard/SendInvitationForm";
+import WhatsAppShareForm from "@/components/dashboard/WhatsAppShareForm";
 
 export const metadata = { title: "Kirim Undangan | Meduta" };
 
@@ -43,7 +44,15 @@ export default async function KirimUndanganPage() {
         </p>
       </div>
 
-      <SendInvitationForm invitationId={invitation.id} appUrl={appUrl} />
+      <div className="space-y-6">
+        <WhatsAppShareForm
+          invitationId={invitation.id}
+          invitationSlug={invitation.slug}
+          appUrl={appUrl}
+        />
+
+        <SendInvitationForm invitationId={invitation.id} appUrl={appUrl} />
+      </div>
     </div>
   );
 }
