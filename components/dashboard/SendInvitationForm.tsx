@@ -231,6 +231,11 @@ export default function SendInvitationForm({
           <input type="hidden" name="appUrl" value={appUrl} />
           <input
             type="hidden"
+            name="sendEmail"
+            value={sendEmail ? "on" : "off"}
+          />
+          <input
+            type="hidden"
             name="rows"
             value={JSON.stringify(importRows)}
           />

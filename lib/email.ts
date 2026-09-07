@@ -6,6 +6,13 @@ const from =
 
 const resend = apiKey ? new Resend(apiKey) : null;
 
+// Jeda antar pengiriman (ms) untuk menghindari rate limit Resend
+// saat mengirim dalam jumlah banyak (mis. import / kirim ulang massal).
+export const EMAIL_DELAY_MS = Math.max(
+  0,
+  Number(process.env.EMAIL_DELAY_MS ?? 200),
+);
+
 export type InvitationEmailData = {
   to: string;
   guestName: string;
