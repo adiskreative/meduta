@@ -98,3 +98,30 @@ export async function saveGeneralSettings(
   revalidatePath("/dashboard/pengaturan-umum");
   return { success: true, message: "Pengaturan tersimpan." };
 }
+
+export async function setInvitationStatus(
+  invitationId: string,
+  formData: FormData,
+): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const invitation = await prisma.invitation.findFirst({
+    where: { id: invitationId, userId: session.user.id },
+  });
+  if (!invitation) return;
+
+  const status = formData.get("status")?.toString();
+  const next = status === "published" ? "published" : "draft";
+
+  if (invitation.status !== next) {
+    await prisma.invitation.update({
+      where: { id: invitationId },
+      data: { status: next },
+    });
+  }
+
+  revalidatePath("/dashboard/pengaturan-umum");
+  revalidatePath("/dashboard");
+  revalidatePath(`/u/${invitation.slug}`);
+}

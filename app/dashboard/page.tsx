@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   FileText,
   ClipboardCheck,
@@ -11,10 +12,19 @@ import {
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getEventName } from "@/lib/invitation-data";
+import CopyLinkButton from "@/components/dashboard/CopyLinkButton";
 
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const headerList = await headers();
+  const protocol = headerList.get("x-forwarded-proto") ?? "http";
+  const host =
+    headerList.get("x-forwarded-host") ??
+    headerList.get("host") ??
+    "localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`;
 
   const invitation = await prisma.invitation.findFirst({
     where: { userId: session.user.id },
@@ -91,26 +101,30 @@ export default async function DashboardPage() {
         </h2>
 
         {invitation ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium text-zinc-900">
-                {getEventName(invitation.data) ?? invitation.slug}
-              </p>
-              <p className="text-sm text-zinc-500">
-                Template: {invitation.template.name} •{" "}
-                <span
-                  className={`font-medium ${
-                    invitation.status === "published"
-                      ? "text-emerald-600"
-                      : "text-amber-600"
-                  }`}
-                >
-                  {invitation.status === "published" ? "Published" : "Draft"}
-                </span>
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {invitation.status === "published" && (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-medium text-zinc-900">
+                  {getEventName(invitation.data) ?? invitation.slug}
+                </p>
+                <p className="text-sm text-zinc-500">
+                  Template: {invitation.template.name} •{" "}
+                  <span
+                    className={`font-medium ${
+                      invitation.status === "published"
+                        ? "text-emerald-600"
+                        : "text-amber-600"
+                    }`}
+                  >
+                    {invitation.status === "published" ? "Published" : "Draft"}
+                  </span>
+                </p>
+                <p className="mt-1 truncate text-xs text-zinc-400">
+                  {appUrl}/u/{invitation.slug}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <CopyLinkButton url={`${appUrl}/u/${invitation.slug}`} />
                 <Link
                   href={`/u/${invitation.slug}`}
                   target="_blank"
@@ -119,14 +133,27 @@ export default async function DashboardPage() {
                   <Eye className="h-4 w-4" />
                   Lihat Undangan
                 </Link>
-              )}
-              <Link
-                href="/dashboard/pengaturan-umum"
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
-              >
-                Edit
-              </Link>
+                <Link
+                  href="/dashboard/pengaturan-umum"
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
+                >
+                  Edit
+                </Link>
+              </div>
             </div>
+            {invitation.status !== "published" && (
+              <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                Undangan masih berstatus <strong>Draft</strong>. Tamu hanya bisa
+                melihatnya setelah Anda{" "}
+                <Link
+                  href="/dashboard/pengaturan-umum"
+                  className="font-semibold underline"
+                >
+                  publish
+                </Link>{" "}
+                di Pengaturan Umum.
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 py-6 text-center">

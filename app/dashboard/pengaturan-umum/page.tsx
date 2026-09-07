@@ -48,6 +48,7 @@ export default async function PengaturanUmumPage() {
         defaultCustomMessage={
           typeof data?.customMessage === "string" ? data.customMessage : ""
         }
+        isPublished={invitation.status === "published"}
       />
     </div>
   );
