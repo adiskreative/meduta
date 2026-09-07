@@ -158,11 +158,15 @@ model Guest {
   invitation   Invitation @relation(fields: [invitationId], references: [id])
   name         String
   email        String?
+  phone        String? // nomor WhatsApp tamu
   uniqueLink   String     @unique
   rsvpStatus   String? // hadir | tidak_hadir | belum_konfirmasi
   guestCount   Int?
   message      String?
   submittedAt  DateTime?
+  emailSent    Boolean    @default(false) // apakah email undangan sudah dikirim
+  emailSentAt  DateTime? // kapan email undangan terakhir dikirim
+  lastSendError String? // error dari pengiriman email terakhir (jika ada)
   createdAt    DateTime   @default(now())
 
   @@index([invitationId])
