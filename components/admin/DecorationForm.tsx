@@ -26,6 +26,12 @@ export default function DecorationForm({
     <div className="rounded-2xl border border-zinc-200 bg-white p-6">
       <h2 className="mb-4 text-lg font-semibold text-zinc-900">Tambah Dekorasi</h2>
 
+      <p className="mb-4 rounded-lg bg-zinc-50 px-4 py-3 text-xs leading-relaxed text-zinc-500">
+        Layer <strong>Bingkai</strong> otomatis membungkus area sesuai Penempatan
+        (Cover = hero atas, Section = kolom konten), tanpa perlu atur posisi/ukuran.
+        Layer <strong>Dekorasi</strong> mengambang dan perlu posisi/ukuran manual.
+      </p>
+
       {state?.message && (
         <div
           className={`mb-4 rounded-lg px-4 py-3 text-sm ${
