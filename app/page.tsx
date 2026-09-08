@@ -37,6 +37,14 @@ const templates = [
       "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=70",
     premium: true,
   },
+  {
+    key: "rustic",
+    name: "Rustic Wedding",
+    desc: "Nuansa earthy hangat dengan aksen hijau yang menenangkan.",
+    image:
+      "https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=600&q=70",
+    premium: false,
+  },
 ];
 
 export const metadata = {

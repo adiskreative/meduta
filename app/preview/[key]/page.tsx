@@ -11,7 +11,7 @@ type Props = {
   params: Promise<{ key: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic"]);
 
 export const metadata: Metadata = {
   title: "Pratinjau Template | Meduta",
@@ -119,7 +119,7 @@ export default async function PreviewPage({ params }: Props) {
     <div className="relative">
       <div className="sticky top-0 z-50 flex items-center justify-between border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur">
         <p className="text-sm font-medium text-zinc-700">
-          Pratinjau {key === "classic" ? "Elegant Classic" : key === "minimal" ? "Modern Minimal" : "Floral Premium"}
+          Pratinjau {key === "classic" ? "Elegant Classic" : key === "minimal" ? "Modern Minimal" : key === "rustic" ? "Rustic Wedding" : "Floral Premium"}
         </p>
         <div className="flex items-center gap-3">
           <Link
