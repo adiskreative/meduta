@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { Save, Eye, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { saveGallery, GalleryState } from "@/lib/actions/content";
+import GalleryUploader from "@/components/dashboard/GalleryUploader";
 
 type GalleryItem = { id: string; url?: string; caption?: string };
 
@@ -98,13 +99,15 @@ export default function GalleryForm({
                     />
                   )}
                   <input
+                    id={`gallery-url-${item.id}`}
                     name="gallery.url[]"
                     type="text"
-                    placeholder="URL gambar (cth: https://images.com/foto.jpg)"
+                    placeholder="URL gambar (cth: https://images.com/foto.jpg) atau unggah dari file di bawah"
                     defaultValue={item.url ?? ""}
                     className={inputClass()}
                   />
                 </div>
+                <GalleryUploader targetId={`gallery-url-${item.id}`} />
                 <input
                   name="gallery.caption[]"
                   type="text"

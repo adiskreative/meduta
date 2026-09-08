@@ -14,6 +14,13 @@ export type UploadState = {
 };
 
 export async function uploadAvatar(formData: FormData): Promise<UploadState> {
+  return uploadImage(formData, "");
+}
+
+async function uploadImage(
+  formData: FormData,
+  folder: string,
+): Promise<UploadState> {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -31,7 +38,9 @@ export async function uploadAvatar(formData: FormData): Promise<UploadState> {
   }
 
   const ext = file.type.split("/")[1] === "jpeg" ? "jpg" : file.type.split("/")[1];
-  const path = `${session.user.id}/${randomUUID()}.${ext}`;
+  const path = folder
+    ? `${folder}/${session.user.id}/${randomUUID()}.${ext}`
+    : `${session.user.id}/${randomUUID()}.${ext}`;
 
   const supabase = getSupabaseAdmin();
 
@@ -59,4 +68,8 @@ export async function uploadAvatar(formData: FormData): Promise<UploadState> {
   const { data: urlData } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
 
   return { url: urlData.publicUrl };
+}
+
+export async function uploadGalleryImage(formData: FormData): Promise<UploadState> {
+  return uploadImage(formData, "gallery");
 }
