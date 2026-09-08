@@ -125,3 +125,31 @@ export async function setInvitationStatus(
   revalidatePath("/dashboard");
   revalidatePath(`/u/${invitation.slug}`);
 }
+
+export async function deleteInvitation(
+  invitationId: string,
+): Promise<{ success: boolean; message: string }> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const invitation = await prisma.invitation.findFirst({
+    where: { id: invitationId, userId: session.user.id },
+    select: { id: true, slug: true },
+  });
+  if (!invitation) {
+    return { success: false, message: "Undangan tidak ditemukan." };
+  }
+
+  // Guest dan Wish tak punya onDelete: Cascade di schema, jadi hapus dulu
+  // secara eksplisit agar tidak melanggar foreign key.
+  await prisma.$transaction([
+    prisma.wish.deleteMany({ where: { invitationId } }),
+    prisma.guest.deleteMany({ where: { invitationId } }),
+    prisma.invitation.delete({ where: { id: invitationId } }),
+  ]);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/pengaturan-umum");
+  revalidatePath(`/u/${invitation.slug}`);
+  return { success: true, message: "Undangan dihapus." };
+}

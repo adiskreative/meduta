@@ -13,6 +13,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getEventName } from "@/lib/invitation-data";
 import CopyLinkButton from "@/components/dashboard/CopyLinkButton";
+import DeleteInvitationButton from "@/components/dashboard/DeleteInvitationButton";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -139,6 +140,10 @@ export default async function DashboardPage() {
                 >
                   Edit
                 </Link>
+                <DeleteInvitationButton
+                  invitationId={invitation.id}
+                  eventName={getEventName(invitation.data)}
+                />
               </div>
             </div>
             {invitation.status !== "published" && (
