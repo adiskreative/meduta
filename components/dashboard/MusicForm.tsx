@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
-import { Save, Eye, Music } from "lucide-react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { Save, Play, Pause, Music } from "lucide-react";
 import { saveMusic, MusicState } from "@/lib/actions/content";
+import MusicUploader from "./MusicUploader";
 
 export default function MusicForm({
   invitationId,
@@ -16,6 +17,24 @@ export default function MusicForm({
     boundAction,
     undefined,
   );
+
+  const [previewing, setPreviewing] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Hentikan pemutaran pratinjau saat form selesai menyimpan (status baru masuk)
+  useEffect(() => {
+    if (state) setPreviewing(false);
+  }, [state]);
+
+  function togglePreview() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (previewing) {
+      audio.pause();
+    } else {
+      audio.play().catch(() => {});
+    }
+  }
 
   const inputClass = (hasError: boolean) =>
     `w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100 ${
@@ -63,7 +82,18 @@ export default function MusicForm({
         <p className="mt-2 text-xs text-zinc-400">
           Kosongkan untuk menghapus musik latar.
         </p>
+
+        <div className="mt-5 border-t border-zinc-100 pt-5">
+          <p className="mb-2 text-sm font-medium text-zinc-700">
+            Atau unggah dari komputer Anda
+          </p>
+          <MusicUploader targetId="musicUrl" initialUrl={defaultMusicUrl} />
+        </div>
       </div>
+
+      {/* Pemutar pratinjau (tersembunyi) + tombol preview */}
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+      <audio ref={audioRef} src={defaultMusicUrl || undefined} preload="none" onEnded={() => setPreviewing(false)} onPause={() => setPreviewing(false)} onPlay={() => setPreviewing(true)} className="hidden" />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <button
@@ -74,14 +104,19 @@ export default function MusicForm({
           <Save className="h-4 w-4" />
           {isPending ? "Menyimpan..." : "Simpan Musik Latar"}
         </button>
-        <a
-          href="#"
-          onClick={(e) => e.preventDefault()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+        <button
+          type="button"
+          onClick={togglePreview}
+          disabled={!defaultMusicUrl}
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <Eye className="h-4 w-4" />
-          Preview
-        </a>
+          {previewing ? (
+            <Pause className="h-4 w-4" />
+          ) : (
+            <Play className="h-4 w-4" />
+          )}
+          {previewing ? "Hentikan Pratinjau" : "Preview"}
+        </button>
       </div>
     </form>
   );

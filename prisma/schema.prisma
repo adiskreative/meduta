@@ -88,15 +88,16 @@ model VerificationToken {
 }
 
 model Template {
-  id           String               @id @default(cuid())
-  name         String
-  thumbnailUrl String
-  componentKey String               @unique // penanda component React yang di-render
-  isPremium    Boolean              @default(false)
-  createdBy    String?
-  creator      User?                @relation(fields: [createdBy], references: [id])
-  invitations  Invitation[]
-  decorations  TemplateDecoration[]
+  id              String               @id @default(cuid())
+  name            String
+  thumbnailUrl    String
+  componentKey    String               @unique // penanda component React yang di-render
+  isPremium       Boolean              @default(false)
+  defaultMusicUrl String? // musik latar bawaan template (diwarisi undangan)
+  createdBy       String?
+  creator         User?                @relation(fields: [createdBy], references: [id])
+  invitations     Invitation[]
+  decorations     TemplateDecoration[]
 }
 
 model TemplateAsset {

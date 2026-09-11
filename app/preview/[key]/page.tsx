@@ -37,7 +37,7 @@ const sampleData: InvitationView = {
     parentName: "Bpk. Hendra & Ibu Dewi",
     bio: "Anak pertama dari dua bersaudara.",
   },
-  musicUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+  musicUrl: "",
   events: [
     {
       id: "evt1",
@@ -106,6 +106,7 @@ export default async function PreviewPage({ params }: Props) {
   const template = await prisma.template.findUnique({
     where: { componentKey: key },
     select: {
+      defaultMusicUrl: true,
       decorations: {
         include: { asset: { select: { url: true } } },
         orderBy: { zIndex: "asc" },
@@ -121,7 +122,7 @@ export default async function PreviewPage({ params }: Props) {
         invitationId="preview-id"
         slug="preview"
         guestName="Bapak Ahmad & Ibu Siti"
-        data={sampleData}
+        data={{ ...sampleData, musicUrl: sampleData.musicUrl || template?.defaultMusicUrl || undefined }}
         isPublished
         wishes={sampleWishes}
         decorations={decorations}

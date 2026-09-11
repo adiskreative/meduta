@@ -21,18 +21,30 @@ export async function useTemplate(templateId: string) {
   const existing = await prisma.invitation.findFirst({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    select: { id: true },
+    select: { id: true, data: true },
   });
 
   if (existing) {
+    // Wariskan musik default template hanya bila pengguna belum menyetel musik sendiri
+    const currentData = (existing.data ?? {}) as Record<string, unknown>;
+    const hasOwnMusic = typeof currentData.musicUrl === "string" && currentData.musicUrl !== "";
+    const nextData = !hasOwnMusic && template.defaultMusicUrl
+      ? { ...currentData, musicUrl: template.defaultMusicUrl }
+      : currentData;
+
     await prisma.invitation.update({
       where: { id: existing.id },
-      data: { templateId },
+      data: { templateId, data: nextData as object },
     });
   } else {
     const slug = `undangan-${Math.random().toString(36).slice(2, 8)}`;
     await prisma.invitation.create({
-      data: { userId, templateId, slug, data: {} },
+      data: {
+        userId,
+        templateId,
+        slug,
+        data: template.defaultMusicUrl ? { musicUrl: template.defaultMusicUrl } : {},
+      },
     });
   }
 

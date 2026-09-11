@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import TemplateForm from "@/components/admin/TemplateForm";
+import TemplateMusicManager from "@/components/admin/TemplateMusicManager";
 
 export const metadata = { title: "Edit Template | Meduta" };
 
@@ -51,6 +52,11 @@ export default async function AdminTemplateDetailPage({
           componentKey: template.componentKey,
           isPremium: template.isPremium,
         }}
+      />
+
+      <TemplateMusicManager
+        templateId={template.id}
+        defaultMusicUrl={template.defaultMusicUrl}
       />
     </div>
   );
