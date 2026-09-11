@@ -28,7 +28,9 @@ export default function TemplateCard({ template }: { template: TemplateCardData 
       </div>
       <Link
         href={`/preview/${template.key}`}
-        className="mt-5 inline-flex items-center gap-2 rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-5 inline-flex items-center gap-2 rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600"
       >
         <Eye className="h-4 w-4" />
         Lihat Pratinjau

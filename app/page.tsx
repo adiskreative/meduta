@@ -155,29 +155,29 @@ export default function Home() {
 
 function Navbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#10173f]/85 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-600 text-white">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-600 text-white">
             <Heart className="h-5 w-5" />
           </span>
-          <span className="text-lg font-bold tracking-tight">Meduta</span>
+          <span className="text-lg font-bold tracking-tight text-white">Meduta</span>
         </Link>
-        <div className="hidden items-center gap-8 text-sm font-medium text-zinc-600 md:flex">
-          <a href="#fitur" className="transition hover:text-zinc-900">Fitur</a>
-          <a href="#cara-kerja" className="transition hover:text-zinc-900">Cara Kerja</a>
-          <a href="#harga" className="transition hover:text-zinc-900">Harga</a>
+        <div className="hidden items-center gap-8 text-sm font-medium text-zinc-300 md:flex">
+          <a href="#fitur" className="transition hover:text-white">Fitur</a>
+          <a href="#cara-kerja" className="transition hover:text-white">Cara Kerja</a>
+          <a href="#harga" className="transition hover:text-white">Harga</a>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900"
+            className="text-sm font-medium text-zinc-200 transition hover:text-white"
           >
             Masuk
           </Link>
           <Link
             href="/register"
-            className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
+            className="rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-700"
           >
             Daftar
           </Link>
@@ -189,37 +189,64 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-rose-50 via-white to-white" />
-      <div className="mx-auto max-w-6xl px-6 py-24 text-center sm:py-32">
-        <p className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-sm font-medium text-rose-600">
-          <Sparkles className="h-4 w-4" />
-          Undangan Digital untuk Momen Spesial Anda
-        </p>
-        <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
-          Undangan Pernikahan{" "}
-          <span className="text-rose-600">Digital</span> yang Elegan
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-600">
-          Buat undangan digital yang indah, bagikan link ke tamu, dan pantau
-          RSVP serta ucapan mereka — semua dalam satu tempat.
-        </p>
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-rose-700"
-          >
-            Buat Undangan Gratis
-            <ArrowRight className="h-5 w-5" />
-          </Link>
-          <a
-            href="#cara-kerja"
-            className="inline-flex items-center gap-2 rounded-full border border-zinc-300 px-8 py-3.5 text-base font-medium text-zinc-700 transition hover:bg-zinc-50"
-          >
-            Lihat Cara Kerja
-          </a>
+    <section className="relative overflow-hidden bg-[#10173f]">
+      {/* Background pola daun navy (layer normal, di atas bg fallback section) */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/design/bg-new-opt.jpg')" }}
+      />
+      {/* Lapisan penggelap halus agar teks terbaca */}
+      <div aria-hidden className="absolute inset-0 bg-[#0d1340]/35" />
+
+      <div className="relative mx-auto max-w-6xl px-6 py-16 sm:py-20 lg:py-24">
+        <div className="grid items-center gap-8 sm:gap-12 lg:grid-cols-2">
+          {/* Kiri: teks */}
+          <div className="text-center lg:text-left">
+            <p className="mx-auto inline-flex items-center gap-2 rounded-full bg-pink-600 px-5 py-2 text-sm font-medium text-white shadow-lg shadow-pink-600/30 lg:mx-0">
+              <Sparkles className="h-4 w-4" />
+              Undangan Digital untuk Momen Spesial Anda
+            </p>
+            <h1 className="mt-6 text-4xl font-extrabold uppercase leading-tight tracking-tight text-white sm:text-5xl">
+              Undangan Pernikahan{" "}
+              <span className="text-pink-500">Digital Yang</span> Elegan
+            </h1>
+            <p className="mx-auto mt-5 max-w-xl text-base text-zinc-200 lg:mx-0">
+              Buat undangan digital yang mudah, bagikan linknya ke tamu, dan pantau
+              RSVP serta ucapan mereka — semua dalam satu tempat.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 rounded-full bg-pink-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-600/40 transition hover:bg-pink-500"
+              >
+                Buat Undangan Gratis
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25">
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </span>
+              </Link>
+              <a
+                href="#cara-kerja"
+                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-7 py-3 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/20"
+              >
+                Lihat Cara Kerja
+              </a>
+            </div>
+            <p className="mt-5 text-xs text-zinc-400">
+              Gratis untuk memulai • Tanpa kartu kredit
+            </p>
+          </div>
+
+          {/* Kanan: ilustrasi utuh (arch + pasangan + bunga) — versi kecil di ponsel */}
+          <div className="relative mx-auto w-full max-w-[240px] sm:max-w-[360px] lg:max-w-[440px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/design/ilustrasi.webp"
+              alt="Ilustrasi pasangan pengantin dengan buket bunga"
+              className="animate-float-slow w-full object-contain drop-shadow-2xl"
+            />
+          </div>
         </div>
-        <p className="mt-6 text-sm text-zinc-400">Gratis untuk memulai • Tanpa kartu kredit</p>
       </div>
     </section>
   );
@@ -238,9 +265,9 @@ function Features() {
           {features.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-zinc-200 p-6 transition hover:border-rose-200 hover:shadow-md"
+              className="rounded-2xl border border-zinc-200 p-6 transition hover:border-pink-200 hover:shadow-md"
             >
-              <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+              <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
                 <f.icon className="h-6 w-6" />
               </span>
               <h3 className="font-semibold text-zinc-900">{f.title}</h3>
@@ -284,7 +311,7 @@ function Steps() {
         <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s, i) => (
             <div key={s.title} className="relative rounded-2xl border border-zinc-200 bg-white p-6">
-              <span className="mb-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-rose-600 text-sm font-bold text-white">
+              <span className="mb-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-pink-600 text-sm font-bold text-white">
                 {i + 1}
               </span>
               <h3 className="font-semibold text-zinc-900">{s.title}</h3>
@@ -312,7 +339,7 @@ function Pricing() {
               key={plan.name}
               className={`rounded-3xl border p-8 ${
                 plan.highlighted
-                  ? "border-rose-200 bg-rose-50 shadow-lg"
+                  ? "border-pink-200 bg-pink-50 shadow-lg"
                   : "border-zinc-200"
               }`}
             >
@@ -325,7 +352,7 @@ function Pricing() {
               <ul className="mt-6 space-y-3">
                 {plan.features.map((feat) => (
                   <li key={feat} className="flex items-center gap-2 text-sm text-zinc-700">
-                    <Check className="h-4 w-4 shrink-0 text-rose-600" />
+                    <Check className="h-4 w-4 shrink-0 text-pink-600" />
                     {feat}
                   </li>
                 ))}
@@ -334,7 +361,7 @@ function Pricing() {
                 href={plan.href}
                 className={`mt-8 block rounded-xl px-6 py-3 text-center font-semibold transition ${
                   plan.highlighted
-                    ? "bg-rose-600 text-white hover:bg-rose-700"
+                    ? "bg-pink-600 text-white hover:bg-pink-700"
                     : "border border-zinc-300 text-zinc-700 hover:bg-zinc-50"
                 }`}
               >
@@ -360,7 +387,7 @@ function CTA() {
         </p>
         <Link
           href="/register"
-          className="mt-8 inline-flex items-center gap-2 rounded-full bg-rose-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-rose-700"
+          className="mt-8 inline-flex items-center gap-2 rounded-full bg-pink-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-pink-700"
         >
           Daftar Sekarang
           <ArrowRight className="h-5 w-5" />
@@ -372,15 +399,15 @@ function CTA() {
 
 function Footer() {
   return (
-    <footer className="border-t border-zinc-100 bg-white py-10">
+    <footer className="border-t border-white/10 bg-[#10173f] py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-600 text-white">
             <Heart className="h-4 w-4" />
           </span>
-          <span className="font-bold">Meduta</span>
+          <span className="font-bold text-white">Meduta</span>
         </div>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-zinc-400">
           © {new Date().getFullYear()} Meduta. Undangan digital untuk momen spesial Anda.
         </p>
       </div>
@@ -399,7 +426,7 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <p className="text-sm font-semibold uppercase tracking-widest text-rose-600">{eyebrow}</p>
+      <p className="text-sm font-semibold uppercase tracking-widest text-pink-600">{eyebrow}</p>
       <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
       <p className="mt-4 text-zinc-600">{desc}</p>
     </div>
