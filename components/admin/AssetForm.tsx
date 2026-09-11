@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useActionState } from "react";
-import { Upload, Link2, Image as ImageIcon } from "lucide-react";
+import { useState, useRef, useActionState } from "react";
+import { Upload, Link2, Image as ImageIcon, FileIcon, X } from "lucide-react";
 import {
   createAssetFromUpload,
   createAssetFromUrl,
@@ -19,6 +19,9 @@ const TYPE_OPTIONS = [
 
 export default function AssetForm() {
   const [tab, setTab] = useState<"upload" | "url">("upload");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [uploadState, uploadAction, uploadPending] = useActionState<
     AdminAssetState | undefined,
@@ -32,6 +35,25 @@ export default function AssetForm() {
 
   const state = tab === "upload" ? uploadState : urlState;
   const isPending = tab === "upload" ? uploadPending : urlPending;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setPreview(null);
+    }
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    setPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const inputClass = (hasError?: boolean) =>
     `w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100 ${
@@ -133,11 +155,48 @@ export default function AssetForm() {
             >
               File
             </label>
-            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-sm text-zinc-500 transition hover:border-rose-300 hover:bg-rose-50">
-              <ImageIcon className="h-5 w-5" />
-              <span>Klik untuk pilih file (maks 10MB)</span>
-              <input id="file" name="file" type="file" className="hidden" />
-            </label>
+            <input
+              ref={fileInputRef}
+              id="file"
+              name="file"
+              type="file"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            {selectedFile ? (
+              <div className="relative rounded-lg border border-zinc-300 bg-white p-3">
+                <button
+                  type="button"
+                  onClick={clearFile}
+                  className="absolute right-2 top-2 rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt={selectedFile.name}
+                    className="mx-auto max-h-40 rounded object-contain"
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-zinc-600">
+                    <FileIcon className="h-5 w-5 text-zinc-400" />
+                    <span className="truncate">{selectedFile.name}</span>
+                  </div>
+                )}
+                <p className="mt-1 text-xs text-zinc-400">
+                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              </div>
+            ) : (
+              <label
+                htmlFor="file"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-sm text-zinc-500 transition hover:border-rose-300 hover:bg-rose-50"
+              >
+                <ImageIcon className="h-5 w-5" />
+                <span>Klik untuk pilih file (maks 10MB)</span>
+              </label>
+            )}
             {state?.errors?.file && (
               <p className="mt-1 text-xs text-red-600">{state.errors.file[0]}</p>
             )}
