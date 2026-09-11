@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Font stack elegan untuk template undangan (dimuat via CDN link di layout) */
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+  --font-serif-elegant: "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-script: "Great Vibes", "Brush Script MT", cursive;
 }
 
 @theme inline {
@@ -23,4 +28,116 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ===== Animasi halus untuk template undangan ===== */
+@keyframes meduta-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes meduta-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes meduta-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+.animate-fade-up {
+  animation: meduta-fade-up 0.9s ease-out both;
+}
+
+.animate-fade-up-delay-1 {
+  animation: meduta-fade-up 0.9s ease-out 0.15s both;
+}
+
+.animate-fade-up-delay-2 {
+  animation: meduta-fade-up 0.9s ease-out 0.3s both;
+}
+
+.animate-fade-up-delay-3 {
+  animation: meduta-fade-up 0.9s ease-out 0.45s both;
+}
+
+.animate-fade-up-delay-4 {
+  animation: meduta-fade-up 0.9s ease-out 0.6s both;
+}
+
+.animate-float-slow {
+  animation: meduta-float 5s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: meduta-float 7s ease-in-out 1s infinite;
+}
+
+/* Teks gradasi emas berkilau (shimmer) */
+.text-gold-shimmer {
+  background: linear-gradient(
+    100deg,
+    #b98a2e 20%,
+    #f3d476 40%,
+    #fdf0c0 50%,
+    #f3d476 60%,
+    #b98a2e 80%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: meduta-shimmer 6s linear infinite;
+}
+
+/* ===== Gerbang undangan (Buka Undangan) ===== */
+@keyframes meduta-gate-open {
+  from {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+.animate-gate-open {
+  animation: meduta-gate-open 0.7s ease-in forwards;
+}
+
+/* Saat gerbang tertutup, PreviewShell mengunci transform agar
+   overlay fixed gerbang menempel persis di layar ponsel mockup */
+.gate-locked {
+  transform: translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-up-delay-1,
+  .animate-fade-up-delay-2,
+  .animate-fade-up-delay-3,
+  .animate-fade-up-delay-4,
+  .animate-float-slow,
+  .animate-float-slower,
+  .text-gold-shimmer,
+  .animate-gate-open {
+    animation: none;
+  }
 }

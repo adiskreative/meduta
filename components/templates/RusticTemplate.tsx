@@ -17,12 +17,12 @@ import {
   Send,
   MessageSquare,
   UserCheck,
-  Volume2,
-  VolumeX,
   User,
   Users
 } from "lucide-react";
 import type { TemplateProps, WishItem } from "./types";
+import InvitationGate from "./InvitationGate";
+import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 
 export interface PersonData {
   name?: string;
@@ -141,7 +141,7 @@ function RsvpForm({
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-700 text-amber-50 shadow-md">
           <UserCheck className="h-6 w-6" />
         </div>
-        <h4 className="font-serif text-xl font-medium text-emerald-950">Konfirmasi Terkirim!</h4>
+        <h4 className="font-[family-name:var(--font-display)] text-xl font-medium text-emerald-950">Konfirmasi Terkirim!</h4>
         <p className="text-xs text-stone-600 leading-relaxed max-w-xs mx-auto">
           Terima kasih <span className="font-semibold text-emerald-900">{name}</span>. Konfirmasi kehadiran Anda telah tersimpan dengan status{" "}
           <span className="font-bold uppercase tracking-wider text-emerald-800">
@@ -357,17 +357,36 @@ function WishList({ wishes }: { wishes: WishItem[] }) {
   );
 }
 
-export default function RusticTemplate({
+export default function RusticTemplate(props: TemplateProps) {
+  // Wrapper client: kelola status gerbang "Buka Undangan" + musik latar
+  const [gateOpen, setGateOpen] = useState(false);
+  const music = useBackgroundMusic(props.data.musicUrl);
+  return (
+    <RusticShell
+      {...props}
+      gateOpen={gateOpen}
+      onGateOpen={() => {
+        setGateOpen(true);
+        music.play();
+      }}
+      music={music}
+    />
+  );
+}
+
+function RusticShell({
   invitationId = "inv-123",
   guestName = "Bapak / Ibu / Saudara",
   data = defaultInvitationData,
   isPublished = true,
   wishes: initialWishes,
-}: TemplateProps) {
+  gateOpen = true,
+  onGateOpen,
+  music,
+}: TemplateProps & { gateOpen?: boolean; onGateOpen?: () => void; music?: MusicController }) {
   const [wishesList, setWishesList] = useState<WishItem[]>(
     initialWishes && initialWishes.length > 0 ? initialWishes : defaultWishes
   );
-  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
 
   const groom = data?.groom ?? defaultInvitationData.groom;
   const bride = data?.bride ?? defaultInvitationData.bride;
@@ -400,18 +419,14 @@ export default function RusticTemplate({
       <div className="pointer-events-none fixed inset-0 opacity-[0.03] bg-[radial-gradient(#2d5a43_1px,transparent_1px)] [background-size:16px_16px]" />
 
       {/* Floating Music Button Toggle */}
-      {data?.musicUrl && (
-        <button
-          onClick={() => setIsPlayingMusic(!isPlayingMusic)}
-          className="fixed bottom-5 right-5 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-900 text-amber-200 shadow-xl border border-amber-300/40 backdrop-blur-md transition-all hover:scale-110 active:scale-95"
-          title={isPlayingMusic ? "Matikan Musik" : "Putar Musik"}
-        >
-          {isPlayingMusic ? (
-            <Volume2 className="h-5 w-5 animate-pulse text-amber-300" />
-          ) : (
-            <VolumeX className="h-5 w-5 opacity-70" />
-          )}
-        </button>
+      {data?.musicUrl && music && (
+        <MusicFab
+          isPlaying={music.isPlaying}
+          onToggle={music.toggle}
+          buttonClassName="bg-emerald-900 text-amber-200 border border-amber-300/40"
+          playingIconClassName="h-5 w-5 animate-pulse text-amber-300"
+          pausedIconClassName="h-5 w-5 opacity-70"
+        />
       )}
 
       {/* Cover Header Hero Section */}
@@ -421,6 +436,8 @@ export default function RusticTemplate({
         brideNick={bride?.nickname ?? bride?.name}
         eventDate={data?.eventDate}
         guestName={guestName}
+        locked={!gateOpen}
+        onOpen={onGateOpen}
       />
 
       {/* Main Invitation Container */}
@@ -513,7 +530,7 @@ export default function RusticTemplate({
                     <span className="inline-block rounded-full bg-emerald-100/70 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-800">
                       {formatDate(e.date)}
                     </span>
-                    <h3 className="mt-3 font-serif text-2xl font-medium text-stone-900">{e.title ?? "Acara"}</h3>
+                    <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl font-medium text-stone-900">{e.title ?? "Acara"}</h3>
 
                     <div className="mt-3 space-y-1.5 text-sm text-stone-600">
                       {e.time && (
@@ -592,7 +609,7 @@ export default function RusticTemplate({
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
         <div className="relative z-10 mx-auto max-w-md px-6">
           <Sprout className="mx-auto mb-4 h-6 w-6 text-amber-300/80" />
-          <p className="font-serif text-3xl font-light tracking-wide text-amber-100">
+          <p className="font-[family-name:var(--font-display)] text-3xl font-light tracking-wide text-amber-100">
             {groom?.nickname ?? groom?.name ?? "Pria"}{" "}
             <Heart className="mx-2 inline h-5 w-5 fill-emerald-500 text-emerald-500 animate-pulse" />{" "}
             {bride?.nickname ?? bride?.name ?? "Wanita"}
@@ -633,14 +650,18 @@ function Cover({
   brideNick,
   eventDate,
   guestName,
+  locked = false,
+  onOpen,
 }: {
   eventName: string;
   groomNick?: string;
   brideNick?: string;
   eventDate?: string;
   guestName?: string;
+  locked?: boolean;
+  onOpen?: () => void;
 }) {
-  return (
+  const cover = (
     <header
       className="relative flex min-h-[95vh] w-full max-w-2xl flex-col items-center justify-between overflow-hidden bg-stone-900 px-6 py-12 text-center text-white shadow-2xl"
       style={{
@@ -660,9 +681,9 @@ function Cover({
       </div>
 
       <div className="my-auto py-8">
-        <h1 className="font-serif text-5xl leading-tight sm:text-6xl tracking-wide text-stone-100 drop-shadow-md">
+        <h1 className="font-[family-name:var(--font-display)] text-5xl leading-tight sm:text-6xl tracking-wide text-stone-100 drop-shadow-md">
           <span className="block">{groomNick ?? "Pria"}</span>
-          <span className="my-2 block font-sans text-2xl font-light italic text-amber-200">&amp;</span>
+          <span className="my-2 block font-[family-name:var(--font-script)] text-4xl font-light italic text-amber-200">&amp;</span>
           <span className="block">{brideNick ?? "Wanita"}</span>
         </h1>
 
@@ -686,13 +707,30 @@ function Cover({
       </div>
     </header>
   );
+
+  // Saat gerbang tertutup: konten dikunci + overlay "Buka Undangan" fullscreen
+  if (locked) {
+    return (
+      <InvitationGate
+        theme="rustic"
+        eventName={eventName}
+        groomNick={groomNick}
+        brideNick={brideNick}
+        eventDate={eventDate}
+        guestName={guestName}
+        onOpen={onOpen}
+      />
+    );
+  }
+
+  return cover;
 }
 
 function Heading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <div className="relative inline-block">
       <p className="text-xs font-bold uppercase tracking-[0.35em] text-emerald-800/90">{eyebrow}</p>
-      <h2 className="mt-1.5 font-serif text-3xl font-normal text-stone-900 sm:text-4xl">{title}</h2>
+      <h2 className="mt-1.5 font-[family-name:var(--font-display)] text-3xl font-normal text-stone-900 sm:text-4xl">{title}</h2>
       <LeafDivider />
     </div>
   );
@@ -747,7 +785,7 @@ function Person({
         {role}
       </span>
 
-      <h3 className="mt-3 font-serif text-2xl font-medium text-stone-900">
+      <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl font-medium text-stone-900">
         {person?.name ?? "-"}
       </h3>
 

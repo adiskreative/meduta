@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { X } from "lucide-react";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { mapDecorations } from "@/lib/decoration";
 import TemplateRenderer from "@/components/templates";
+import PreviewShell from "@/components/templates/PreviewShell";
 import type { InvitationView } from "@/components/templates/types";
 
 type Props = {
@@ -38,7 +37,7 @@ const sampleData: InvitationView = {
     parentName: "Bpk. Hendra & Ibu Dewi",
     bio: "Anak pertama dari dua bersaudara.",
   },
-  musicUrl: "https://example.com/music.mp3",
+  musicUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
   events: [
     {
       id: "evt1",
@@ -116,22 +115,7 @@ export default async function PreviewPage({ params }: Props) {
   const decorations = mapDecorations(template?.decorations ?? []);
 
   return (
-    <div className="relative">
-      <div className="sticky top-0 z-50 flex items-center justify-between border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur">
-        <p className="text-sm font-medium text-zinc-700">
-          Pratinjau {key === "classic" ? "Elegant Classic" : key === "minimal" ? "Modern Minimal" : key === "rustic" ? "Rustic Wedding" : "Floral Premium"}
-        </p>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
-          >
-            <X className="h-4 w-4" />
-            Tutup
-          </Link>
-        </div>
-      </div>
-
+    <PreviewShell>
       <TemplateRenderer
         componentKey={key}
         invitationId="preview-id"
@@ -142,6 +126,6 @@ export default async function PreviewPage({ params }: Props) {
         wishes={sampleWishes}
         decorations={decorations}
       />
-    </div>
+    </PreviewShell>
   );
 }
