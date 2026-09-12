@@ -68,16 +68,19 @@ export async function saveEventInfo(
   const locations = parseList("addlEvent.location");
   const maps = parseList("addlEvent.locationMap");
 
-  const events = titles.map((_, i) =>
-    eventSchema.parse({
-      id: crypto.randomUUID(),
-      title: titles[i] ?? "",
-      date: dates[i] ?? "",
-      time: times[i] ?? "",
-      location: locations[i] ?? "",
-      locationMap: maps[i] ?? "",
-    }),
-  );
+  const events = titles
+    .map((_, i) =>
+      eventSchema.parse({
+        id: crypto.randomUUID(),
+        title: titles[i] ?? "",
+        date: dates[i] ?? "",
+        time: times[i] ?? "",
+        location: locations[i] ?? "",
+        locationMap: maps[i] ?? "",
+      }),
+    )
+    // Buang baris acara yang benar-benar kosong agar tidak tersimpan kartu hantu
+    .filter((e) => e.title || e.date || e.time || e.location || e.locationMap);
 
   const invitation = await prisma.invitation.findFirst({
     where: { id: invitationId, userId: session.user.id },

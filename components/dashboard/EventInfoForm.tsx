@@ -197,9 +197,6 @@ export default function EventInfoForm({
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input name="addlEvent.title[]" type="hidden" value={event.title ?? ""} />
-                <input name="addlEvent.id[]" type="hidden" value={event.id} />
-
                 <div className="sm:col-span-2">
                   <input
                     name="addlEvent.title[]"
@@ -210,19 +207,23 @@ export default function EventInfoForm({
                   />
                 </div>
                 <div>
+                  <label className="mb-1 block text-xs font-medium text-zinc-500">
+                    Tanggal
+                  </label>
                   <input
                     name="addlEvent.date[]"
-                    type="text"
-                    placeholder="Tanggal"
+                    type="date"
                     defaultValue={event.date ?? ""}
                     className={inputClass(false)}
                   />
                 </div>
                 <div>
+                  <label className="mb-1 block text-xs font-medium text-zinc-500">
+                    Jam
+                  </label>
                   <input
                     name="addlEvent.time[]"
-                    type="text"
-                    placeholder="Jam"
+                    type="time"
                     defaultValue={event.time ?? ""}
                     className={inputClass(false)}
                   />
