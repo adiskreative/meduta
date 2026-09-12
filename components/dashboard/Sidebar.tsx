@@ -19,8 +19,10 @@ import {
   CreditCard,
   Bell,
   X,
+  CircleHelp,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { LogoWithText } from "@/components/Logo";
 
 type NavItem = {
   label: string;
@@ -39,6 +41,7 @@ const navSections: { title: string; items: NavItem[] }[] = [
         icon: Settings,
       },
       { label: "Pilih Tema", href: "/dashboard/pilih-tema", icon: Palette },
+      { label: "Panduan", href: "/dashboard/panduan", icon: CircleHelp },
     ],
   },
   {
@@ -117,9 +120,7 @@ export default function Sidebar({
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-5">
-          <Link href="/dashboard" className="text-xl font-bold text-rose-600">
-            Meduta
-          </Link>
+          <LogoWithText href="/dashboard" textClass="text-rose-600" markClass="h-8 w-auto" textSize="text-xl" />
           <button
             onClick={onClose}
             className="rounded-md p-1.5 text-zinc-500 hover:bg-zinc-100 lg:hidden"

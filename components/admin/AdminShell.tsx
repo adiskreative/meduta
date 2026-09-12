@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Palette, Images, ArrowLeft, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
+import { LogoMark } from "@/components/Logo";
 
 type NavItem = { label: string; href: string; icon: React.ElementType };
 
@@ -38,11 +39,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-rose-400">
-              Admin Panel
-            </p>
-            <p className="text-sm font-bold text-zinc-900">Meduta</p>
+          <div className="flex items-center gap-2.5">
+            <LogoMark className="h-8 w-auto" />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-rose-400">
+                Admin Panel
+              </p>
+              <p className="text-sm font-bold text-zinc-900">Meduta</p>
+            </div>
           </div>
           <button
             onClick={() => setOpen(false)}
