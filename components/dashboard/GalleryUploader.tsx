@@ -3,6 +3,9 @@
 import { useRef, useState } from "react";
 import { Upload, Loader2, Check, X, Image as ImageIcon } from "lucide-react";
 import { uploadGalleryImage } from "@/lib/actions/upload";
+import { compressImageForUpload } from "@/lib/image";
+
+const MAX_SIZE_MB = 3;
 
 export default function GalleryUploader({
   targetId,
@@ -15,12 +18,16 @@ export default function GalleryUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const original = e.target.files?.[0];
+    if (!original) return;
     setBusy(true);
     setStatus(null);
 
     try {
+      // Kompres otomatis bila file di atas batas (mis. foto kamera HP 4-8MB)
+      const file = await compressImageForUpload(original);
+      const wasCompressed = file !== original;
+
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
 
@@ -39,7 +46,12 @@ export default function GalleryUploader({
       const input = document.getElementById(targetId) as HTMLInputElement | null;
       if (input) input.value = result.url;
 
-      setStatus({ ok: true, text: "Foto berhasil diunggah." });
+      setStatus({
+        ok: true,
+        text: wasCompressed
+          ? `Foto dikompres otomatis (${(original.size / 1024 / 1024).toFixed(1)}MB → ${(file.size / 1024 / 1024).toFixed(2)}MB) dan berhasil diunggah.`
+          : "Foto berhasil diunggah.",
+      });
       setPreview(result.url);
       URL.revokeObjectURL(objectUrl);
     } catch {
@@ -97,6 +109,10 @@ export default function GalleryUploader({
             {status.text}
           </p>
         )}
+
+        <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
+          JPG/PNG/WebP, maks {MAX_SIZE_MB}MB. Disarankan rasio potret <span className="font-medium text-zinc-500">4:5</span> (contoh: 960×1200px) — foto terpotong otomatis di tengah sesuai frame.
+        </p>
       </div>
     </div>
   );

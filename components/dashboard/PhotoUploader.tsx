@@ -3,11 +3,14 @@
 import { useRef, useState } from "react";
 import { Upload, ImageIcon, Check, Loader2 } from "lucide-react";
 import { uploadAvatar } from "@/lib/actions/upload";
+import { compressImageForUpload } from "@/lib/image";
 
 type Props = {
   fieldId: string; // id/name dari input photoUrl
   currentUrl?: string;
 };
+
+const MAX_SIZE_MB = 3;
 
 export default function PhotoUploader({ fieldId, currentUrl }: Props) {
   const [preview, setPreview] = useState<string | undefined>(currentUrl);
@@ -16,12 +19,16 @@ export default function PhotoUploader({ fieldId, currentUrl }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const original = e.target.files?.[0];
+    if (!original) return;
     setBusy(true);
     setStatus(null);
 
     try {
+      // Kompres otomatis bila file di atas batas (mis. foto kamera HP 4-8MB)
+      const file = await compressImageForUpload(original);
+      const wasCompressed = file !== original;
+
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
 
@@ -40,7 +47,12 @@ export default function PhotoUploader({ fieldId, currentUrl }: Props) {
       const input = document.getElementById(fieldId) as HTMLInputElement | null;
       if (input) input.value = result.url;
 
-      setStatus({ type: "success", text: "Foto berhasil diunggah." });
+      setStatus({
+        type: "success",
+        text: wasCompressed
+          ? `Foto dikompres otomatis (${(original.size / 1024 / 1024).toFixed(1)}MB → ${(file.size / 1024 / 1024).toFixed(2)}MB) dan berhasil diunggah.`
+          : "Foto berhasil diunggah.",
+      });
       setPreview(result.url);
       URL.revokeObjectURL(objectUrl);
     } catch {
@@ -89,6 +101,12 @@ export default function PhotoUploader({ fieldId, currentUrl }: Props) {
           )}
         </div>
       </div>
+
+      <p className="mt-3 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
+        <span className="font-medium text-zinc-600">Ketentuan foto:</span> format
+        JPG/PNG/WebP, maksimal {MAX_SIZE_MB}MB. Disarankan <span className="font-medium text-zinc-600">persegi 1:1</span> (contoh: 800×800px)
+        dengan wajah di tengah — foto tampil bulat dan terpotong otomatis di tengah.
+      </p>
 
       {status && (
         <p
