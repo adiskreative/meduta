@@ -8,6 +8,7 @@ import type { InvitationView } from "@/components/templates/types";
 
 type Props = {
   params: Promise<{ key: string }>;
+  searchParams: Promise<{ embed?: string }>;
 };
 
 const VALID = new Set(["classic", "minimal", "floral", "rustic"]);
@@ -99,8 +100,9 @@ const sampleWishes = [
   },
 ];
 
-export default async function PreviewPage({ params }: Props) {
+export default async function PreviewPage({ params, searchParams }: Props) {
   const { key } = await params;
+  const { embed } = await searchParams;
   if (!VALID.has(key)) notFound();
 
   const template = await prisma.template.findUnique({
@@ -115,18 +117,36 @@ export default async function PreviewPage({ params }: Props) {
   });
   const decorations = mapDecorations(template?.decorations ?? []);
 
-  return (
-    <PreviewShell>
-      <TemplateRenderer
-        componentKey={key}
-        invitationId="preview-id"
-        slug="preview"
-        guestName="Bapak Ahmad & Ibu Siti"
-        data={{ ...sampleData, musicUrl: sampleData.musicUrl || template?.defaultMusicUrl || undefined }}
-        isPublished
-        wishes={sampleWishes}
-        decorations={decorations}
-      />
-    </PreviewShell>
+  const templateNode = (
+    <TemplateRenderer
+      componentKey={key}
+      invitationId="preview-id"
+      slug="preview"
+      guestName="Bapak Ahmad & Ibu Siti"
+      data={{ ...sampleData, musicUrl: sampleData.musicUrl || template?.defaultMusicUrl || undefined }}
+      isPublished
+      embedded={embed === "1"}
+      wishes={sampleWishes}
+      decorations={decorations}
+    />
   );
+
+  // Mode embed (?embed=1): template polos untuk dijadikan thumbnail live
+  // via iframe di landing page / dashboard — tanpa mockup & badge shell.
+  // Scrollbar disembunyikan & interaksi dimatikan via <style> (aman SSR,
+  // tanpa mutasi DOM yang memicu hydration mismatch).
+  if (embed === "1") {
+    return (
+      <>
+        <style>{`
+          html, body { scrollbar-width: none; overflow-x: hidden; }
+          body::-webkit-scrollbar { display: none; }
+          body { pointer-events: none; }
+        `}</style>
+        {templateNode}
+      </>
+    );
+  }
+
+  return <PreviewShell>{templateNode}</PreviewShell>;
 }

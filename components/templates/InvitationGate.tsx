@@ -58,6 +58,8 @@ export default function InvitationGate({
   eventDate,
   guestName,
   onOpen,
+  /** Mode embed (thumbnail live): gerbang disembunyikan agar konten terlihat. */
+  embedded = false,
 }: {
   theme?: GateTheme;
   eventName?: string;
@@ -66,8 +68,9 @@ export default function InvitationGate({
   eventDate?: string;
   guestName?: string;
   onOpen?: () => void;
+  embedded?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(embedded);
   const [closing, setClosing] = useState(false);
   const t = THEME_STYLES[theme];
 

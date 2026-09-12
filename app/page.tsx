@@ -9,8 +9,16 @@ import {
   Check,
   ArrowRight,
   Presentation,
+  Camera,
+  Music,
+  ListChecks,
+  Mail,
+  MessageCircle,
+  Building2,
 } from "lucide-react";
 import TemplateCard from "@/components/landing/TemplateCard";
+import ContactForm from "@/components/landing/ContactForm";
+import Logo from "@/components/Logo";
 
 const templates = [
   {
@@ -146,8 +154,11 @@ export default function Home() {
       <Features />
       <Templates />
       <Steps />
+      <Panduan />
+      <Tentang />
       <Pricing />
       <CTA />
+      <Kontak />
       <Footer />
     </main>
   );
@@ -157,21 +168,21 @@ function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#10173f]/85 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-600 text-white">
-            <Heart className="h-5 w-5" />
-          </span>
-          <span className="text-lg font-bold tracking-tight text-white">Meduta</span>
+        <Link href="/" className="flex items-center gap-2.5">
+          <Logo className="h-10 w-auto" />
         </Link>
         <div className="hidden items-center gap-8 text-sm font-medium text-zinc-300 md:flex">
           <a href="#fitur" className="transition hover:text-white">Fitur</a>
           <a href="#cara-kerja" className="transition hover:text-white">Cara Kerja</a>
+          <a href="#panduan" className="transition hover:text-white">Panduan</a>
+          <a href="#tentang" className="transition hover:text-white">Tentang</a>
           <a href="#harga" className="transition hover:text-white">Harga</a>
+          <a href="#kontak" className="transition hover:text-white">Kontak</a>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="text-sm font-medium text-zinc-200 transition hover:text-white"
+            className="flex min-h-[44px] items-center px-3 text-sm font-medium text-zinc-200 transition hover:text-white"
           >
             Masuk
           </Link>
@@ -324,6 +335,195 @@ function Steps() {
   );
 }
 
+const panduanTips = [
+  {
+    icon: Camera,
+    title: "Tips Foto",
+    points: [
+      "Foto mempelai: persegi 1:1 (cth. 800×800px) — tampil bulat dengan wajah di tengah",
+      "Foto galeri: potret 4:5 (cth. 960×1200px) — mengisi frame sempurna",
+      "Format JPG/PNG/WebP — foto besar dikompres otomatis saat diunggah",
+    ],
+  },
+  {
+    icon: Music,
+    title: "Tips Musik Latar",
+    points: [
+      "Format MP3/WAV/OGG/M4A, maksimal 10MB — MP3 paling ringan",
+      "Musik otomatis mengalun saat tamu menekan Buka Undangan",
+      "Tamu bisa mematikan musik lewat tombol speaker di undangan",
+    ],
+  },
+  {
+    icon: ListChecks,
+    title: "Tips Pengisian",
+    points: [
+      "Isi bertahap — semua perubahan tersimpan per bagian",
+      "Gunakan Preview di setiap form untuk memastikan tampilan",
+      "Nama tamu otomatis muncul di cover lewat link pribadi",
+    ],
+  },
+];
+
+function Panduan() {
+  return (
+    <section id="panduan" className="bg-white py-24">
+      <div className="mx-auto max-w-6xl px-6">
+        <SectionHeading
+          eyebrow="Panduan"
+          title="Persiapan Sebelum Membuat Undangan"
+          desc="Ketahui ketentuan foto, musik, dan cara pengisian agar undangan Anda selesai cepat tanpa hambatan."
+        />
+        <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
+          {panduanTips.map((tip) => (
+            <div
+              key={tip.title}
+              className="rounded-2xl border border-zinc-200 p-6 transition hover:border-pink-200 hover:shadow-md"
+            >
+              <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
+                <tip.icon className="h-6 w-6" />
+              </span>
+              <h3 className="font-semibold text-zinc-900">{tip.title}</h3>
+              <ul className="mt-3 space-y-2">
+                {tip.points.map((point) => (
+                  <li key={point} className="flex gap-2 text-sm leading-relaxed text-zinc-600">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-pink-600" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const KONTAK = {
+  email: "adi.skreative@gmail.com",
+  wa: "6282399889992",
+  waDisplay: "0823 9988 9992",
+  alamat: "Btn Graha Bidara Blok G.6",
+};
+
+function Tentang() {
+  return (
+    <section id="tentang" className="bg-white py-24">
+      <div className="mx-auto max-w-4xl px-6">
+        <SectionHeading
+          eyebrow="Tentang"
+          title="Tentang Meduta"
+          desc="Platform undangan digital yang membantu Anda membagikan momen bahagia dengan cara yang elegan."
+        />
+        <div className="mt-12 grid items-center gap-10 md:grid-cols-2">
+          <div>
+            <p className="text-base leading-relaxed text-zinc-600">
+              <span className="font-semibold text-zinc-900">Meduta</span> adalah
+              layanan undangan pernikahan digital yang memudahkan pasangan
+              membuat, mengelola, dan membagikan undangan ke semua tamu — cukup
+              dari satu tempat.
+            </p>
+            <p className="mt-4 text-base leading-relaxed text-zinc-600">
+              Kami percaya undangan bukan sekadar informasi acara, melainkan
+              kesan pertama dari hari bahagia Anda. Karena itu setiap template
+              kami dirancang elegan, mudah diisi tanpa keahlian teknis, dan
+              lengkap dengan fitur yang tamu butuhkan: RSVP, ucapan, musik,
+              galeri, dan peta lokasi.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-6">
+              <div>
+                <p className="text-3xl font-bold text-pink-600">4+</p>
+                <p className="text-sm text-zinc-500">Desain template elegan</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-pink-600">100%</p>
+                <p className="text-sm text-zinc-500">Responsif di ponsel</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-pink-600">Gratis</p>
+                <p className="text-sm text-zinc-500">Mulai tanpa biaya</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-3xl bg-gradient-to-br from-pink-600 to-rose-500 p-8 text-white shadow-xl shadow-pink-600/20">
+            <Heart className="h-10 w-10" />
+            <p className="mt-4 text-lg font-medium leading-relaxed">
+              “Membagikan kabar bahagia seharusnya semudah tersenyum.”
+            </p>
+            <p className="mt-4 text-sm text-white/80">— Tim Meduta</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Kontak() {
+  return (
+    <section id="kontak" className="bg-zinc-50 py-24">
+      <div className="mx-auto max-w-6xl px-6">
+        <SectionHeading
+          eyebrow="Kontak"
+          title="Hubungi Kami"
+          desc="Ada pertanyaan atau butuh bantuan? Kirim pesan atau hubungi kami langsung."
+        />
+        <div className="mt-14 grid gap-8 lg:grid-cols-[1fr_1.2fr]">
+          {/* Kiri: info kontak */}
+          <div className="space-y-4">
+            <a
+              href={`mailto:${KONTAK.email}`}
+              className="group flex items-center gap-4 rounded-2xl border border-zinc-200 bg-white p-5 transition hover:border-pink-200 hover:shadow-md"
+            >
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 transition group-hover:scale-110">
+                <Mail className="h-6 w-6" />
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-500">Email</h3>
+                <p className="break-all text-sm font-medium text-zinc-900 group-hover:text-pink-600">
+                  {KONTAK.email}
+                </p>
+              </div>
+            </a>
+            <a
+              href={`https://wa.me/${KONTAK.wa}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 rounded-2xl border border-zinc-200 bg-white p-5 transition hover:border-pink-200 hover:shadow-md"
+            >
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 transition group-hover:scale-110">
+                <MessageCircle className="h-6 w-6" />
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-500">WhatsApp</h3>
+                <p className="text-sm font-medium text-zinc-900 group-hover:text-pink-600">
+                  {KONTAK.waDisplay}
+                </p>
+              </div>
+            </a>
+            <div className="flex items-center gap-4 rounded-2xl border border-zinc-200 bg-white p-5">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-50 text-pink-600">
+                <Building2 className="h-6 w-6" />
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-500">Alamat</h3>
+                <p className="text-sm font-medium text-zinc-900">{KONTAK.alamat}</p>
+              </div>
+            </div>
+            <p className="rounded-xl bg-pink-50 px-5 py-4 text-xs leading-relaxed text-pink-700">
+              Respon tercepat via WhatsApp. Untuk pertanyaan teknis, sertakan
+              nama akun atau email yang terdaftar agar kami bisa membantu lebih cepat.
+            </p>
+          </div>
+
+          {/* Kanan: form pesan */}
+          <ContactForm />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Pricing() {
   return (
     <section id="harga" className="bg-white py-24">
@@ -401,15 +601,27 @@ function Footer() {
   return (
     <footer className="border-t border-white/10 bg-[#10173f] py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-600 text-white">
-            <Heart className="h-4 w-4" />
-          </span>
-          <span className="font-bold text-white">Meduta</span>
+        <div className="flex items-center">
+          <Logo className="h-9 w-auto" />
         </div>
-        <p className="text-sm text-zinc-400">
-          © {new Date().getFullYear()} Meduta. Undangan digital untuk momen spesial Anda.
-        </p>
+        <div className="flex flex-col items-center gap-2 sm:items-end">
+          <div className="flex items-center gap-4 text-xs text-zinc-400">
+            <a href={`mailto:${KONTAK.email}`} className="transition hover:text-white">
+              {KONTAK.email}
+            </a>
+            <a
+              href={`https://wa.me/${KONTAK.wa}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition hover:text-white"
+            >
+              WA: {KONTAK.waDisplay}
+            </a>
+          </div>
+          <p className="text-sm text-zinc-400">
+            © {new Date().getFullYear()} Meduta. Undangan digital untuk momen spesial Anda.
+          </p>
+        </div>
       </div>
     </footer>
   );

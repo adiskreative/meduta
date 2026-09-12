@@ -358,12 +358,14 @@ function WishList({ wishes }: { wishes: WishItem[] }) {
 }
 
 export default function RusticTemplate(props: TemplateProps) {
-  // Wrapper client: kelola status gerbang "Buka Undangan" + musik latar
-  const [gateOpen, setGateOpen] = useState(false);
-  const music = useBackgroundMusic(props.data.musicUrl);
+  // Mode embed (thumbnail live iframe): gerbang terbuka, musik dimatikan
+  const isEmbed = !!props.embedded;
+  const [gateOpen, setGateOpen] = useState(isEmbed);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
   return (
     <RusticShell
       {...props}
+      data={isEmbed ? { ...props.data, musicUrl: undefined } : props.data}
       gateOpen={gateOpen}
       onGateOpen={() => {
         setGateOpen(true);

@@ -20,12 +20,14 @@ const BORDER = "border-emerald-200 bg-emerald-50/40 focus:border-emerald-500 foc
 type GateProps = { gateOpen?: boolean; onGateOpen?: () => void };
 
 export default function ClassicTemplate(props: TemplateProps) {
-  // Wrapper client: kelola status gerbang "Buka Undangan" + musik latar
-  const [gateOpen, setGateOpen] = useState(false);
-  const music = useBackgroundMusic(props.data.musicUrl);
+  // Mode embed (thumbnail live iframe): gerbang terbuka, musik dimatikan
+  const isEmbed = !!props.embedded;
+  const [gateOpen, setGateOpen] = useState(isEmbed);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
   return (
     <ClassicShell
       {...props}
+      data={isEmbed ? { ...props.data, musicUrl: undefined } : props.data}
       gateOpen={gateOpen}
       onGateOpen={() => {
         setGateOpen(true);

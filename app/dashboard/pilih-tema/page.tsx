@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, Eye } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { useTemplate } from "@/lib/actions/template";
@@ -58,15 +58,26 @@ export default async function PilihTemaPage() {
 
               <div className="p-4">
                 <h3 className="font-semibold text-zinc-900">{template.name}</h3>
-                <form action={useTemplate.bind(null, template.id)}>
-                  <button
-                    type="submit"
-                    disabled={isActive}
-                    className="mt-3 w-full rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400"
+                <div className="mt-3 grid grid-cols-[auto_1fr] gap-2">
+                  <a
+                    href={`/preview/${template.componentKey}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3.5 py-2 text-sm font-semibold text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
                   >
-                    {isActive ? "Template Aktif" : "Pakai Template Ini"}
-                  </button>
-                </form>
+                    <Eye className="h-4 w-4" />
+                    Preview
+                  </a>
+                  <form action={useTemplate.bind(null, template.id)}>
+                    <button
+                      type="submit"
+                      disabled={isActive}
+                      className="w-full rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400"
+                    >
+                      {isActive ? "Template Aktif" : "Pakai Template Ini"}
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           );

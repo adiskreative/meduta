@@ -128,6 +128,38 @@ body {
   transform: translateZ(0);
 }
 
+/* Mode embed (thumbnail live iframe): template menjadi dokumen utuh
+   agar tinggi dokumen = tinggi konten, dan pan hover bergerak mulus */
+html.thumb-embed,
+html.thumb-embed body {
+  height: auto;
+  overflow: visible;
+}
+
+html.thumb-embed body {
+  pointer-events: none;
+}
+
+/* ===== Thumbnail live: pan otomatis saat kursor hover ===== */
+@keyframes meduta-thumb-pan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--thumb-pan, -400px));
+  }
+}
+
+.thumb-pan {
+  animation: meduta-thumb-pan 9s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb-pan {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-fade-up-delay-1,

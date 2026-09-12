@@ -78,6 +78,8 @@ export type TemplateProps = {
   guestName?: string;
   data: InvitationView;
   isPublished: boolean;
+  /** Mode embed (thumbnail live iframe): gerbang terbuka & musik mati. */
+  embedded?: boolean;
   wishes?: WishItem[];
   decorations?: Decoration[];
 };

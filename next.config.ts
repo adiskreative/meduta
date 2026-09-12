@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const securityHeaders = [
-  { key: "X-Frame-Options", value: "DENY" },
+  // SAMEORIGIN: halaman preview boleh di-frame oleh landing page sendiri
+  // (thumbnail live), situs eksternal tetap diblokir (anti-klikjacking).
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
