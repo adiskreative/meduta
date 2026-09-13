@@ -53,6 +53,21 @@ const templates = [
       "https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=600&q=70",
     premium: false,
   },
+  {
+    key: "berkreative",
+    name: "Berkreative Royale",
+    desc: "Full color: navy berpola, gradasi pink-violet-emas, glassmorphism.",
+    image: "/design/bg-new-opt.jpg",
+    premium: true,
+  },
+  {
+    key: "garden",
+    name: "Garden Royale",
+    desc: "Stationery taman kerajaan: arch bunga, wreath mawar, gazebo & merpati emas.",
+    image:
+      "https://htrcniqylvhzhkjeukcw.supabase.co/storage/v1/object/public/templates/background/45d062d5-746e-4476-8891-862c0d6ae302.jpg",
+    premium: true,
+  },
 ];
 
 export const metadata = {

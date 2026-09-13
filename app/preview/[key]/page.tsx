@@ -11,7 +11,7 @@ type Props = {
   searchParams: Promise<{ embed?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden"]);
 
 export const metadata: Metadata = {
   title: "Pratinjau Template | Meduta",
@@ -31,12 +31,16 @@ const sampleData: InvitationView = {
     nickname: "Andi",
     parentName: "Bpk. Slamet & Ibu Sri",
     bio: "Anak kedua dari tiga bersaudara.",
+    photoUrl:
+      "https://images.unsplash.com/photo-1618835962148-cf177563c6c0?w=600&q=70&auto=format&fit=crop",
   },
   bride: {
     name: "Reni Kartika",
     nickname: "Reni",
     parentName: "Bpk. Hendra & Ibu Dewi",
     bio: "Anak pertama dari dua bersaudara.",
+    photoUrl:
+      "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=600&q=70&auto=format&fit=crop",
   },
   musicUrl: "",
   events: [

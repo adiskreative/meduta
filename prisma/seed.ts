@@ -66,6 +66,12 @@ async function main() {
       componentKey: "rustic",
       isPremium: false,
     },
+    {
+      name: "Berkreative Royale",
+      thumbnailUrl: "/design/bg-new-opt.jpg",
+      componentKey: "berkreative",
+      isPremium: true,
+    },
   ];
 
   for (const template of templates) {
@@ -78,7 +84,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 4 template berhasil dibuat.");
+  console.log("Seed selesai: 5 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.

@@ -2,6 +2,8 @@ import ClassicTemplate from "./ClassicTemplate";
 import MinimalTemplate from "./MinimalTemplate";
 import FloralTemplate from "./FloralTemplate";
 import RusticTemplate from "./RusticTemplate";
+import BerkreativeTemplate from "./BerkreativeTemplate";
+import GardenTemplate from "./GardenTemplate";
 import DecorationLayer from "./DecorationLayer";
 import type { TemplateProps } from "./types";
 
@@ -10,6 +12,8 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   minimal: MinimalTemplate,
   floral: FloralTemplate,
   rustic: RusticTemplate,
+  berkreative: BerkreativeTemplate,
+  garden: GardenTemplate,
 };
 
 export default function TemplateRenderer({
