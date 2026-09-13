@@ -13,6 +13,7 @@ import {
   formatTime,
   type TemplateProps,
 } from "./types";
+import { getBackgroundUrl } from "@/lib/decoration";
 
 const ACCENT = "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-600/25";
 const BORDER = "border-emerald-200 bg-emerald-50/40 focus:border-emerald-500 focus:ring-emerald-100";
@@ -44,6 +45,7 @@ function ClassicShell({
   data,
   isPublished,
   wishes,
+  decorations,
   gateOpen = true,
   onGateOpen,
   music,
@@ -51,6 +53,9 @@ function ClassicShell({
   if (!isPublished) {
     return <DraftNotice />;
   }
+
+  // Prioritas background: pilihan user > admin (template) > bawaan template
+  const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
 
   const groom = data.groom;
   const bride = data.bride;
@@ -72,6 +77,7 @@ function ClassicShell({
         guestName={guestName}
         locked={!gateOpen}
         onOpen={onGateOpen}
+        bgUrl={bgUrl}
       />
 
       {groom?.name || bride?.name ? (
@@ -163,6 +169,7 @@ function Cover({
   guestName,
   locked = false,
   onOpen,
+  bgUrl,
 }: {
   eventName: string;
   groomNick?: string;
@@ -171,13 +178,13 @@ function Cover({
   guestName?: string;
   locked?: boolean;
   onOpen?: () => void;
+  bgUrl?: string;
 }) {
   const cover = (
     <header
       className="animate-fade-up relative flex min-h-[92vh] w-full max-w-3xl flex-col items-center justify-center bg-cover bg-center px-6 text-center text-white"
       style={{
-        backgroundImage:
-          "linear-gradient(to bottom, rgba(8,52,38,0.55), rgba(6,38,28,0.72)), url(https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=70)",
+        backgroundImage: `linear-gradient(to bottom, rgba(8,52,38,0.55), rgba(6,38,28,0.72)), url(${bgUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=70"})`,
       }}
     >
       {/* Bingkai emas ganda */}
@@ -233,6 +240,7 @@ function Cover({
         eventDate={eventDate}
         guestName={guestName}
         onOpen={onOpen}
+        backgroundUrl={bgUrl}
       />
     );
   }

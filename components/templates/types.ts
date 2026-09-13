@@ -44,6 +44,8 @@ export type InvitationView = {
   locationMap?: string;
   customMessage?: string;
   musicUrl?: string;
+  /** Background kustom pilihan user — meng-override background template. */
+  backgroundUrl?: string;
   groom?: CouplePerson;
   bride?: CouplePerson;
   story?: StoryItem[];

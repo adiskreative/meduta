@@ -20,6 +20,7 @@ import {
   Bell,
   X,
   CircleHelp,
+  Mountain,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { LogoWithText } from "@/components/Logo";
@@ -59,6 +60,11 @@ const navSections: { title: string; items: NavItem[] }[] = [
         label: "Background Music",
         href: "/dashboard/background-music",
         icon: Music,
+      },
+      {
+        label: "Background Undangan",
+        href: "/dashboard/background",
+        icon: Mountain,
       },
       { label: "Kado Nikah", href: "/dashboard/kado-nikah", icon: Gift },
     ],

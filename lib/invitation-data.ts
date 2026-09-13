@@ -37,6 +37,8 @@ export type InvitationData = {
   videos?: Array<{ id: string; url: string; title?: string }>;
   slides?: Array<{ id: string; url: string }>;
   musicUrl?: string;
+  /** Background kustom pilihan user — meng-override background template. */
+  backgroundUrl?: string;
   gifts?: Array<{
     id: string;
     provider: string;

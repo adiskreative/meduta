@@ -194,3 +194,50 @@ export async function saveMusic(
   revalidatePath("/dashboard/background-music");
   return { success: true, message: "Musik latar tersimpan." };
 }
+
+export type BackgroundState = {
+  errors?: { backgroundUrl?: string[] };
+  message?: string;
+  success?: boolean;
+};
+
+/**
+ * Simpan background pilihan user untuk undangannya sendiri
+ * (per-undangan — user lain yang memakai template sama tidak terpengaruh).
+ * Nilai kosong = kembali ke background bawaan/admin.
+ */
+export async function saveUserBackground(
+  invitationId: string,
+  _state: BackgroundState | undefined,
+  formData: FormData,
+): Promise<BackgroundState> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const backgroundUrl = z
+    .string()
+    .max(500)
+    .trim()
+    .url("URL background tidak valid.")
+    .optional()
+    .or(z.literal(""))
+    .safeParse(formData.get("backgroundUrl") ?? "");
+  if (!backgroundUrl.success) {
+    return { errors: { backgroundUrl: ["URL background tidak valid."] } };
+  }
+
+  const invitation = await getOwnedInvitation(invitationId, session.user.id);
+  if (!invitation) return { message: "Undangan tidak ditemukan.", success: false };
+
+  const currentData = (invitation.data ?? {}) as Record<string, unknown>;
+  await prisma.invitation.update({
+    where: { id: invitationId },
+    data: {
+      data: { ...currentData, backgroundUrl: backgroundUrl.data || undefined } as object,
+    },
+  });
+
+  revalidatePath("/dashboard/background");
+  revalidatePath("/", "layout");
+  return { success: true, message: "Background tersimpan." };
+}

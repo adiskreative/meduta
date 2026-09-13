@@ -27,9 +27,11 @@ export default function DecorationForm({
       <h2 className="mb-4 text-lg font-semibold text-zinc-900">Tambah Dekorasi</h2>
 
       <p className="mb-4 rounded-lg bg-zinc-50 px-4 py-3 text-xs leading-relaxed text-zinc-500">
-        Layer <strong>Bingkai</strong> otomatis membungkus area sesuai Penempatan
-        (Cover = hero atas, Section = kolom konten), tanpa perlu atur posisi/ukuran.
-        Layer <strong>Dekorasi</strong> mengambang dan perlu posisi/ukuran manual.
+        Layer <strong>Background</strong> mengganti foto latar template (cover &amp;
+        gerbang "Buka Undangan") — posisi/ukuran tidak diperlukan. Layer{" "}
+        <strong>Bingkai</strong> otomatis membungkus area sesuai Penempatan
+        (Cover = hero atas, Section = kolom konten). Layer <strong>Dekorasi</strong>{" "}
+        mengambang dan perlu posisi/ukuran manual.
       </p>
 
       {state?.message && (
@@ -102,6 +104,7 @@ export default function DecorationForm({
             >
               <option value="decor">Dekorasi</option>
               <option value="frame">Bingkai</option>
+              <option value="background">Background (ganti foto latar)</option>
             </select>
           </div>
         </div>

@@ -8,6 +8,7 @@ import WishForm from "./WishForm";
 import WishList from "./WishList";
 import RsvpForm from "./RsvpForm";
 import { formatDate, formatTime, type TemplateProps } from "./types";
+import { getBackgroundUrl } from "@/lib/decoration";
 
 const ACCENT =
   "bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:via-pink-600 hover:to-rose-700 shadow-lg shadow-rose-500/25";
@@ -41,10 +42,13 @@ function FloralShell({
   data,
   isPublished,
   wishes,
+  decorations,
   gateOpen = true,
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // Prioritas background: pilihan user > admin (template) > bawaan template
+  const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
   if (!isPublished) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#fdf4f6] px-6 text-center">
@@ -76,6 +80,7 @@ function FloralShell({
         guestName={guestName}
         locked={!gateOpen}
         onOpen={onGateOpen}
+        bgUrl={bgUrl}
       />
 
       <div className="w-full max-w-3xl space-y-16 px-6 py-16">
@@ -341,6 +346,7 @@ function Cover({
   guestName,
   locked = false,
   onOpen,
+  bgUrl,
 }: {
   eventName: string;
   groomNick?: string;
@@ -349,13 +355,13 @@ function Cover({
   guestName?: string;
   locked?: boolean;
   onOpen?: () => void;
+  bgUrl?: string;
 }) {
   const cover = (
     <header
       className="animate-fade-up relative flex min-h-[92vh] w-full max-w-3xl flex-col items-center justify-center overflow-hidden bg-center bg-cover px-6 text-center text-white"
       style={{
-        backgroundImage:
-          "linear-gradient(to bottom, rgba(120,26,60,0.45), rgba(88,14,50,0.65)), url(https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=70)",
+        backgroundImage: `linear-gradient(to bottom, rgba(120,26,60,0.45), rgba(88,14,50,0.65)), url(${bgUrl || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=70"})`,
       }}
     >
       {/* Bingkai halus + ornamen melayang */}
@@ -413,6 +419,7 @@ function Cover({
         eventDate={eventDate}
         guestName={guestName}
         onOpen={onOpen}
+        backgroundUrl={bgUrl}
       />
     );
   }

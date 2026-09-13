@@ -21,6 +21,7 @@ import {
   Users
 } from "lucide-react";
 import type { TemplateProps, WishItem } from "./types";
+import { getBackgroundUrl } from "@/lib/decoration";
 import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 
@@ -382,10 +383,13 @@ function RusticShell({
   data = defaultInvitationData,
   isPublished = true,
   wishes: initialWishes,
+  decorations,
   gateOpen = true,
   onGateOpen,
   music,
 }: TemplateProps & { gateOpen?: boolean; onGateOpen?: () => void; music?: MusicController }) {
+  // Prioritas background: pilihan user > admin (template) > bawaan template
+  const bgUrl = data?.backgroundUrl || getBackgroundUrl(decorations);
   const [wishesList, setWishesList] = useState<WishItem[]>(
     initialWishes && initialWishes.length > 0 ? initialWishes : defaultWishes
   );
@@ -440,6 +444,7 @@ function RusticShell({
         guestName={guestName}
         locked={!gateOpen}
         onOpen={onGateOpen}
+        bgUrl={bgUrl}
       />
 
       {/* Main Invitation Container */}
@@ -654,6 +659,7 @@ function Cover({
   guestName,
   locked = false,
   onOpen,
+  bgUrl,
 }: {
   eventName: string;
   groomNick?: string;
@@ -662,13 +668,13 @@ function Cover({
   guestName?: string;
   locked?: boolean;
   onOpen?: () => void;
+  bgUrl?: string;
 }) {
   const cover = (
     <header
       className="relative flex min-h-[95vh] w-full max-w-2xl flex-col items-center justify-between overflow-hidden bg-stone-900 px-6 py-12 text-center text-white shadow-2xl"
       style={{
-        backgroundImage:
-          "linear-gradient(to bottom, rgba(15, 23, 18, 0.5), rgba(10, 15, 12, 0.8)), url(https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=1200&q=80)",
+        backgroundImage: `linear-gradient(to bottom, rgba(15, 23, 18, 0.5), rgba(10, 15, 12, 0.8)), url(${bgUrl || "https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=1200&q=80"})`,
         backgroundPosition: "center",
         backgroundSize: "cover",
       }}
@@ -721,6 +727,7 @@ function Cover({
         eventDate={eventDate}
         guestName={guestName}
         onOpen={onOpen}
+        backgroundUrl={bgUrl}
       />
     );
   }

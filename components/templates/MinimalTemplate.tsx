@@ -9,6 +9,7 @@ import WishList from "./WishList";
 import RsvpForm from "./RsvpForm";
 import CopyButton from "./CopyButton";
 import { formatDate, formatTime, type TemplateProps } from "./types";
+import { getBackgroundUrl } from "@/lib/decoration";
 
 const ACCENT =
   "bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 hover:from-indigo-700 hover:via-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-600/25";
@@ -42,10 +43,13 @@ function MinimalShell({
   data,
   isPublished,
   wishes,
+  decorations,
   gateOpen = true,
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // Prioritas background: pilihan user > admin (template) > bawaan template
+  const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
   if (!isPublished) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-zinc-50 px-6 text-center">
@@ -74,6 +78,7 @@ function MinimalShell({
         guestName={guestName}
         locked={!gateOpen}
         onOpen={onGateOpen}
+        bgUrl={bgUrl}
       />
 
       <div className="w-full max-w-3xl space-y-16 px-6 py-16">
@@ -302,6 +307,7 @@ function Cover({
   guestName,
   locked = false,
   onOpen,
+  bgUrl,
 }: {
   eventName: string;
   groomNick?: string;
@@ -310,12 +316,13 @@ function Cover({
   guestName?: string;
   locked?: boolean;
   onOpen?: () => void;
+  bgUrl?: string;
 }) {
   const cover = (
     <header className="animate-fade-up relative flex min-h-[88vh] w-full max-w-3xl flex-col items-center justify-end overflow-hidden bg-indigo-950 pb-16 text-center text-white">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1200&q=70"
+        src={bgUrl || "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1200&q=70"}
         alt=""
         className="absolute inset-0 h-full w-full object-cover opacity-40"
       />
@@ -364,6 +371,7 @@ function Cover({
         eventDate={eventDate}
         guestName={guestName}
         onOpen={onOpen}
+        backgroundUrl={bgUrl}
       />
     );
   }

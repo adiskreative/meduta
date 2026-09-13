@@ -1,5 +1,16 @@
 import type { Decoration } from "@/components/templates/types";
 
+/**
+ * Ambil URL background kustom dari dekorasi layer "background".
+ * Admin menetapkannya lewat Admin Panel → Template → Dekorasi dengan
+ * Layer = "Background". Jika ada, template memakainya untuk cover & gerbang
+ * (menggantikan foto bawaan). Jika tidak ada, template memakai bawaannya.
+ */
+export function getBackgroundUrl(decorations?: Decoration[]): string | undefined {
+  const bg = decorations?.find((d) => d.layer === "background");
+  return bg?.assetUrl;
+}
+
 export function mapDecorations(
   rows: {
     id: string;

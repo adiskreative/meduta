@@ -5,14 +5,19 @@ export default function DecorationLayer({
 }: {
   decorations?: Decoration[];
 }) {
+  // Layer "background" tidak dirender di sini — dikonsumsi langsung oleh
+  // tiap template (cover + gerbang) via getBackgroundUrl() agar foto latar
+  // template benar-benar terganti, bukan sekadar ditumpuk di atasnya.
+  const bgDecorations = decorations?.filter((d) => d.layer === "background");
   if (!decorations || decorations.length === 0) return null;
+  if (decorations.length === bgDecorations?.length) return null;
 
   return (
     <div
       className="pointer-events-none fixed inset-0 z-[60] overflow-hidden"
       aria-hidden="true"
     >
-      {decorations.map((d) => {
+      {decorations.filter((d) => d.layer !== "background").map((d) => {
         const size = d.size ?? {};
         const pos = d.position ?? {};
 

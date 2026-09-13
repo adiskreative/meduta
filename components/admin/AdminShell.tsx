@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Palette, Images, ArrowLeft, X } from "lucide-react";
+import { LayoutDashboard, Palette, Images, Mountain, ArrowLeft, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { LogoMark } from "@/components/Logo";
@@ -12,6 +12,7 @@ type NavItem = { label: string; href: string; icon: React.ElementType };
 const navItems: NavItem[] = [
   { label: "Ringkasan", href: "/admin", icon: LayoutDashboard },
   { label: "Template", href: "/admin/templates", icon: Palette },
+  { label: "Background", href: "/admin/backgrounds", icon: Mountain },
   { label: "Aset Desain", href: "/admin/assets", icon: Images },
 ];
 

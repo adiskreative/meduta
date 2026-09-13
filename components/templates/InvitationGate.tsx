@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { formatDate } from "./types";
 
-type GateTheme = "classic" | "minimal" | "floral" | "rustic";
+type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden";
 
 /**
  * Gerbang undangan ala undangan digital premium:
@@ -48,6 +48,23 @@ const THEME_STYLES: Record<
     eyebrow: "text-amber-100",
     amp: "font-[family-name:var(--font-script)] text-amber-200",
   },
+  berkreative: {
+    // Navy brand Meduta dengan bingkai bunga pink-biru
+    photo: "/design/bg-new-opt.jpg",
+    overlay:
+      "linear-gradient(to bottom, rgba(11,16,48,0.55), rgba(45,10,36,0.78))",
+    eyebrow: "text-fuchsia-200",
+    amp: "text-gold-shimmer font-[family-name:var(--font-script)]",
+  },
+  garden: {
+    // Taman bunga ungu — stationery royal garden
+    photo:
+      "https://htrcniqylvhzhkjeukcw.supabase.co/storage/v1/object/public/templates/background/45d062d5-746e-4476-8891-862c0d6ae302.jpg",
+    overlay:
+      "linear-gradient(to bottom, rgba(46,16,60,0.45), rgba(88,14,50,0.72))",
+    eyebrow: "text-amber-100",
+    amp: "font-[family-name:var(--font-script)] text-pink-200",
+  },
 };
 
 export default function InvitationGate({
@@ -60,6 +77,8 @@ export default function InvitationGate({
   onOpen,
   /** Mode embed (thumbnail live): gerbang disembunyikan agar konten terlihat. */
   embedded = false,
+  /** Background kustom dari admin — menggantikan foto bawaan tema. */
+  backgroundUrl,
 }: {
   theme?: GateTheme;
   eventName?: string;
@@ -69,6 +88,7 @@ export default function InvitationGate({
   guestName?: string;
   onOpen?: () => void;
   embedded?: boolean;
+  backgroundUrl?: string;
 }) {
   const [open, setOpen] = useState(embedded);
   const [closing, setClosing] = useState(false);
@@ -101,10 +121,10 @@ export default function InvitationGate({
       role="dialog"
       aria-label="Buka undangan"
     >
-      {/* Foto latar + gradasi sesuai tema */}
+      {/* Foto latar + gradasi sesuai tema (atau background kustom admin) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={t.photo}
+        src={backgroundUrl || t.photo}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
       />

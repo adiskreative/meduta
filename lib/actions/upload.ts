@@ -90,6 +90,13 @@ export async function uploadGalleryImage(formData: FormData): Promise<UploadStat
   return uploadImage(formData, "gallery");
 }
 
+/** Upload background undangan pilihan user (rasio disarankan 9:16). */
+export async function uploadInvitationBackground(
+  formData: FormData,
+): Promise<UploadState> {
+  return uploadImage(formData, "background");
+}
+
 /** Pastikan bucket storage tersedia; kembalikan pesan error bila gagal. */
 async function ensureBucket(
   supabase: ReturnType<typeof getSupabaseAdmin>,
