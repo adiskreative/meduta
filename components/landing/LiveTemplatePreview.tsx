@@ -20,10 +20,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
  */
 
 const PHONE_W = 390; // lebar desain template (viewport iframe)
-const CARD_W = 208; // lebar tampilan di kartu (w-52)
-const SCALE = CARD_W / PHONE_W;
-const INNER_H = Math.round(PHONE_W * (19 / 9)); // tinggi viewport iframe (9:19)
-const FRAME_H = Math.round(INNER_H * SCALE); // tinggi bingkai tampil
+const BORDER = 10; // ketebalan bingkai ponsel (border-[10px])
+const CARD_W = 240; // lebar total kartu termasuk border (w-60)
+const SCREEN_W = CARD_W - BORDER * 2; // lebar layar yang terlihat (220px)
+// Presisi: skala dihitung dari LAYAR (di dalam border), bukan lebar total —
+// tanpa ini konten terpotong di kanan dan tampak bergeser dari tengah.
+const SCALE = SCREEN_W / PHONE_W;
+const SCREEN_H = Math.round(SCREEN_W * (19 / 9)); // layar terlihat rasio 9:19
+const INNER_H = Math.round(SCREEN_H / SCALE); // tinggi viewport iframe (≈823)
+const FRAME_H = SCREEN_H + BORDER * 2; // tinggi total bingkai tampil
 
 function easeInOutSine(t: number): number {
   return -(Math.cos(Math.PI * t) - 1) / 2;
@@ -136,7 +141,7 @@ export default function LiveTemplatePreview({ templateKey }: { templateKey: stri
     <div
       ref={wrapRef}
       className="relative overflow-hidden rounded-[2.25rem] border-[10px] border-zinc-900 bg-black shadow-2xl"
-      style={{ width: CARD_W, height: FRAME_H }}
+      style={{ width: SCREEN_W + BORDER * 2, height: FRAME_H }}
       onMouseEnter={startPan}
       onMouseLeave={scrollBackToTop}
     >

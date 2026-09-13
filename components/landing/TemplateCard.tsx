@@ -20,7 +20,7 @@ export default function TemplateCard({ template }: { template: TemplateCardData 
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Lihat pratinjau template ${template.name}`}
-        className="relative w-52"
+        className="relative w-60"
       >
         <LiveTemplatePreview templateKey={template.key} />
       </Link>

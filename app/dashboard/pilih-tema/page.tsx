@@ -3,6 +3,7 @@ import { Check, Sparkles, Eye } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { useTemplate } from "@/lib/actions/template";
+import LiveTemplatePreview from "@/components/landing/LiveTemplatePreview";
 
 export const metadata = { title: "Pilih Tema | Meduta" };
 
@@ -35,25 +36,30 @@ export default async function PilihTemaPage() {
               key={template.id}
               className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md"
             >
-              <div className="relative aspect-[3/4] overflow-hidden bg-zinc-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={template.thumbnailUrl}
-                  alt={template.name}
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                />
+              <div className="relative flex justify-center bg-gradient-to-b from-rose-50/70 to-white py-8">
                 {template.isPremium && (
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">
+                  <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">
                     <Sparkles className="h-3 w-3" />
                     Premium
                   </span>
                 )}
                 {isActive && (
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white">
+                  <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white">
                     <Check className="h-3 w-3" />
                     Dipakai
                   </span>
                 )}
+                {/* Thumbnail live: template asli berjalan dalam bingkai ponsel,
+                    pan otomatis saat hover — konsisten dengan landing page */}
+                <a
+                  href={`/preview/${template.componentKey}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Lihat pratinjau template ${template.name}`}
+                  className="relative w-60"
+                >
+                  <LiveTemplatePreview templateKey={template.componentKey} />
+                </a>
               </div>
 
               <div className="p-4">
