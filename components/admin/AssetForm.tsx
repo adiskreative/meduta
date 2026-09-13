@@ -103,48 +103,31 @@ export default function AssetForm() {
         action={tab === "upload" ? uploadAction : urlAction}
         className="space-y-4"
       >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label
-              htmlFor="name"
-              className="mb-1.5 block text-sm font-medium text-zinc-700"
-            >
-              Nama aset
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="cth: Bunga mawar pojok kiri"
-              className={inputClass(!!state?.errors?.name)}
-            />
-            {state?.errors?.name && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.name[0]}</p>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="type"
-              className="mb-1.5 block text-sm font-medium text-zinc-700"
-            >
-              Tipe aset
-            </label>
-            <select
-              id="type"
-              name="type"
-              defaultValue="IMAGE"
-              className={inputClass(!!state?.errors?.type)}
-            >
-              {TYPE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {state?.errors?.type && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.type[0]}</p>
-            )}
-          </div>
+        <div>
+          <label
+            htmlFor="type"
+            className="mb-1.5 block text-sm font-medium text-zinc-700"
+          >
+            Kategori aset
+          </label>
+          <select
+            id="type"
+            name="type"
+            defaultValue="IMAGE"
+            className={`${inputClass(!!state?.errors?.type)} sm:max-w-xs`}
+          >
+            {TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {state?.errors?.type && (
+            <p className="mt-1 text-xs text-red-600">{state.errors.type[0]}</p>
+          )}
+          <p className="mt-1.5 text-xs text-zinc-400">
+            Nama aset dibuat otomatis dari nama file/URL — tidak perlu menulis judul.
+          </p>
         </div>
 
         {tab === "upload" ? (
