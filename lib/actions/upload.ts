@@ -90,6 +90,7 @@ export async function uploadGalleryImage(formData: FormData): Promise<UploadStat
   return uploadImage(formData, "gallery");
 }
 
+
 /** Upload background undangan pilihan user (rasio disarankan 9:16). */
 export async function uploadInvitationBackground(
   formData: FormData,
@@ -209,6 +210,20 @@ export async function uploadTemplateMusic(
   });
 
   return { url };
+}
+
+/**
+ * Upload foto mempelai contoh untuk data contoh template (khusus admin).
+ * Hanya menyimpan ke storage; URL-nya dimasukkan admin ke kolom foto pada
+ * form Data Contoh (atau otomatis oleh SamplePhotoUploader).
+ */
+export async function uploadTemplateSamplePhoto(
+  formData: FormData,
+): Promise<UploadState> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  if (session.user.role !== "ADMIN") redirect("/dashboard");
+  return uploadImage(formData, "template-sample");
 }
 
 /** Hapus musik default template (khusus admin). */
