@@ -86,6 +86,13 @@ async function main() {
       componentKey: "botanical",
       isPremium: true,
     },
+    {
+      name: "Zen Minimalist",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=60",
+      componentKey: "zen",
+      isPremium: true,
+    },
   ];
 
   for (const template of templates) {
@@ -98,7 +105,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 7 template berhasil dibuat.");
+  console.log("Seed selesai: 8 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.

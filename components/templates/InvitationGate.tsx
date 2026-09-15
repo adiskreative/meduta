@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { formatDate } from "./types";
 
-type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden" | "botanical";
+type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden" | "botanical" | "zen";
 
 /**
  * Gerbang undangan ala undangan digital premium:
@@ -73,6 +73,15 @@ const THEME_STYLES: Record<
       "linear-gradient(to bottom, rgba(85,107,47,0.45), rgba(50,64,24,0.8))",
     eyebrow: "text-[#E2DAD0]",
     amp: "font-[family-name:var(--font-script)] text-[#E2DAD0]",
+  },
+  zen: {
+    // Taman zen hening — zen minimalist (off-white/beige/sage)
+    photo:
+      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1200&q=80",
+    overlay:
+      "linear-gradient(to bottom, rgba(250,248,245,0.55), rgba(239,233,221,0.85))",
+    eyebrow: "text-[#788A75]",
+    amp: "font-[family-name:var(--font-script)] text-[#788A75]",
   },
 };
 

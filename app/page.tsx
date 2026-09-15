@@ -76,6 +76,14 @@ const templates = [
       "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&q=60",
     premium: true,
   },
+  {
+    key: "zen",
+    name: "Zen Minimalist",
+    desc: "Hening & berkelas: off-white bertekstur, stempel hanko merah, countdown & galeri grayscale.",
+    image:
+      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {
