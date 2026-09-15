@@ -4,6 +4,7 @@ import RingIcon from "@/components/icons/RingIcon";
 import { prisma } from "@/lib/prisma";
 import { deleteTemplate } from "@/lib/actions/admin-template";
 import DeleteTemplateButton from "@/components/admin/DeleteTemplateButton";
+import RegenerateThumbButton from "@/components/admin/RegenerateThumbButton";
 
 export const metadata = { title: "Kelola Template | Meduta" };
 
@@ -101,6 +102,11 @@ export default async function AdminTemplatesPage() {
                     usedBy={template._count.invitations}
                     action={deleteTemplate}
                   />
+                </div>
+
+                {/* Regenerasi thumbnail statis (screenshot Chrome headless) */}
+                <div className="mt-2 grid grid-cols-1">
+                  <RegenerateThumbButton templateId={template.id} />
                 </div>
               </div>
             </div>
