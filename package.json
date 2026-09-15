@@ -12,7 +12,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "thumbs": "node scripts/generate-thumbs.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

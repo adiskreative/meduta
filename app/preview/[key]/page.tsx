@@ -5,14 +5,21 @@ import { mapDecorations } from "@/lib/decoration";
 import { DEFAULT_SAMPLE_DATA, mergeSampleData } from "@/lib/sample-data";
 import TemplateRenderer from "@/components/templates";
 import PreviewShell from "@/components/templates/PreviewShell";
+import ShotReporter from "@/components/templates/ShotReporter";
 import type { InvitationView } from "@/components/templates/types";
+import {
+  THUMB_INNER_H,
+  THUMB_FULL_H,
+  thumbVh,
+  THUMB_PHONE_W,
+} from "@/lib/thumb-constants";
 
 type Props = {
   params: Promise<{ key: string }>;
-  searchParams: Promise<{ embed?: string }>;
+  searchParams: Promise<{ embed?: string; shot?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen"]);
 
 export const metadata: Metadata = {
   title: "Pratinjau Template | Meduta",
@@ -37,7 +44,7 @@ const sampleWishes = [
 
 export default async function PreviewPage({ params, searchParams }: Props) {
   const { key } = await params;
-  const { embed } = await searchParams;
+  const { embed, shot } = await searchParams;
   if (!VALID.has(key)) notFound();
 
   const template = await prisma.template.findUnique({
@@ -65,7 +72,7 @@ export default async function PreviewPage({ params, searchParams }: Props) {
       guestName={sampleGuest ?? "Bapak Ahmad & Ibu Siti"}
       data={{ ...sampleData, musicUrl: sampleData.musicUrl || template?.defaultMusicUrl || undefined }}
       isPublished
-      embedded={embed === "1"}
+      embedded={embed === "1" || shot === "1"}
       wishes={sampleWishes}
       decorations={decorations}
     />
@@ -84,6 +91,41 @@ export default async function PreviewPage({ params, searchParams }: Props) {
           body { pointer-events: none; }
         `}</style>
         {templateNode}
+      </>
+    );
+  }
+
+  // Mode shot (?shot=1): seperti embed, tapi seluruh template dirender
+  // "terbuka" dalam kolom sempit khusus untuk penangkapan screenshot
+  // full-halaman oleh Chrome headless (pembuatan thumbnail).
+  // PENTING: kolom RATA KIRI (bukan margin auto) — Chrome headless memiliki
+  // lebar layout minimum ~500px walau window-size 390; jika kolom 390px
+  // di-tengahkan, screenshot 390px akan memotong sisi kanan dan menyisakan
+  // strip kosong di kiri thumbnail.
+  if (shot === "1") {
+    return (
+      <>
+        <style>{`
+          html, body { scrollbar-width: none; overflow-x: hidden; margin: 0; height: auto !important; }
+          body::-webkit-scrollbar { display: none; }
+          body { pointer-events: none; }
+          /* Section "satu layar" dirender setinggi viewport ponsel tiruan
+             (THUMB_INNER_H ≈ 823px) — PERSIS seperti live iframe, sehingga
+             komposisi cover & kartu tamu identik piksel dengan tampilan live.
+             100vh/100svh TIDAK dipakai karena window screenshot setinggi
+             seluruh halaman (vh = tinggi halaman, bukan layar ponsel). */
+          .min-h-screen { min-height: ${THUMB_FULL_H}px !important; }
+          [class*="min-h-[100svh]"], [class*="min-h-[100vh]"] { min-height: ${THUMB_FULL_H}px !important; }
+          [class*="min-h-[95vh]"] { min-height: ${thumbVh(95)}px !important; }
+          [class*="min-h-[92vh]"] { min-height: ${thumbVh(92)}px !important; }
+          [class*="min-h-[90svh]"] { min-height: ${thumbVh(90)}px !important; }
+          [class*="min-h-[88vh]"] { min-height: ${thumbVh(88)}px !important; }
+          [class*="max-h-[80vh]"] { max-height: ${thumbVh(80)}px !important; }
+          [class*="max-h-[85vh]"] { max-height: ${thumbVh(85)}px !important; }
+          [class*="max-h-[90vh]"] { max-height: ${thumbVh(90)}px !important; }
+        `}</style>
+        <div style={{ width: THUMB_PHONE_W, margin: "0" }}>{templateNode}</div>
+        <ShotReporter />
       </>
     );
   }

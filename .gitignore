@@ -52,3 +52,9 @@ client_secret_*.json
 next-env.d.ts
 
 /app/generated/prisma
+
+# Thumbnail generator scratch
+.tmp-thumbs/
+.tmp-chrome-profile/
+.tmp-edge-profile/
+.dev-server.log
