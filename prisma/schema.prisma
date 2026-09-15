@@ -94,6 +94,7 @@ model Template {
   componentKey    String               @unique // penanda component React yang di-render
   isPremium       Boolean              @default(false)
   defaultMusicUrl String? // musik latar bawaan template (diwarisi undangan)
+  sampleData      Json? // data contoh preview/thumbnail (override default); null = bawaan
   createdBy       String?
   creator         User?                @relation(fields: [createdBy], references: [id])
   invitations     Invitation[]
