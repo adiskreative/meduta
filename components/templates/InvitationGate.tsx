@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { formatDate } from "./types";
 
-type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden";
+type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden" | "botanical";
 
 /**
  * Gerbang undangan ala undangan digital premium:
@@ -64,6 +64,15 @@ const THEME_STYLES: Record<
       "linear-gradient(to bottom, rgba(46,16,60,0.45), rgba(88,14,50,0.72))",
     eyebrow: "text-amber-100",
     amp: "font-[family-name:var(--font-script)] text-pink-200",
+  },
+  botanical: {
+    // Dedeaunan hijau — botanical romantic
+    photo:
+      "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=1200&q=80",
+    overlay:
+      "linear-gradient(to bottom, rgba(85,107,47,0.45), rgba(50,64,24,0.8))",
+    eyebrow: "text-[#E2DAD0]",
+    amp: "font-[family-name:var(--font-script)] text-[#E2DAD0]",
   },
 };
 

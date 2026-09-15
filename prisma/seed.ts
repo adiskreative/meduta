@@ -72,6 +72,20 @@ async function main() {
       componentKey: "berkreative",
       isPremium: true,
     },
+    {
+      name: "Garden Royale",
+      thumbnailUrl:
+        "https://htrcniqylvhzhkjeukcw.supabase.co/storage/v1/object/public/templates/background/45d062d5-746e-4476-8891-862c0d6ae302.jpg",
+      componentKey: "garden",
+      isPremium: true,
+    },
+    {
+      name: "Botanical Garden",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&q=60",
+      componentKey: "botanical",
+      isPremium: true,
+    },
   ];
 
   for (const template of templates) {
@@ -84,7 +98,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 5 template berhasil dibuat.");
+  console.log("Seed selesai: 7 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.
