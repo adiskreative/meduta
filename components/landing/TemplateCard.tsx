@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import LiveTemplatePreview from "./LiveTemplatePreview";
 
 export type TemplateCardData = {
@@ -29,7 +30,7 @@ export default function TemplateCard({ template }: { template: TemplateCardData 
           <h3 className="text-lg font-semibold text-zinc-900">{template.name}</h3>
           {template.premium && (
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950">
-              <Sparkles className="h-3 w-3" /> Premium
+              <RingIcon className="h-3 w-3" /> Premium
             </span>
           )}
         </div>

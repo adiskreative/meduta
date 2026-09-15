@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Clock, CalendarDays, Heart, Sparkles, ExternalLink } from "lucide-react";
+import { MapPin, Clock, CalendarDays, Heart, ExternalLink } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 import WishForm from "./WishForm";
@@ -254,7 +255,7 @@ function FloralShell({
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-rose-100 to-pink-200/70 text-rose-600">
-                      <Sparkles className="h-5 w-5" />
+                      <RingIcon className="h-5 w-5" />
                     </span>
                     <div>
                       <p className="font-[family-name:var(--font-display)] font-semibold text-zinc-900">
@@ -279,7 +280,7 @@ function FloralShell({
           <section className="text-center">
             <Heading eyebrow="Wishes" title="Pesan Untuk Tamu" />
             <div className="relative mx-auto mt-8 max-w-lg rounded-3xl border border-pink-100 bg-gradient-to-br from-white to-rose-50/70 p-8 shadow-sm">
-              <Sparkles className="mx-auto mb-3 h-6 w-6 text-pink-400" />
+              <RingIcon className="mx-auto mb-3 h-6 w-6 text-pink-400" />
               <p className="whitespace-pre-line leading-relaxed text-zinc-600">
                 {data.customMessage}
               </p>
@@ -309,7 +310,7 @@ function FloralShell({
         <div className="relative mx-auto max-w-md px-6">
           <div className="mb-6 flex justify-center">
             <span className="h-px w-14 bg-gradient-to-r from-transparent to-rose-300/50" />
-            <Sparkles className="mx-3 h-4 w-4 text-rose-300" />
+            <RingIcon className="mx-3 h-4 w-4 text-rose-300" />
             <span className="h-px w-14 bg-gradient-to-l from-transparent to-rose-300/50" />
           </div>
           <p className="font-[family-name:var(--font-display)] text-3xl text-rose-50">
@@ -436,7 +437,7 @@ function Heading({ eyebrow, title }: { eyebrow: string; title: string }) {
       </h2>
       <div className="mt-3 flex items-center justify-center gap-2.5 text-rose-400/80">
         <span className="h-px w-10 bg-gradient-to-r from-transparent to-rose-400/60" />
-        <Sparkles className="h-3.5 w-3.5" />
+        <RingIcon className="h-3.5 w-3.5" />
         <span className="h-px w-10 bg-gradient-to-l from-transparent to-rose-400/60" />
       </div>
     </div>

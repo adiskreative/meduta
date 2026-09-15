@@ -8,9 +8,9 @@ import {
   Heart,
   Quote,
   Landmark,
-  Sparkles,
   ExternalLink,
 } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 import WishForm from "./WishForm";
@@ -174,7 +174,7 @@ function GardenShell({
 function DraftNotice() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#faf6ee] px-6 text-center">
-      <Sparkles className="h-8 w-8 text-emerald-700" />
+      <RingIcon className="h-8 w-8 text-emerald-700" />
       <p className="text-lg font-medium text-zinc-800">Undangan belum dipublikasikan</p>
       <p className="text-sm text-zinc-500">
         Pemilik undangan belum mengaktifkan halaman ini. Silakan cek kembali nanti.
@@ -737,8 +737,19 @@ function Footer({
   brideName?: string;
 }) {
   return (
-    <footer className="relative w-full overflow-hidden bg-gradient-to-b from-emerald-900 to-[#043527] px-6 pb-14 pt-20 text-center text-emerald-50">
+    <footer className="relative w-full overflow-hidden bg-gradient-to-b from-emerald-900 to-[#043527] px-6 pb-44 pt-20 text-center text-emerald-50">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.15),transparent_55%)]" />
+
+      {/* Garland penutup — cermin vertikal dari garland cover, menutup
+          undangan secara simetris (atas: menggantung, bawah: tumbuh naik).
+          Rasio asli (h-auto) sehingga tidak ada bagian terpotong. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/design/flower-garland-wide.webp"
+        alt=""
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 mx-auto h-auto w-full max-w-3xl -scale-y-100 drop-shadow-[0_-10px_30px_rgba(190,24,93,0.3)]"
+      />
+
       <div className="relative">
         {/* Merpati & cincin emas (aset) — penutup romantis */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -750,7 +761,7 @@ function Footer({
 
         <div className="mb-4 flex items-center justify-center gap-3">
           <span className="h-px w-14 bg-gradient-to-r from-transparent to-amber-300/70" />
-          <Sparkles className="h-4 w-4 text-amber-300" />
+          <RingIcon className="h-4 w-4 text-amber-300" />
           <span className="h-px w-14 bg-gradient-to-l from-transparent to-amber-300/70" />
         </div>
 

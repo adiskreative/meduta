@@ -11,7 +11,6 @@ import {
   Gift,
   Copy,
   Check,
-  Sparkles,
   ExternalLink,
   ChevronDown,
   Send,
@@ -20,6 +19,7 @@ import {
   User,
   Users
 } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import type { TemplateProps, WishItem } from "./types";
 import { getBackgroundUrl } from "@/lib/decoration";
 import InvitationGate from "./InvitationGate";
@@ -576,7 +576,7 @@ function RusticShell({
           <section className="relative text-center">
             <Heading eyebrow="Wishes" title="Pesan Spesial" />
             <div className="relative mx-auto mt-8 max-w-lg rounded-2xl border border-amber-200/60 bg-amber-50/40 p-8 shadow-sm">
-              <Sparkles className="mx-auto mb-3 h-6 w-6 text-amber-600/70" />
+              <RingIcon className="mx-auto mb-3 h-6 w-6 text-amber-600/70" />
               <p className="whitespace-pre-line font-serif text-base leading-relaxed text-stone-700">
                 {data.customMessage}
               </p>

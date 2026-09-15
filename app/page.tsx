@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   Heart,
-  Sparkles,
   CalendarHeart,
   MessagesSquare,
   MapPin,
@@ -16,6 +15,7 @@ import {
   MessageCircle,
   Building2,
 } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import TemplateCard from "@/components/landing/TemplateCard";
 import ContactForm from "@/components/landing/ContactForm";
 import Logo from "@/components/Logo";
@@ -68,6 +68,14 @@ const templates = [
       "https://htrcniqylvhzhkjeukcw.supabase.co/storage/v1/object/public/templates/background/45d062d5-746e-4476-8891-862c0d6ae302.jpg",
     premium: true,
   },
+  {
+    key: "botanical",
+    name: "Botanical Garden",
+    desc: "Sage green & ivory bertekstur kertas: countdown save-the-date, galeri lightbox, frame blob organik.",
+    image:
+      "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {
@@ -103,7 +111,7 @@ const features = [
     desc: "Buat link undangan unik per tamu dan kirim massal sekali jalan.",
   },
   {
-    icon: Sparkles,
+    icon: RingIcon,
     title: "Mudah Dikelola",
     desc: "Kelola semua data dari dashboard yang rapi, tanpa perlu keahlian teknis.",
   },
@@ -230,7 +238,7 @@ function Hero() {
           {/* Kiri: teks */}
           <div className="text-center lg:text-left">
             <p className="mx-auto inline-flex items-center gap-2 rounded-full bg-pink-600 px-5 py-2 text-sm font-medium text-white shadow-lg shadow-pink-600/30 lg:mx-0">
-              <Sparkles className="h-4 w-4" />
+              <RingIcon className="h-4 w-4" />
               Undangan Digital untuk Momen Spesial Anda
             </p>
             <h1 className="mt-6 text-4xl font-extrabold uppercase leading-tight tracking-tight text-white sm:text-5xl">

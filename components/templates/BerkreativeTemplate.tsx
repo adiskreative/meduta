@@ -8,10 +8,10 @@ import {
   Heart,
   Quote,
   Landmark,
-  Sparkles,
   ExternalLink,
   AtSign,
 } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 import WishForm from "./WishForm";
@@ -174,7 +174,7 @@ function BerkreativeShell({
 function DraftNotice() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#0b1030] px-6 text-center text-white">
-      <Sparkles className="h-8 w-8 text-fuchsia-400" />
+      <RingIcon className="h-8 w-8 text-fuchsia-400" />
       <p className="text-lg font-medium">Undangan belum dipublikasikan</p>
       <p className="text-sm text-white/60">
         Pemilik undangan belum mengaktifkan halaman ini. Silakan cek kembali nanti.
@@ -200,7 +200,7 @@ function SectionHeading({
       </h2>
       <div className="mt-4 flex items-center justify-center gap-2">
         <span className="h-px w-12 bg-gradient-to-r from-transparent to-fuchsia-400/70" />
-        <Sparkles className="h-4 w-4 text-amber-300" />
+        <RingIcon className="h-4 w-4 text-amber-300" />
         <span className="h-px w-12 bg-gradient-to-l from-transparent to-fuchsia-400/70" />
       </div>
     </div>
@@ -746,7 +746,7 @@ function Footer({
       <div className="relative">
         <div className="mb-6 flex justify-center">
           <span className="h-px w-12 bg-gradient-to-r from-transparent to-amber-300/70" />
-          <Sparkles className="mx-3 h-4 w-4 text-amber-300" />
+          <RingIcon className="mx-3 h-4 w-4 text-amber-300" />
           <span className="h-px w-12 bg-gradient-to-l from-transparent to-amber-300/70" />
         </div>
         <p className="font-[family-name:var(--font-display)] text-3xl text-white">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Clock, CalendarDays, Heart, Landmark, Quote, Sparkles, ExternalLink, AtSign } from "lucide-react";
+import { MapPin, Clock, CalendarDays, Heart, Landmark, Quote, ExternalLink, AtSign } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 import WishForm from "./WishForm";
@@ -284,7 +285,7 @@ function MinimalShell({
       </div>
 
       <footer className="w-full bg-gradient-to-r from-indigo-950 via-violet-950 to-fuchsia-950 px-6 py-14 text-center">
-        <Sparkles className="mx-auto mb-4 h-5 w-5 text-fuchsia-300" />
+        <RingIcon className="mx-auto mb-4 h-5 w-5 text-fuchsia-300" />
         <p className="text-2xl font-light tracking-tight text-white">
           {groom?.nickname ?? groom?.name ?? "Pria"}{" "}
           <Heart className="mx-1 inline h-4 w-4 fill-fuchsia-400 text-fuchsia-400" />{" "}

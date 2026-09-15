@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, MapPin, Clock, Heart, Quote, Landmark, Sparkles, ExternalLink } from "lucide-react";
+import { CalendarDays, MapPin, Clock, Heart, Quote, Landmark, ExternalLink } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 import WishForm from "./WishForm";
@@ -155,7 +156,7 @@ function OrnamentDivider({ light = false }: { light?: boolean }) {
   return (
     <div className={`flex items-center justify-center gap-3 ${light ? "text-amber-200/90" : "text-amber-500/80"}`}>
       <span className={`h-px w-14 ${light ? "bg-gradient-to-r from-transparent to-amber-200/70" : "bg-gradient-to-r from-transparent to-amber-500/60"}`} />
-      <Sparkles className="h-4 w-4" />
+      <RingIcon className="h-4 w-4" />
       <span className={`h-px w-14 ${light ? "bg-gradient-to-l from-transparent to-amber-200/70" : "bg-gradient-to-l from-transparent to-amber-500/60"}`} />
     </div>
   );

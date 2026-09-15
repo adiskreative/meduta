@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { Check, Sparkles, Eye } from "lucide-react";
+import { Check, Eye } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { useTemplate } from "@/lib/actions/template";
@@ -39,7 +40,7 @@ export default async function PilihTemaPage() {
               <div className="relative flex justify-center bg-gradient-to-b from-rose-50/70 to-white py-8">
                 {template.isPremium && (
                   <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">
-                    <Sparkles className="h-3 w-3" />
+                    <RingIcon className="h-3 w-3" />
                     Premium
                   </span>
                 )}
