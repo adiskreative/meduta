@@ -16,7 +16,7 @@ import {
   Building2,
 } from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
-import TemplateCard from "@/components/landing/TemplateCard";
+import TemplateSlider from "@/components/landing/TemplateSlider";
 import ContactForm from "@/components/landing/ContactForm";
 import Logo from "@/components/Logo";
 
@@ -82,6 +82,14 @@ const templates = [
     desc: "Hening & berkelas: off-white bertekstur, stempel hanko merah, countdown & galeri grayscale.",
     image:
       "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=60",
+    premium: true,
+  },
+  {
+    key: "vogue",
+    name: "Vogue Editorial",
+    desc: "Gaya majalah fashion: masthead editorial, cover story grayscale, countdown & lookbook.",
+    image:
+      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=60",
     premium: true,
   },
 ];
@@ -331,10 +339,10 @@ function Templates() {
           title="Pilih Desain Undangan"
           desc="Lihat beberapa template siap pakai. Tampil sempurna di ponsel tamu Anda."
         />
-        <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {templates.map((t) => (
-            <TemplateCard key={t.name} template={t} />
-          ))}
+        {/* Slider: 6 template tampil sekaligus di desktop (2 baris × 3 kolom),
+            sisanya diakses lewat tombol next/prev */}
+        <div className="mt-14">
+          <TemplateSlider templates={templates} />
         </div>
       </div>
     </section>

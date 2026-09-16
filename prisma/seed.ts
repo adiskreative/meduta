@@ -93,6 +93,13 @@ async function main() {
       componentKey: "zen",
       isPremium: true,
     },
+    {
+      name: "Vogue Editorial",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=60",
+      componentKey: "vogue",
+      isPremium: true,
+    },
   ];
 
   for (const template of templates) {
@@ -105,7 +112,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 8 template berhasil dibuat.");
+  console.log("Seed selesai: 9 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.

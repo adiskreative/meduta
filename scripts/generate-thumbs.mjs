@@ -152,8 +152,20 @@ async function main() {
         .webp({ quality: 80 })
         .toFile(out);
 
+      // Perbarui manifest dimensi (dibaca LiveTemplatePreview untuk pan presisi)
+      const metaPath = path.resolve("lib/thumbs-meta.json");
+      let meta = {};
+      try {
+        meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+      } catch {
+        meta = {};
+      }
+      const finalMeta = await sharp(out).metadata();
+      meta[key] = { w: finalMeta.width, h: finalMeta.height };
+      fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2));
+
       const kb = Math.round(fs.statSync(out).size / 1024);
-      console.log(`OK ${info.width}x${cropH} → ${kb}KB`);
+      console.log(`OK ${info.width}x${cropH} → ${kb}KB (manifest ${finalMeta.width}x${finalMeta.height})`);
     } catch (err) {
       console.error(`[${key}] GAGAL: ${err.message}`);
     }

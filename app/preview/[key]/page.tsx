@@ -19,7 +19,7 @@ type Props = {
   searchParams: Promise<{ embed?: string; shot?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue"]);
 
 export const metadata: Metadata = {
   title: "Pratinjau Template | Meduta",

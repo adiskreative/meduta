@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { formatDate } from "./types";
 
-type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden" | "botanical" | "zen";
+type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden" | "botanical" | "zen" | "vogue";
 
 /**
  * Gerbang undangan ala undangan digital premium:
@@ -82,6 +82,15 @@ const THEME_STYLES: Record<
       "linear-gradient(to bottom, rgba(250,248,245,0.55), rgba(239,233,221,0.85))",
     eyebrow: "text-[#788A75]",
     amp: "font-[family-name:var(--font-script)] text-[#788A75]",
+  },
+  vogue: {
+    // Ruang editorial mewah — vogue editorial (cream/charcoal)
+    photo:
+      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1200&q=80",
+    overlay:
+      "linear-gradient(to bottom, rgba(17,17,17,0.72), rgba(17,17,17,0.92))",
+    eyebrow: "text-[#DCD8CE]",
+    amp: "font-[family-name:var(--font-serif-elegant)] italic text-[#F9F8F3]",
   },
 };
 
