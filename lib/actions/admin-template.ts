@@ -220,6 +220,28 @@ export async function updateSampleData(
     "sample.giftProvider": z.string().max(60).trim().optional(),
     "sample.giftAccountNumber": z.string().max(40).trim().optional(),
     "sample.giftHolderName": z.string().max(120).trim().optional(),
+    // Rangkaian acara contoh (3 slot: 2 bawaan + 1 tambahan)
+    "sample.eventTitle1": z.string().max(120).trim().optional(),
+    "sample.eventDate1": z.string().max(40).trim().optional(),
+    "sample.eventTime1": z.string().max(60).trim().optional(),
+    "sample.eventLocation1": z.string().max(200).trim().optional(),
+    "sample.eventMap1": z
+      .union([z.string().url("URL peta tidak valid").max(500), z.literal("")])
+      .optional(),
+    "sample.eventTitle2": z.string().max(120).trim().optional(),
+    "sample.eventDate2": z.string().max(40).trim().optional(),
+    "sample.eventTime2": z.string().max(60).trim().optional(),
+    "sample.eventLocation2": z.string().max(200).trim().optional(),
+    "sample.eventMap2": z
+      .union([z.string().url("URL peta tidak valid").max(500), z.literal("")])
+      .optional(),
+    "sample.eventTitle3": z.string().max(120).trim().optional(),
+    "sample.eventDate3": z.string().max(40).trim().optional(),
+    "sample.eventTime3": z.string().max(60).trim().optional(),
+    "sample.eventLocation3": z.string().max(200).trim().optional(),
+    "sample.eventMap3": z
+      .union([z.string().url("URL peta tidak valid").max(500), z.literal("")])
+      .optional(),
   });
 
   const raw: Record<string, string> = {};
@@ -285,6 +307,47 @@ export async function updateSampleData(
   // tambahan dan dibaca halaman preview)
   const guestName = str(d["sample.guestName"]);
   if (guestName) overrideRecord.guestName = guestName;
+
+  // Rangkaian acara contoh: 3 slot. Slot yang dikosongkan memakai acara
+  // bawaan pada indeks yang sama (array override mengganti utuh, jadi slot
+  // kosong tetap harus diisi nilai bawaan agar tidak hilang).
+  const eventSlots: Array<Record<string, string>> = [];
+  let eventsTouched = false;
+  const fields = d as unknown as Record<string, string | undefined>;
+  for (let i = 1; i <= 3; i++) {
+    const title = str(fields[`sample.eventTitle${i}`]);
+    const date = str(fields[`sample.eventDate${i}`]);
+    const time = str(fields[`sample.eventTime${i}`]);
+    const location = str(fields[`sample.eventLocation${i}`]);
+    const locationMap = str(fields[`sample.eventMap${i}`]);
+    const def = DEFAULT_SAMPLE_DATA.events?.[i - 1];
+
+    if (!title && !date && !time && !location && !locationMap) {
+      if (def) {
+        eventSlots.push({
+          id: def.id,
+          title: def.title ?? "",
+          date: def.date ?? "",
+          time: def.time ?? "",
+          location: def.location ?? "",
+          locationMap: def.locationMap ?? "",
+        });
+      }
+      continue;
+    }
+    eventsTouched = true;
+    eventSlots.push({
+      id: def?.id ?? `sample-event-${i}`,
+      title: title ?? def?.title ?? "",
+      date: date ?? def?.date ?? "",
+      time: time ?? def?.time ?? "",
+      location: location ?? def?.location ?? "",
+      locationMap: locationMap ?? def?.locationMap ?? "",
+    });
+  }
+  if (eventsTouched) {
+    overrideRecord.events = eventSlots;
+  }
 
   // groom/bride selalu ada sebagai kunci (mungkin kosong) — override dianggap
   // ada bila ada kunci lain selain keduanya, ATAU isi di dalam keduanya.

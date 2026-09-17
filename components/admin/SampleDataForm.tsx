@@ -18,7 +18,28 @@ type Defaults = Pick<
   | "location"
   | "locationMap"
   | "customMessage"
+  | "events"
 >;
+
+/** ISO date -> "YYYY-MM-DD" untuk input type=date. */
+function toInputDate(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+}
+
+/** ISO date -> format panjang Indonesia untuk keterangan bawaan. */
+function formatDateID(value?: string): string {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(d);
+}
 
 /**
  * Form Data Contoh template. Placeholder memperlihatkan nilai bawaan
@@ -196,6 +217,93 @@ export default function SampleDataForm({
         </div>
         <div className="mt-4">
           {field({ label: "Pesan pembuka", name: "sample.customMessage", path: "customMessage", placeholder: defaults.customMessage ?? "", area: true })}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+        <h2 className="mb-1 text-lg font-semibold text-zinc-900">
+          Agenda Rangkaian Acara Contoh
+        </h2>
+        <p className="mb-4 text-xs text-zinc-400">
+          Slot yang dikosongkan memakai acara bawaan (Akad &amp; Resepsi). Slot 3 kosong
+          berarti hanya 2 acara yang tampil di pratinjau.
+        </p>
+        <div className="space-y-5">
+          {[1, 2, 3].map((n) => (
+            <div
+              key={n}
+              className="rounded-xl border border-zinc-200 p-4"
+            >
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Acara {n}
+                {n <= 2 && (
+                  <span className="ml-2 font-normal normal-case text-zinc-400">
+                    (bawaan: {n === 1 ? "Akad Nikah" : "Resepsi"})
+                    </span>
+                )}
+              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {field({
+                  label: "Nama acara",
+                  name: `sample.eventTitle${n}`,
+                  path: `events.${n - 1}.title`,
+                  placeholder: defaults.events?.[n - 1]?.title ?? "",
+                })}
+                <div>
+                  <label
+                    htmlFor={`sample.eventDate${n}`}
+                    className="mb-1.5 block text-sm font-medium text-zinc-700"
+                  >
+                    Tanggal
+                  </label>
+                  <input
+                    id={`sample.eventDate${n}`}
+                    name={`sample.eventDate${n}`}
+                    type="date"
+                    defaultValue={toInputDate(
+                      v(`events.${n - 1}.date`) || defaults.events?.[n - 1]?.date,
+                    )}
+                    className="w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  />
+                  <p className="mt-1 text-xs text-zinc-400">
+                    Bawaan: <span className="italic">{formatDateID(defaults.events?.[n - 1]?.date)}</span>
+                  </p>
+                </div>
+                <div>
+                  <label
+                    htmlFor={`sample.eventTime${n}`}
+                    className="mb-1.5 block text-sm font-medium text-zinc-700"
+                  >
+                    Jam (bebas)
+                  </label>
+                  <input
+                    id={`sample.eventTime${n}`}
+                    name={`sample.eventTime${n}`}
+                    type="text"
+                    defaultValue={v(`events.${n - 1}.time`) || defaults.events?.[n - 1]?.time}
+                    placeholder="08.00 - 10.00 WIB"
+                    className="w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  />
+                  <p className="mt-1 text-xs text-zinc-400">
+                    Contoh: <span className="italic">08.00 - 10.00 WIB</span>
+                  </p>
+                </div>
+                {field({
+                  label: "Lokasi",
+                  name: `sample.eventLocation${n}`,
+                  path: `events.${n - 1}.location`,
+                  placeholder: defaults.events?.[n - 1]?.location ?? "",
+                })}
+                {field({
+                  label: "URL Google Maps",
+                  name: `sample.eventMap${n}`,
+                  path: `events.${n - 1}.locationMap`,
+                  placeholder: defaults.events?.[n - 1]?.locationMap ?? "",
+                  type: "url",
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
