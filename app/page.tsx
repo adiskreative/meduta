@@ -515,6 +515,17 @@ function Tentang() {
               “Membagikan kabar bahagia seharusnya semudah tersenyum.”
             </p>
             <p className="mt-4 text-sm text-white/80">— Tim Meduta</p>
+            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/20 pt-5 text-sm font-medium">
+              <Link href="/tim" className="text-white/90 underline-offset-4 transition hover:text-white hover:underline">
+                Tim Kami
+              </Link>
+              <Link href="/syarat-ketentuan" className="text-white/90 underline-offset-4 transition hover:text-white hover:underline">
+                Syarat & Ketentuan
+              </Link>
+              <Link href="/kebijakan-privasi" className="text-white/90 underline-offset-4 transition hover:text-white hover:underline">
+                Kebijakan Privasi
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -669,20 +680,38 @@ function Footer() {
         </div>
         <div className="flex flex-col items-center gap-2 sm:items-end">
           <div className="flex items-center gap-4 text-xs text-zinc-400">
-            <a href={`mailto:${KONTAK.email}`} className="transition hover:text-white">
-              {KONTAK.email}
+            <a
+              href={`mailto:${KONTAK.email}`}
+              aria-label="Email Meduta"
+              title={KONTAK.email}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-zinc-300 transition hover:bg-pink-600 hover:text-white"
+            >
+              <Mail className="h-4.5 w-4.5" />
             </a>
             <a
               href={`https://wa.me/${KONTAK.wa}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="transition hover:text-white"
+              aria-label="WhatsApp Meduta"
+              title={`WA: ${KONTAK.waDisplay}`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-zinc-300 transition hover:bg-emerald-500 hover:text-white"
             >
-              WA: {KONTAK.waDisplay}
+              <MessageCircle className="h-4.5 w-4.5" />
             </a>
           </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-zinc-400 sm:justify-end">
+            <Link href="/syarat-ketentuan" className="transition hover:text-white">
+              Syarat & Ketentuan
+            </Link>
+            <Link href="/kebijakan-privasi" className="transition hover:text-white">
+              Kebijakan Privasi
+            </Link>
+            <Link href="/tim" className="transition hover:text-white">
+              Tim Kami
+            </Link>
+          </div>
           <p className="text-sm text-zinc-400">
-            © {new Date().getFullYear()} Meduta. Undangan digital untuk momen spesial Anda.
+            Copyright © {new Date().getFullYear()} Meduta. Adi.Skreative. All rights reserved.
           </p>
         </div>
       </div>
