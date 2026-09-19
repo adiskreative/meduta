@@ -373,7 +373,7 @@ function Cover({
 }) {
   const cover = (
     <header
-      className="animate-fade-up relative flex min-h-[92vh] w-full max-w-3xl flex-col items-center justify-center overflow-hidden bg-center bg-cover px-6 text-center text-white"
+      className="animate-fade-up relative mx-auto flex min-h-[92vh] w-full max-w-3xl flex-col items-center justify-center overflow-hidden bg-center bg-cover px-6 text-center text-white"
       style={{
         backgroundImage: `linear-gradient(to bottom, rgba(120,26,60,0.45), rgba(88,14,50,0.65)), url(${bgUrl || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=70"})`,
       }}

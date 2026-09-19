@@ -40,6 +40,7 @@ const KEYS = [
   "zen",
   "vogue",
   "celestial",
+  "enchanted",
 ];
 
 function parseArgs() {

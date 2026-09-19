@@ -333,7 +333,7 @@ function Cover({
   bgUrl?: string;
 }) {
   const cover = (
-    <header className="animate-fade-up relative flex min-h-[88vh] w-full max-w-3xl flex-col items-center justify-end overflow-hidden bg-indigo-950 pb-16 text-center text-white">
+    <header className="animate-fade-up relative mx-auto flex min-h-[88vh] w-full max-w-3xl flex-col items-center justify-end overflow-hidden bg-indigo-950 pb-16 text-center text-white">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={bgUrl || "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1200&q=70"}

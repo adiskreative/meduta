@@ -114,6 +114,12 @@ async function main() {
       componentKey: "scrapbook",
       isPremium: true,
     },
+    {
+      name: "Enchanted Garden",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=60",
+      componentKey: "enchanted",
+    },
   ];
 
   for (const template of templates) {
@@ -126,7 +132,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 11 template berhasil dibuat.");
+  console.log("Seed selesai: 12 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.

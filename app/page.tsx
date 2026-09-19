@@ -108,6 +108,14 @@ const templates = [
       "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=60",
     premium: true,
   },
+  {
+    key: "enchanted",
+    name: "Enchanted Garden",
+    desc: "Taman bunga penuh warna: pintu gerbang mekar, kelopak jatuh, glass card pastel & gradasi rose-purple.",
+    image:
+      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {
@@ -459,7 +467,7 @@ const KONTAK = {
   email: "adi.skreative@gmail.com",
   wa: "6282399889992",
   waDisplay: "0823 9988 9992",
-  alamat: "Btn Graha Bidara Blok G.6",
+  alamat: "Kab. Parigi Moutong, Kec. Parigi, Jl. Jalur Dua Lebo, Btn Graha Bidara Blok G.6",
 };
 
 function Tentang() {

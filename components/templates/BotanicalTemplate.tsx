@@ -371,7 +371,7 @@ function Cover({
   bridePhoto?: string;
 }) {
   const cover = (
-    <header className="animate-fade-up relative flex min-h-[100svh] w-full max-w-3xl flex-col items-center justify-center overflow-hidden px-6 py-24 text-center">
+    <header className="animate-fade-up relative mx-auto flex min-h-[100svh] w-full max-w-3xl flex-col items-center justify-center overflow-hidden px-6 py-24 text-center">
       {/* Latar: pilihan user > admin > bawaan (foto dedaunan) */}
       <div
         className="absolute inset-0 bg-cover bg-center"

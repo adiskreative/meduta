@@ -685,7 +685,7 @@ function Cover({
 }) {
   const cover = (
     <header
-      className="relative flex min-h-[95vh] w-full max-w-2xl flex-col items-center justify-between overflow-hidden bg-stone-900 px-6 py-12 text-center text-white shadow-2xl"
+      className="relative mx-auto flex min-h-[95vh] w-full max-w-2xl flex-col items-center justify-between overflow-hidden bg-stone-900 px-6 py-12 text-center text-white shadow-2xl"
       style={{
         backgroundImage: `linear-gradient(to bottom, rgba(15, 23, 18, 0.5), rgba(10, 15, 12, 0.8)), url(${bgUrl || "https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=1200&q=80"})`,
         backgroundPosition: "center",

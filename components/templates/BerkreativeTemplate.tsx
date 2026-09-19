@@ -248,7 +248,7 @@ function Cover({
 }) {
   const cover = (
     <header
-      className="animate-fade-up relative flex min-h-[100svh] w-full max-w-3xl flex-col items-center justify-center overflow-hidden bg-cover bg-center px-6 pb-64 pt-14 text-center text-white"
+      className="animate-fade-up relative mx-auto flex min-h-[100svh] w-full max-w-3xl flex-col items-center justify-center overflow-hidden bg-cover bg-center px-6 pb-64 pt-14 text-center text-white"
       style={
         bgUrl
           ? {

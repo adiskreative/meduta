@@ -9,6 +9,7 @@ import ZenTemplate from "./ZenTemplate";
 import VogueTemplate from "./VogueTemplate";
 import CelestialTemplate from "./CelestialTemplate";
 import ScrapbookTemplate from "./ScrapbookTemplate";
+import EnchantedTemplate from "./EnchantedTemplate";
 import DecorationLayer from "./DecorationLayer";
 import type { TemplateProps } from "./types";
 
@@ -24,6 +25,7 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   vogue: VogueTemplate,
   celestial: CelestialTemplate,
   scrapbook: ScrapbookTemplate,
+  enchanted: EnchantedTemplate,
 };
 
 export default function TemplateRenderer({
