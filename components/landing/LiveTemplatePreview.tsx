@@ -36,7 +36,7 @@ const SCREEN_H = THUMB_SCREEN_H;
 const INNER_H = THUMB_INNER_H;
 const FRAME_H = SCREEN_H + BORDER * 2;
 
-type Meta = { w: number; h: number };
+type Meta = { w: number; h: number; file?: string };
 const META = THUMBS_META as Record<string, Meta>;
 
 export default function LiveTemplatePreview({ templateKey }: { templateKey: string }) {
@@ -82,7 +82,7 @@ export default function LiveTemplatePreview({ templateKey }: { templateKey: stri
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`/thumbs/${templateKey}.webp`}
+              src={`/thumbs/${meta.file ?? `${templateKey}.webp`}`}
               alt={`Tampilan template ${templateKey}`}
               width={PHONE_W}
               height={Math.round(displayedH)}

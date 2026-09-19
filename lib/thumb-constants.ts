@@ -8,8 +8,8 @@
  * dengan tampilan live iframe (kartu tamu tidak terpotong).
  */
 
-/** Lebar desain template (viewport asli screenshot). */
-export const THUMB_PHONE_W = 390;
+/** Lebar desain template (viewport asli screenshot — iPhone 16 Pro Max). */
+export const THUMB_PHONE_W = 440;
 /** Ketebalan bingkai ponsel pada kartu (border-[10px]). */
 export const THUMB_BORDER = 10;
 /** Lebar total kartu termasuk bingkai (w-60). */
@@ -18,10 +18,10 @@ export const THUMB_CARD_W = 240;
 export const THUMB_SCREEN_W = THUMB_CARD_W - THUMB_BORDER * 2; // 220
 /** Skala render: layar terlihat / lebar desain. */
 export const THUMB_SCALE = THUMB_SCREEN_W / THUMB_PHONE_W; // ≈0.5641
-/** Tinggi layar terlihat — rasio 9:19 persis seperti live iframe. */
-export const THUMB_SCREEN_H = Math.round(THUMB_SCREEN_W * (19 / 9)); // 464
-/** Tinggi viewport tiruan — INI acuan satu-layar di mode shot. */
-export const THUMB_INNER_H = Math.round(THUMB_SCREEN_H / THUMB_SCALE); // ≈823
+/** Tinggi layar terlihat — rasio persis seperti live iframe (440:956). */
+export const THUMB_SCREEN_H = Math.round(THUMB_SCREEN_W * (956 / 440)); // 478
+/** Tinggi viewport tiruan — INI acuan satu-layar di mode shot (iPhone 16 Pro Max). */
+export const THUMB_INNER_H = Math.round(THUMB_SCREEN_H / THUMB_SCALE); // 956
 
 /** Section penuh layar di mode shot (min-h-screen & 100svh/vh). */
 export const THUMB_FULL_H = THUMB_INNER_H;

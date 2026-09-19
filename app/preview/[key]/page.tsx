@@ -16,10 +16,10 @@ import {
 
 type Props = {
   params: Promise<{ key: string }>;
-  searchParams: Promise<{ embed?: string; shot?: string }>;
+  searchParams: Promise<{ embed?: string; shot?: string; frame?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook"]);
 
 export const metadata: Metadata = {
   title: "Pratinjau Template | Meduta",
@@ -44,7 +44,7 @@ const sampleWishes = [
 
 export default async function PreviewPage({ params, searchParams }: Props) {
   const { key } = await params;
-  const { embed, shot } = await searchParams;
+  const { embed, shot, frame } = await searchParams;
   if (!VALID.has(key)) notFound();
 
   const template = await prisma.template.findUnique({
@@ -126,6 +126,26 @@ export default async function PreviewPage({ params, searchParams }: Props) {
         `}</style>
         <div style={{ width: THUMB_PHONE_W, margin: "0" }}>{templateNode}</div>
         <ShotReporter />
+      </>
+    );
+  }
+
+  // Mode frame (?frame=1): isi mockup preview — dokumen mandiri yang
+  // dirender dalam <iframe> ber-viewport ponsel (390px) oleh PreviewShell.
+  // Render via iframe membuat breakpoint Tailwind (sm:/md:) merespons
+  // lebar LAYAR PONSEL, bukan lebar browser — mockup kini akurat piksel
+  // seperti ponsel asli (sebelumnya layout desktop dijejalkan ke 360px).
+  if (frame === "1") {
+    return (
+      <>
+        <style>{`
+          html, body { margin: 0; scrollbar-width: none; overflow-x: hidden; }
+          /* Scrollbar disembunyikan agar mirip overlay ponsel asli —
+             dan lebar konten tetap penuh (scrollbar klasik Windows
+             memakan ~17px dari viewport iframe) */
+          html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+        `}</style>
+        {templateNode}
       </>
     );
   }

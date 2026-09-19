@@ -11,6 +11,37 @@ export function getBackgroundUrl(decorations?: Decoration[]): string | undefined
   return bg?.assetUrl;
 }
 
+/**
+ * Ambil URL foto khusus halaman "Buka Undangan" dari dekorasi layer
+ * "gate-photo" (ditetapkan admin lewat fitur Galeri di Dekorasi).
+ * Dipakai admin; pilihan user (data.gatePhotoUrl) selalu menang atas ini.
+ */
+export function getGatePhotoUrl(decorations?: Decoration[]): string | undefined {
+  const gate = decorations?.find((d) => d.layer === "gate-photo");
+  return gate?.assetUrl;
+}
+
+/**
+ * Prioritas final foto gerbang: pilihan user > pilihan admin (dekorasi) >
+ * foto mempelai > galeri pertama > undefined (template pakai bawaannya).
+ */
+export function resolveGatePhoto(options: {
+  gatePhotoUrl?: string;
+  adminGatePhotoUrl?: string;
+  groomPhotoUrl?: string;
+  bridePhotoUrl?: string;
+  firstGalleryUrl?: string;
+}): string | undefined {
+  return (
+    options.gatePhotoUrl ||
+    options.adminGatePhotoUrl ||
+    options.groomPhotoUrl ||
+    options.bridePhotoUrl ||
+    options.firstGalleryUrl ||
+    undefined
+  );
+}
+
 export function mapDecorations(
   rows: {
     id: string;

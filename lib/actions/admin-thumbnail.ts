@@ -25,7 +25,8 @@ const CHROME_CANDIDATES = [
   "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
 ];
 
-const THUMB_W = 390;
+const THUMB_W = 440; // viewport desain — iPhone 16 Pro Max (440×956)
+const RESIZE_W = 480; // lebar akhir WebP — sama dengan scripts/generate-thumbs.mjs
 
 function findChrome(): string {
   for (const p of CHROME_CANDIDATES) {
@@ -45,7 +46,7 @@ async function measureHeight(chrome: string, profile: string, url: string): Prom
       "--no-first-run",
       "--disable-extensions",
       `--user-data-dir=${profile}`,
-      "--window-size=390,900",
+      "--window-size=440,1000",
       "--virtual-time-budget=12000",
       "--dump-dom",
       url,
@@ -73,7 +74,7 @@ async function takeScreenshot(
       "--disable-extensions",
       "--hide-scrollbars",
       `--user-data-dir=${profile}`,
-      `--window-size=390,${height}`,
+      `--window-size=440,${height}`,
       `--screenshot=${outFile}`,
       "--timeout=40000",
       url,
@@ -82,6 +83,41 @@ async function takeScreenshot(
   );
   if (!fs.existsSync(outFile)) {
     throw new Error("Chrome tidak menulis file screenshot.");
+  }
+}
+
+/**
+ * Tulis thumbnail ke FILE BERVERSI (nama unik per regenerasi) — file baru
+ * pasti tidak terkunci proses lain (antivirus/indexer Windows sering
+ * mem-lock file lama yang baru dipindai → "unable to open ... Invalid
+ * argument" saat menimpa langsung). Manifest lalu menunjuk file aktif;
+ * file versi lama dihapus best-effort (jika terkunci, berikutnya lagi).
+ */
+async function writeVersioned(
+  pipeline: import("sharp").Sharp,
+  key: string,
+  outDir: string,
+): Promise<string> {
+  const fileName = `${key}-${Date.now()}.webp`;
+  await pipeline.toFile(path.join(outDir, fileName));
+  return fileName;
+}
+
+/** Hapus file thumbnail lama milik satu key — best-effort (abaikan lock). */
+function cleanupOldThumbs(key: string, keepFile: string, outDir: string): void {
+  try {
+    for (const f of fs.readdirSync(outDir)) {
+      const isMine = f === `${key}.webp` || /^\d+\.webp$/.test(f.replace(`${key}-`, "")) || (f.startsWith(`${key}-`) && f.endsWith(".webp"));
+      if (isMine && f !== keepFile && !f.endsWith(".tmp.webp")) {
+        try {
+          fs.rmSync(path.join(outDir, f), { force: true });
+        } catch {
+          /* file terkunci — biarkan, dibersihkan pada regenerasi berikutnya */
+        }
+      }
+    }
+  } catch {
+    /* direktori tidak terbaca — abaikan */
   }
 }
 
@@ -135,23 +171,34 @@ export async function regenerateThumbnail(templateId: string): Promise<ThumbStat
     const cropH = Math.min(info.height, lastContent + 24);
     const outDir = path.resolve("public/thumbs");
     fs.mkdirSync(outDir, { recursive: true });
-    const out = path.join(outDir, `${key}.webp`);
-    await sharp(png)
-      .extract({ left: 0, top: 0, width: info.width, height: cropH })
-      .resize({ width: THUMB_W, withoutEnlargement: true })
-      .webp({ quality: 80 })
-      .toFile(out);
+    const fileName = await writeVersioned(
+      sharp(png)
+        .extract({ left: 0, top: 0, width: info.width, height: cropH })
+        .resize({ width: RESIZE_W, withoutEnlargement: true })
+        .webp({ quality: 80 }),
+      key,
+      outDir,
+    );
+    const out = path.join(outDir, fileName);
 
     // Perbarui manifest dimensi (dibaca LiveTemplatePreview untuk pan presisi)
+    // — baca metadata file FINAL agar selalu akurat, DAN catat nama file
+    // aktif (file berversi) agar kartu memuat thumbnail terbaru.
     const metaPath = path.resolve("lib/thumbs-meta.json");
-    let meta: Record<string, { w: number; h: number }> = {};
+    let meta: Record<string, { w: number; h: number; file?: string }> = {};
     try {
       meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
     } catch {
       meta = {};
     }
-    meta[key] = { w: Math.min(info.width, THUMB_W), h: Math.round((cropH * THUMB_W) / info.width) };
+    const finalMeta = await sharp(out).metadata();
+    const previousFile = meta[key]?.file ?? `${key}.webp`;
+    meta[key] = { w: finalMeta.width ?? RESIZE_W, h: finalMeta.height ?? cropH, file: fileName };
     fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2));
+
+    // Hapus thumbnail lama (termasuk <key>.webp lama) — best-effort
+    cleanupOldThumbs(key, fileName, outDir);
+    void previousFile;
 
     revalidatePath("/");
     revalidatePath("/dashboard/pilih-tema");
@@ -165,5 +212,6 @@ export async function regenerateThumbnail(templateId: string): Promise<ThumbStat
   } finally {
     fs.rmSync(profile, { recursive: true, force: true });
     fs.rmSync(path.join(tmpDir, `${key}-full.png`), { force: true });
+    fs.rmSync(path.join(tmpDir, `${key}-*.webp`), { force: true });
   }
 }

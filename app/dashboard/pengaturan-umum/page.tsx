@@ -53,3 +53,6 @@ export default async function PengaturanUmumPage() {
     </div>
   );
 }
+// Halaman membaca sesi & data DB — wajib dirender dinamis agar
+// perubahan (dan sesi) selalu terbaru, tidak ter-cache statis.
+export const dynamic = "force-dynamic";

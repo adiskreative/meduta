@@ -38,6 +38,8 @@ const KEYS = [
   "garden",
   "botanical",
   "zen",
+  "vogue",
+  "celestial",
 ];
 
 function parseArgs() {
@@ -49,7 +51,7 @@ function parseArgs() {
   return {
     base: get("--base", "http://localhost:3000"),
     keys: get("--keys", null),
-    width: Number(get("--width", "390")),
+    width: Number(get("--width", "440")),
     outDir: get("--out", "public/thumbs"),
   };
 }
@@ -70,7 +72,7 @@ async function measureHeight(chrome, profile, url) {
       "--no-first-run",
       "--disable-extensions",
       `--user-data-dir=${profile}`,
-      "--window-size=390,900",
+      "--window-size=440,1000",
       "--virtual-time-budget=12000",
       "--dump-dom",
       url,
@@ -92,7 +94,7 @@ async function screenshot(chrome, profile, url, height, outFile) {
       "--disable-extensions",
       "--hide-scrollbars",
       `--user-data-dir=${profile}`,
-      `--window-size=390,${height}`,
+      `--window-size=440,${height}`,
       `--screenshot=${outFile}`,
       "--timeout=40000",
       url,
@@ -145,14 +147,18 @@ async function main() {
         }
       }
       const cropH = Math.min(info.height, lastContent + 24);
-      const out = path.join(outDirAbs, `${key}.webp`);
+      // Tulis FILE BERVERSI (nama unik) — kebal lock antivirus/indexer
+      // Windows pada file lama; manifest menunjuk file aktif.
+      const fileName = `${key}-${Date.now()}.webp`;
+      const out = path.join(outDirAbs, fileName);
       await sharp(png)
         .extract({ left: 0, top: 0, width: info.width, height: cropH })
         .resize({ width: 480, withoutEnlargement: true })
         .webp({ quality: 80 })
         .toFile(out);
 
-      // Perbarui manifest dimensi (dibaca LiveTemplatePreview untuk pan presisi)
+      // Perbarui manifest dimensi + nama file aktif (dibaca
+      // LiveTemplatePreview untuk pan presisi & sumber gambar)
       const metaPath = path.resolve("lib/thumbs-meta.json");
       let meta = {};
       try {
@@ -161,8 +167,23 @@ async function main() {
         meta = {};
       }
       const finalMeta = await sharp(out).metadata();
-      meta[key] = { w: finalMeta.width, h: finalMeta.height };
+      meta[key] = { w: finalMeta.width, h: finalMeta.height, file: fileName };
       fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2));
+
+      // Hapus thumbnail lama milik key ini — best-effort (abaikan lock)
+      try {
+        for (const f of fs.readdirSync(outDirAbs)) {
+          if (f.startsWith(`${key}-`) && f.endsWith(".webp") && f !== fileName) {
+            try {
+              fs.rmSync(path.join(outDirAbs, f), { force: true });
+            } catch { /* terkunci — bersihkan di regenerasi berikutnya */ }
+          } else if (f === `${key}.webp` && f !== fileName) {
+            try {
+              fs.rmSync(path.join(outDirAbs, f), { force: true });
+            } catch { /* terkunci */ }
+          }
+        }
+      } catch { /* direktori tak terbaca */ }
 
       const kb = Math.round(fs.statSync(out).size / 1024);
       console.log(`OK ${info.width}x${cropH} → ${kb}KB (manifest ${finalMeta.width}x${finalMeta.height})`);

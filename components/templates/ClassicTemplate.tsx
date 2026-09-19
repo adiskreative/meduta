@@ -12,9 +12,10 @@ import CopyButton from "./CopyButton";
 import {
   formatDate,
   formatTime,
+  splitAgenda,
   type TemplateProps,
 } from "./types";
-import { getBackgroundUrl } from "@/lib/decoration";
+import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
 
 const ACCENT = "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-600/25";
 const BORDER = "border-emerald-200 bg-emerald-50/40 focus:border-emerald-500 focus:ring-emerald-100";
@@ -57,10 +58,26 @@ function ClassicShell({
 
   // Prioritas background: pilihan user > admin (template) > bawaan template
   const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
+  // Prioritas foto gerbang: user > admin (dekorasi) > mempelai > galeri[0]
+  const gatePhoto = resolveGatePhoto({
+    gatePhotoUrl: data?.gatePhotoUrl,
+    adminGatePhotoUrl: getGatePhotoUrl(decorations),
+    groomPhotoUrl: data?.groom?.photoUrl,
+    bridePhotoUrl: data?.bride?.photoUrl,
+    firstGalleryUrl: data?.gallery?.[0]?.url,
+  });
 
   const groom = data.groom;
   const bride = data.bride;
-  const events = data.events ?? [];
+  // Acara: entri "Akad" pada Rangkaian Acara digabung ke Acara Utama agar
+  // tidak tampil dobel (lihat splitAgenda).
+  const agenda = splitAgenda(data.events, {
+    date: data.eventDate,
+    time: data.eventTime,
+    venue: [data.venueName, data.location].filter(Boolean).join(", "),
+    mapUrl: data.locationMap,
+  });
+  const events = agenda.additional;
   const story = data.story ?? [];
   const gallery = data.gallery ?? [];
   const gifts = data.gifts ?? [];
@@ -79,6 +96,7 @@ function ClassicShell({
         locked={!gateOpen}
         onOpen={onGateOpen}
         bgUrl={bgUrl}
+        gatePhoto={gatePhoto}
       />
 
       {groom?.name || bride?.name ? (
@@ -90,11 +108,11 @@ function ClassicShell({
       ) : null}
 
       <MainEvent
-        eventDate={data.eventDate}
-        eventTime={data.eventTime}
+        eventDate={agenda.main.date}
+        eventTime={agenda.main.time}
         venueName={data.venueName}
         location={data.location}
-        locationMap={data.locationMap}
+        locationMap={agenda.main.mapUrl}
       />
 
       {story.length > 0 ? <StorySection story={story} /> : null}
@@ -171,8 +189,10 @@ function Cover({
   locked = false,
   onOpen,
   bgUrl,
+  gatePhoto,
 }: {
   eventName: string;
+  gatePhoto?: string;
   groomNick?: string;
   brideNick?: string;
   eventDate?: string;
@@ -242,6 +262,7 @@ function Cover({
         guestName={guestName}
         onOpen={onOpen}
         backgroundUrl={bgUrl}
+        photoUrl={gatePhoto}
       />
     );
   }

@@ -92,6 +92,22 @@ const templates = [
       "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=60",
     premium: true,
   },
+  {
+    key: "celestial",
+    name: "Celestial Night",
+    desc: "Langit malam berbintang: teks emas berkilau, canvas bintang & meteor, glass card bercahaya.",
+    image:
+      "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600&q=60",
+    premium: true,
+  },
+  {
+    key: "scrapbook",
+    name: "Scrapbook Album",
+    desc: "Album foto vintage: polaroid washi tape, tulisan tangan, tone terakota hangat & film 35mm.",
+    image:
+      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {

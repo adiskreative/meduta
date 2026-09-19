@@ -1,58 +1,180 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BookOpen, Monitor } from "lucide-react";
 
 /**
- * Bingkai preview ala "linkundangan":
- * - Desktop: template tampil di dalam mockup ponsel di tengah halaman.
- * - Ponsel asli (layar sempit): mockup DILEPAS — template full-screen,
- *   karena bingkai ganda (ponsel dalam ponsel) hanya menyita layar.
- *   Bar preview menyusut jadi satu pil kecil.
+ * Bingkai preview ala linkundangan:
+ * - Konten SELALU dirender di viewport ponsel nyata 440×956 (iPhone
+ *   16 Pro Max — CSS px perangkat asli) di dalam iframe — rendering
+ *   identik piksel dengan ponsel asli.
+ * - Seluruh mockup lalu DI-SCALE (transform) agar setinggi jendela
+ *   browser, dengan rasio terkunci — ukuran "pas memegang ponsel".
+ * - Detail khas iPhone 16 Pro Max: Dynamic Island, bingkai titanium,
+ *   tombol samping (aksi, volume, daya, kontrol kamera).
+ * - Bar PREVIEW melayang DI DALAM layar, di bawah Dynamic Island;
+ *   di mode desktop pindah ke kanan-atas agar tidak menutupi konten.
+ * - Layar sempit (<640px): full-screen tanpa bingkai ganda.
+ *
+ * Kunci arsitektural: SATU iframe persisten — toggle mode hanya
+ * mengubah inline style pembungkus, pohon JSX tetap sama sehingga
+ * React TIDAK me-remount iframe (tidak ada reload). State di dalam
+ * template (gerbang terbuka, musik, posisi scroll) bertahan saat
+ * berpindah mode ponsel ⇄ desktop.
  */
+
+const SCREEN_W = 440; // iPhone 16 Pro Max: 440×956 CSS px
+const SCREEN_H = 956;
+const BORDER = 14; // ketebalan bingkai titanium
+const BODY_RADIUS = 64;
+const SCREEN_RADIUS = 52;
+
 export default function PreviewShell({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<"mobile" | "desktop">("mobile");
+  const [narrow, setNarrow] = useState(true);
+  const [scale, setScale] = useState(1);
 
-  if (mode === "desktop") {
-    return (
-      <div className="min-h-screen bg-zinc-100">
-        <PreviewBar mode={mode} onToggle={() => setMode("mobile")} />
+  useEffect(() => {
+    const update = () => {
+      const isNarrow = window.innerWidth < 640;
+      setNarrow(isNarrow);
+      // Skala agar mockup (layar + bingkai) muat setinggi jendela
+      setScale(Math.min(1, (window.innerHeight - 24) / (SCREEN_H + BORDER * 2)));
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
-        {/* Bingkai "desktop" lebar */}
-        <div className="p-4 pt-28 sm:p-8 sm:pt-28">
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border-4 border-zinc-900 bg-white shadow-2xl">
-            <div className="flex items-center gap-1.5 border-b border-zinc-200 bg-zinc-100 px-4 py-2.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-              <span className="mx-auto rounded-md bg-white px-3 py-0.5 text-[10px] text-zinc-400">
-                meduta — pratinjau undangan
-              </span>
-            </div>
-            <div className="gate-locked @container max-h-[80vh] overflow-hidden">
-              <div className="max-h-[80vh] overflow-y-auto overscroll-contain">{children}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const isDesktop = mode === "desktop";
+  const isMockup = mode === "mobile" && !narrow; // mockup iPhone di browser lebar
+  const bodyW = SCREEN_W + BORDER * 2;
+  const bodyH = SCREEN_H + BORDER * 2;
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-zinc-100 sm:py-6">
-      <PreviewBar mode={mode} onToggle={() => setMode("desktop")} />
+    /* Lapisan penempatan — inline style penuh (kebal Tailwind lambat) */
+    <div
+      style={
+        isDesktop
+          ? { position: "fixed", inset: 0, background: "#f4f4f5", padding: 10 }
+          : narrow
+            ? {
+                position: "relative",
+                height: "100svh",
+                width: "100%",
+                background: "#fff",
+                overflow: "hidden",
+              }
+            : {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "100svh",
+                background: "#f4f4f5",
+              }
+      }
+    >
+      {/* Pengukur ukuran-hasil-skala agar penempatan tengah tepat */}
+      <div
+        style={
+          isMockup
+            ? { width: bodyW * scale, height: bodyH * scale, flexShrink: 0 }
+            : { width: "100%", height: "100%" }
+        }
+      >
+        {/* Chrome perangkat (mockup) / jendela (desktop) / polos (sempit) */}
+        <div
+          style={
+            isMockup
+              ? {
+                  position: "relative",
+                  width: bodyW,
+                  height: bodyH,
+                  transform: `scale(${scale})`,
+                  transformOrigin: "top left",
+                  borderRadius: BODY_RADIUS,
+                  border: `${BORDER}px solid #1c1c1f`,
+                  boxShadow:
+                    "0 0 0 2px #3f3f46, 0 25px 50px -12px rgba(0,0,0,0.5)",
+                  background: "#18181b",
+                }
+              : isDesktop
+                ? {
+                    position: "relative",
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 16,
+                    border: "6px solid #18181b",
+                    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+                    background: "#fff",
+                    overflow: "hidden",
+                  }
+                : {
+                    position: "relative",
+                    width: "100%",
+                    height: "100%",
+                    background: "#fff",
+                    overflow: "hidden",
+                  }
+          }
+        >
+          {/* Tombol samping titanium — hanya tampil di mockup iPhone */}
+          <div style={{ position: "absolute", left: -17, top: 190, width: 4, height: 32, borderRadius: 2, background: "#3f3f46", visibility: isMockup ? "visible" : "hidden" }} />
+          <div style={{ position: "absolute", left: -17, top: 250, width: 4, height: 62, borderRadius: 2, background: "#3f3f46", visibility: isMockup ? "visible" : "hidden" }} />
+          <div style={{ position: "absolute", left: -17, top: 324, width: 4, height: 62, borderRadius: 2, background: "#3f3f46", visibility: isMockup ? "visible" : "hidden" }} />
+          <div style={{ position: "absolute", right: -17, top: 280, width: 4, height: 96, borderRadius: 2, background: "#3f3f46", visibility: isMockup ? "visible" : "hidden" }} />
+          <div style={{ position: "absolute", right: -17, top: 420, width: 4, height: 40, borderRadius: 2, background: "#565661", visibility: isMockup ? "visible" : "hidden" }} />
 
-      {/* Layar sempit: full-screen tanpa bingkai. sm ke atas: mockup ponsel. */}
-      <div className="mt-12 w-full sm:mt-24 sm:w-[380px] sm:max-w-[92vw]">
-        <div className="h-full bg-zinc-900 sm:rounded-[2.2rem] sm:border-[10px] sm:shadow-2xl">
-          <div className="@container relative h-[calc(100svh-48px)] overflow-hidden bg-white sm:h-[calc(100vh-190px)] sm:max-h-[760px] sm:min-h-[480px] sm:rounded-[1.6rem]">
-            {/* Island/ear notch ala smartphone — hanya di mockup (desktop) */}
-            <div className="pointer-events-none absolute left-1/2 top-2 z-40 hidden h-4 w-20 -translate-x-1/2 rounded-full bg-zinc-900/90 sm:block" />
-            {/* gate-locked: transform agar overlay gerbang fixed menempel di layar ponsel,
-                scroll diteruskan ke pembungkus dalam */}
-            <div className="gate-locked h-full">
-              <div className="h-full overflow-y-auto overscroll-contain">{children}</div>
-            </div>
+          {/* Layar */}
+          <div
+            style={
+              isMockup
+                ? {
+                    position: "relative",
+                    width: SCREEN_W,
+                    height: SCREEN_H,
+                    borderRadius: SCREEN_RADIUS,
+                    overflow: "hidden",
+                    background: "#fff",
+                  }
+                : {
+                    position: "relative",
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: isDesktop ? 10 : 0,
+                    overflow: "hidden",
+                    background: "#fff",
+                  }
+            }
+          >
+            {/* Dynamic Island khas iPhone 16 Pro Max — hanya mockup */}
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: 12,
+                transform: "translateX(-50%)",
+                width: 126,
+                height: 37,
+                borderRadius: 20,
+                background: "#000",
+                zIndex: 40,
+                visibility: isMockup ? "visible" : "hidden",
+              }}
+            />
+            <PreviewBar
+              mode={mode}
+              onToggle={() => setMode(isDesktop ? "mobile" : "desktop")}
+              topOffset={isMockup ? 60 : 10}
+              alignRight={!isMockup}
+            />
+            {/* Iframe persisten — TIDAK pernah di-remount antar mode */}
+            <iframe
+              src="?frame=1"
+              title="Pratinjau undangan"
+              className="block border-0 bg-white"
+              style={{ height: "100%", width: "100%" }}
+            />
           </div>
         </div>
       </div>
@@ -63,37 +185,44 @@ export default function PreviewShell({ children }: { children: React.ReactNode }
 function PreviewBar({
   mode,
   onToggle,
+  topOffset = 10,
+  alignRight = false,
 }: {
   mode: "mobile" | "desktop";
   onToggle: () => void;
+  topOffset?: number;
+  alignRight?: boolean;
 }) {
   return (
-    <div className="fixed inset-x-0 top-0 z-50 flex justify-center">
-      {/* Ponsel: satu pil ramping satu baris. Desktop: tumpukan seperti semula. */}
-      <div className="flex items-center gap-2 rounded-b-xl border border-zinc-300 bg-white/95 px-3 py-1.5 shadow-md backdrop-blur-sm sm:flex-col sm:items-stretch sm:gap-0 sm:rounded-b-xl sm:border-0 sm:bg-transparent sm:px-6 sm:py-1.5 sm:shadow-none sm:backdrop-blur-none">
-        <p className="text-xs font-bold tracking-[0.3em] text-zinc-800 sm:text-center sm:text-sm">
-          PREVIEW
-        </p>
-        <button
-          type="button"
-          onClick={onToggle}
-          className="inline-flex items-center gap-1.5 border border-zinc-300 bg-zinc-900 px-2.5 py-1 text-[10px] font-bold tracking-widest text-white shadow-md transition hover:bg-zinc-700 sm:mt-1 sm:px-3"
-        >
-          {mode === "mobile" ? (
-            <>
-              <Monitor className="h-3 w-3" />
-              <span className="hidden sm:inline">GANTI DESKTOP MODE</span>
-              <span className="sm:hidden">DESKTOP</span>
-            </>
-          ) : (
-            <>
-              <BookOpen className="h-3 w-3" />
-              <span className="hidden sm:inline">GANTI MODE PONSEL</span>
-              <span className="sm:hidden">PONSEL</span>
-            </>
-          )}
-        </button>
-      </div>
+    <div
+      className="absolute z-50 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur"
+      style={{
+        top: topOffset,
+        ...(alignRight
+          ? { right: 14 }
+          : { left: "50%", transform: "translateX(-50%)" }),
+      }}
+    >
+      <p className="text-xs font-bold tracking-[0.25em] text-zinc-800">
+        PREVIEW
+      </p>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="inline-flex items-center gap-1.5 rounded-md bg-zinc-900 px-2.5 py-1 text-[10px] font-bold tracking-widest text-white shadow transition hover:bg-zinc-700"
+      >
+        {mode === "mobile" ? (
+          <>
+            <Monitor className="h-3 w-3" />
+            DESKTOP
+          </>
+        ) : (
+          <>
+            <BookOpen className="h-3 w-3" />
+            PONSEL
+          </>
+        )}
+      </button>
     </div>
   );
 }

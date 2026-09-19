@@ -320,6 +320,28 @@ export default function SampleDataForm({
           {field({ label: "No. rekening", name: "sample.giftAccountNumber", path: "gifts.0.accountNumber", placeholder: defaults.gifts?.[0]?.accountNumber ?? "" })}
           {field({ label: "Atas nama", name: "sample.giftHolderName", path: "gifts.0.holderName", placeholder: defaults.gifts?.[0]?.holderName ?? "" })}
         </div>
+
+        <div className="mt-6">
+          <p className="mb-2 text-sm font-medium text-zinc-700">
+            Foto Gerbang Contoh
+          </p>
+          <p className="mb-3 text-xs text-zinc-400">
+            Foto khusus halaman &quot;Buka Undangan&quot; pratinjau template ini.
+            Kosongkan untuk memakai prioritas otomatis (mempelai → galeri pertama).
+          </p>
+          <input
+            type="hidden"
+            id="sample.gatePhotoUrl"
+            name="sample.gatePhotoUrl"
+            defaultValue={v("gatePhotoUrl")}
+          />
+          <div className="max-w-xs">
+            <SamplePhotoUploader
+              fieldId="sample.gatePhotoUrl"
+              currentUrl={v("gatePhotoUrl") || undefined}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

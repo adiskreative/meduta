@@ -8,8 +8,8 @@ import { useBackgroundMusic, MusicFab, type MusicController } from "./Background
 import WishForm from "./WishForm";
 import WishList from "./WishList";
 import RsvpForm from "./RsvpForm";
-import { formatDate, formatTime, type TemplateProps } from "./types";
-import { getBackgroundUrl } from "@/lib/decoration";
+import { formatDate, formatTime, splitAgenda, type TemplateProps } from "./types";
+import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
 
 const ACCENT =
   "bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:via-pink-600 hover:to-rose-700 shadow-lg shadow-rose-500/25";
@@ -50,6 +50,14 @@ function FloralShell({
 }: TemplateProps & GateProps & { music?: MusicController }) {
   // Prioritas background: pilihan user > admin (template) > bawaan template
   const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
+  // Prioritas foto gerbang: user > admin (dekorasi) > mempelai > galeri[0]
+  const gatePhoto = resolveGatePhoto({
+    gatePhotoUrl: data?.gatePhotoUrl,
+    adminGatePhotoUrl: getGatePhotoUrl(decorations),
+    groomPhotoUrl: data?.groom?.photoUrl,
+    bridePhotoUrl: data?.bride?.photoUrl,
+    firstGalleryUrl: data?.gallery?.[0]?.url,
+  });
   if (!isPublished) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#fdf4f6] px-6 text-center">
@@ -63,7 +71,9 @@ function FloralShell({
 
   const groom = data.groom;
   const bride = data.bride;
-  const events = data.events ?? [];
+ // Info akad sudah tampil di section "Hari Bahagia" — entri "Akad" pada
+  // Rangkaian Acara disembunyikan agar tidak dobel (lihat splitAgenda).
+  const events = splitAgenda(data.events, {}).additional;
   const story = data.story ?? [];
   const gallery = data.gallery ?? [];
   const gifts = data.gifts ?? [];
@@ -82,6 +92,7 @@ function FloralShell({
         locked={!gateOpen}
         onOpen={onGateOpen}
         bgUrl={bgUrl}
+        gatePhoto={gatePhoto}
       />
 
       <div className="w-full max-w-3xl space-y-16 px-6 py-16">
@@ -348,8 +359,10 @@ function Cover({
   locked = false,
   onOpen,
   bgUrl,
+  gatePhoto,
 }: {
   eventName: string;
+  gatePhoto?: string;
   groomNick?: string;
   brideNick?: string;
   eventDate?: string;
@@ -421,6 +434,7 @@ function Cover({
         guestName={guestName}
         onOpen={onOpen}
         backgroundUrl={bgUrl}
+        photoUrl={gatePhoto}
       />
     );
   }

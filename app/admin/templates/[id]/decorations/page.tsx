@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteDecoration } from "@/lib/actions/admin-decoration";
 import DecorationForm from "@/components/admin/DecorationForm";
+import TemplateGalleryManager from "@/components/admin/TemplateGalleryManager";
 import DeleteButton from "@/components/admin/DeleteButton";
 
 export const metadata = { title: "Dekorasi Template | Meduta" };
@@ -130,6 +131,28 @@ export default async function AdminTemplateDecorationsPage({
           </div>
         </div>
       )}
+
+      {/* Galeri template & foto gerbang (sampleData) */}
+      <TemplateGalleryManager
+        templateId={template.id}
+        defaultGallery={
+          Array.isArray(
+            (template.sampleData as Record<string, unknown> | null)?.gallery,
+          )
+            ? ((template.sampleData as Record<string, unknown>).gallery as {
+                id: string;
+                url: string;
+                caption?: string;
+              }[])
+            : []
+        }
+        defaultGatePhoto={
+          typeof (template.sampleData as Record<string, unknown> | null)
+            ?.gatePhotoUrl === "string"
+            ? ((template.sampleData as Record<string, unknown>).gatePhotoUrl as string)
+            : undefined
+        }
+      />
     </div>
   );
 }

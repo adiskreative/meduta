@@ -58,3 +58,7 @@ next-env.d.ts
 .tmp-chrome-profile/
 .tmp-edge-profile/
 .dev-server.log
+
+# Freebuff agent artifacts
+.freebuff/*.log
+.freebuff/*.log.err

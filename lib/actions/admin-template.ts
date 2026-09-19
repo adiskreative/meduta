@@ -216,6 +216,9 @@ export async function updateSampleData(
     "sample.bride.photoUrl": z
       .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
       .optional(),
+    "sample.gatePhotoUrl": z
+      .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
+      .optional(),
     "sample.guestName": z.string().max(120).trim().optional(),
     "sample.giftProvider": z.string().max(60).trim().optional(),
     "sample.giftAccountNumber": z.string().max(40).trim().optional(),
@@ -301,6 +304,11 @@ export async function updateSampleData(
         holderName: giftHolder ?? DEFAULT_SAMPLE_DATA.gifts![0].holderName,
       },
     ];
+  }
+
+  // Foto gerbang contoh (dipakai halaman "Buka Undangan" pratinjau)
+  if (str(d["sample.gatePhotoUrl"])) {
+    overrideRecord.gatePhotoUrl = str(d["sample.gatePhotoUrl"]);
   }
 
   // Nama tamu contoh (bukan bagian InvitationView — disimpan sebagai kunci

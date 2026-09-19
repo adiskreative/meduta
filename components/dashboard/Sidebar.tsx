@@ -21,6 +21,7 @@ import {
   X,
   CircleHelp,
   Mountain,
+  DoorOpen,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { LogoWithText } from "@/components/Logo";
@@ -56,6 +57,11 @@ const navSections: { title: string; items: NavItem[] }[] = [
         icon: CalendarDays,
       },
       { label: "Galeri", href: "/dashboard/galeri", icon: Images },
+      {
+        label: "Foto Gerbang",
+        href: "/dashboard/foto-gerbang",
+        icon: DoorOpen,
+      },
       {
         label: "Background Music",
         href: "/dashboard/background-music",

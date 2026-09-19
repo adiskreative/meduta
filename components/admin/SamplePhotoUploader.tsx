@@ -10,6 +10,10 @@ type Props = {
   fieldId: string;
   /** URL foto contoh yang sedang aktif (override tersimpan atau bawaan) */
   currentUrl?: string;
+  /** Opsional: dipanggil juga dengan URL hasil upload (untuk state React) */
+  onUploaded?: (url: string) => void;
+  /** Opsional: dipanggil saat foto dibersihkan (input dikosongkan) */
+  onCleared?: () => void;
 };
 
 /**
@@ -17,7 +21,12 @@ type Props = {
  * Menulis URL hasil upload ke input tersembunyi `fieldId` sehingga tetap
  * ikut tersimpan lewat tombol "Simpan Data Contoh" biasa.
  */
-export default function SamplePhotoUploader({ fieldId, currentUrl }: Props) {
+export default function SamplePhotoUploader({
+  fieldId,
+  currentUrl,
+  onUploaded,
+  onCleared,
+}: Props) {
   const [preview, setPreview] = useState<string | undefined>(currentUrl);
   const [status, setStatus] = useState<{
     type: "error" | "success";
@@ -53,6 +62,7 @@ export default function SamplePhotoUploader({ fieldId, currentUrl }: Props) {
 
       const input = document.getElementById(fieldId) as HTMLInputElement | null;
       if (input) input.value = result.url;
+      onUploaded?.(result.url);
 
       setStatus({
         type: "success",
@@ -75,6 +85,7 @@ export default function SamplePhotoUploader({ fieldId, currentUrl }: Props) {
     if (input) input.value = "";
     setPreview(undefined);
     setStatus(null);
+    onCleared?.();
   }
 
   return (

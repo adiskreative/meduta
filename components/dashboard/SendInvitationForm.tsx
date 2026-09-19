@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useEffect, useActionState, useRef, useState } from "react";
 import {
   Save,
   Copy,
@@ -9,6 +9,7 @@ import {
   Upload,
   FileSpreadsheet,
   Mail,
+  Eye,
   X,
 } from "lucide-react";
 import {
@@ -21,12 +22,22 @@ import * as XLSX from "xlsx";
 
 type Row = { name: string; email?: string };
 
+type SavedGuest = {
+  id: string;
+  name: string;
+  email?: string;
+  uniqueLink: string;
+};
+
 export default function SendInvitationForm({
   invitationId,
   appUrl,
+  savedGuests = [],
 }: {
   invitationId: string;
   appUrl: string;
+  /** Riwayat tamu dari DB — tampil persisten meski halaman di-refresh. */
+  savedGuests?: SavedGuest[];
 }) {
   const boundAction = createGuests.bind(null, invitationId);
   const [state, formAction, isPending] = useActionState<GuestState | undefined, FormData>(
@@ -51,6 +62,17 @@ export default function SendInvitationForm({
     `w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100 ${
       hasError ? "border-red-400" : "border-zinc-300"
     }`;
+
+  // Setelah generate sukses: kosongkan area ketik (riwayat tetap tampil
+  // di panel bawah, tersimpan di DB) + hapus baris import yang sudah dipakai.
+  const lastSuccess = state?.success ?? importState?.success;
+  useEffect(() => {
+    if (lastSuccess) {
+      setNamesText("");
+      setImportRows([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastSuccess, state?.message, importState?.message]);
 
   async function copyLink(link: string) {
     try {
@@ -109,6 +131,20 @@ export default function SendInvitationForm({
   const createdLinks = state?.createdGuests ?? importState?.createdGuests ?? [];
   const activeMessage = importState?.message ?? state?.message;
   const activeSuccess = state?.success ?? importState?.success;
+
+  // Riwayat persisten: gabungan tamu tersimpan (DB) + yang barusan dibuat
+  // (belum tentu ter-reload) — dedup berdasarkan uniqueLink.
+  const seenLinks = new Set<string>();
+  const allGuests = [...createdLinks.map((g) => ({
+    id: g.uniqueLink + g.name,
+    name: g.name,
+    email: g.email,
+    uniqueLink: g.uniqueLink,
+  })), ...savedGuests].filter((g) => {
+    if (seenLinks.has(g.uniqueLink)) return false;
+    seenLinks.add(g.uniqueLink);
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -273,22 +309,27 @@ export default function SendInvitationForm({
         </form>
       )}
 
-      {/* ====== Daftar link hasil ====== */}
-      {createdLinks.length > 0 && (
+      {/* ====== Riwayat tamu tersimpan (persisten di DB) ====== */}
+      {allGuests.length > 0 && (
         <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-900">
-            <Link2 className="h-4 w-4" />
-            Link Undangan Terbuat
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-zinc-900">
+              <Link2 className="h-4 w-4" />
+              Daftar Tamu &amp; Link Undangan ({allGuests.length})
+            </h2>
+            <p className="text-xs text-zinc-400">
+              Tersimpan permanen — aman di-refresh
+            </p>
+          </div>
           <div className="space-y-2">
-            {createdLinks.map((guest) => {
+            {allGuests.map((guest) => {
               const full = `${appUrl}/u/${guest.uniqueLink}`;
               return (
                 <div
-                  key={guest.uniqueLink + guest.name}
+                  key={guest.id}
                   className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-zinc-800">
                       {guest.name}
                     </p>
@@ -297,18 +338,29 @@ export default function SendInvitationForm({
                     )}
                     <p className="truncate text-xs text-zinc-500">{full}</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => copyLink(full)}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
-                  >
-                    {copied === full ? (
-                      <Check className="h-3.5 w-3.5 text-emerald-600" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                    {copied === full ? "Tersalin" : "Salin"}
-                  </button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <a
+                      href={full}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      Buka
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => copyLink(full)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
+                    >
+                      {copied === full ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                      {copied === full ? "Tersalin" : "Salin"}
+                    </button>
+                  </div>
                 </div>
               );
             })}

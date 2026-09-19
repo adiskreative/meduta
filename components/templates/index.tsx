@@ -7,6 +7,8 @@ import GardenTemplate from "./GardenTemplate";
 import BotanicalTemplate from "./BotanicalTemplate";
 import ZenTemplate from "./ZenTemplate";
 import VogueTemplate from "./VogueTemplate";
+import CelestialTemplate from "./CelestialTemplate";
+import ScrapbookTemplate from "./ScrapbookTemplate";
 import DecorationLayer from "./DecorationLayer";
 import type { TemplateProps } from "./types";
 
@@ -20,6 +22,8 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   botanical: BotanicalTemplate,
   zen: ZenTemplate,
   vogue: VogueTemplate,
+  celestial: CelestialTemplate,
+  scrapbook: ScrapbookTemplate,
 };
 
 export default function TemplateRenderer({

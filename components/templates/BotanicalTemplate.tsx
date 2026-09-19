@@ -24,9 +24,10 @@ import CopyButton from "./CopyButton";
 import {
   formatDate,
   formatTime,
+  splitAgenda,
   type TemplateProps,
 } from "./types";
-import { getBackgroundUrl } from "@/lib/decoration";
+import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
 
 /**
  * Botanical Garden — "Botanical Romantic"
@@ -227,13 +228,29 @@ function BotanicalShell({
 
   const groom = data.groom;
   const bride = data.bride;
-  const events = data.events ?? [];
+  // Acara: entri "Akad" pada Rangkaian Acara digabung ke Acara Utama agar
+  // tidak tampil dobel (lihat splitAgenda).
+  const agenda = splitAgenda(data.events, {
+    date: data.eventDate,
+    time: data.eventTime,
+    venue: [data.venueName, data.location].filter(Boolean).join(", "),
+    mapUrl: data.locationMap,
+  });
+  const events = agenda.additional;
   const story = data.story ?? [];
   const gallery = data.gallery ?? [];
   const gifts = data.gifts ?? [];
 
   // Prioritas background: pilihan user > admin (template) > bawaan (botani)
   const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
+  // Prioritas foto gerbang: user > admin (dekorasi) > mempelai > galeri[0]
+  const gatePhoto = resolveGatePhoto({
+    gatePhotoUrl: data?.gatePhotoUrl,
+    adminGatePhotoUrl: getGatePhotoUrl(decorations),
+    groomPhotoUrl: data?.groom?.photoUrl,
+    bridePhotoUrl: data?.bride?.photoUrl,
+    firstGalleryUrl: data?.gallery?.[0]?.url,
+  });
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[#FAF7F2] font-[family-name:var(--font-sans)] text-[#4A473F]">
@@ -254,6 +271,7 @@ function BotanicalShell({
         bgUrl={bgUrl}
         groomPhoto={groom?.photoUrl}
         bridePhoto={bride?.photoUrl}
+        gatePhoto={gatePhoto}
       />
 
       {data.eventDate ? (
@@ -265,11 +283,11 @@ function BotanicalShell({
       ) : null}
 
       <MainEvent
-        eventDate={data.eventDate}
-        eventTime={data.eventTime}
+        eventDate={agenda.main.date}
+        eventTime={agenda.main.time}
         venueName={data.venueName}
         location={data.location}
-        locationMap={data.locationMap}
+        locationMap={agenda.main.mapUrl}
       />
 
       {events.length > 0 ? <AdditionalEvents events={events} /> : null}
@@ -338,8 +356,10 @@ function Cover({
   bgUrl,
   groomPhoto,
   bridePhoto,
+  gatePhoto,
 }: {
   eventName: string;
+  gatePhoto?: string;
   groomNick?: string;
   brideNick?: string;
   eventDate?: string;
@@ -435,6 +455,7 @@ function Cover({
         guestName={guestName}
         onOpen={onOpen}
         backgroundUrl={bgUrl}
+        photoUrl={gatePhoto}
       />
     );
   }

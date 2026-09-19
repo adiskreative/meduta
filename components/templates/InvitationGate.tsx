@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { formatDate } from "./types";
 
-type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden" | "botanical" | "zen" | "vogue";
+type GateTheme = "classic" | "minimal" | "floral" | "rustic" | "berkreative" | "garden" | "botanical" | "zen" | "vogue" | "celestial" | "scrapbook";
 
 /**
  * Gerbang undangan ala undangan digital premium:
@@ -92,6 +92,24 @@ const THEME_STYLES: Record<
     eyebrow: "text-[#DCD8CE]",
     amp: "font-[family-name:var(--font-serif-elegant)] italic text-[#F9F8F3]",
   },
+  celestial: {
+    // Langit malam celestial — langit berbintang dengan cahaya emas
+    photo:
+      "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1200&q=80",
+    overlay:
+      "linear-gradient(to bottom, rgba(5,8,20,0.55), rgba(5,8,20,0.9))",
+    eyebrow: "text-amber-200",
+    amp: "text-gold-shimmer font-[family-name:var(--font-display)]",
+  },
+  scrapbook: {
+    // Scrapbook album — foto vintage hangat dengan tone terakota
+    photo:
+      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1200&q=80",
+    overlay:
+      "linear-gradient(to bottom, rgba(62,47,40,0.35), rgba(62,47,40,0.72))",
+    eyebrow: "text-[#E39280]",
+    amp: "text-gold-shimmer font-[family-name:var(--font-serif-elegant)] italic",
+  },
 };
 
 export default function InvitationGate({
@@ -106,6 +124,8 @@ export default function InvitationGate({
   embedded = false,
   /** Background kustom dari admin — menggantikan foto bawaan tema. */
   backgroundUrl,
+  /** Foto khusus gerbang pilihan user/admin — menggantikan foto bawaan tema. */
+  photoUrl,
 }: {
   theme?: GateTheme;
   eventName?: string;
@@ -116,6 +136,7 @@ export default function InvitationGate({
   onOpen?: () => void;
   embedded?: boolean;
   backgroundUrl?: string;
+  photoUrl?: string;
 }) {
   const [open, setOpen] = useState(embedded);
   const [closing, setClosing] = useState(false);
@@ -148,10 +169,10 @@ export default function InvitationGate({
       role="dialog"
       aria-label="Buka undangan"
     >
-      {/* Foto latar + gradasi sesuai tema (atau background kustom admin) */}
+      {/* Foto latar + gradasi sesuai tema (foto gerbang > background kustom > bawaan) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={backgroundUrl || t.photo}
+        src={photoUrl || backgroundUrl || t.photo}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
       />

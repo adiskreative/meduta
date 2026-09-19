@@ -20,8 +20,8 @@ import {
   Users
 } from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
-import type { TemplateProps, WishItem } from "./types";
-import { getBackgroundUrl } from "@/lib/decoration";
+import { splitAgenda, type TemplateProps, type WishItem } from "./types";
+import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
 import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 
@@ -390,13 +390,23 @@ function RusticShell({
 }: TemplateProps & { gateOpen?: boolean; onGateOpen?: () => void; music?: MusicController }) {
   // Prioritas background: pilihan user > admin (template) > bawaan template
   const bgUrl = data?.backgroundUrl || getBackgroundUrl(decorations);
+  // Prioritas foto gerbang: user > admin (dekorasi) > mempelai > galeri[0]
+  const gatePhoto = resolveGatePhoto({
+    gatePhotoUrl: data?.gatePhotoUrl,
+    adminGatePhotoUrl: getGatePhotoUrl(decorations),
+    groomPhotoUrl: data?.groom?.photoUrl,
+    bridePhotoUrl: data?.bride?.photoUrl,
+    firstGalleryUrl: data?.gallery?.[0]?.url,
+  });
   const [wishesList, setWishesList] = useState<WishItem[]>(
     initialWishes && initialWishes.length > 0 ? initialWishes : defaultWishes
   );
 
   const groom = data?.groom ?? defaultInvitationData.groom;
   const bride = data?.bride ?? defaultInvitationData.bride;
-  const events = data?.events ?? defaultInvitationData.events ?? [];
+  // Info akad sudah tampil di section "Hari Bahagia" — entri "Akad" pada
+  // Rangkaian Acara disembunyikan agar tidak dobel (lihat splitAgenda).
+  const events = splitAgenda(data?.events ?? defaultInvitationData.events ?? [], {}).additional;
   const gifts = data?.gifts ?? defaultInvitationData.gifts ?? [];
 
   const handleAddWish = (newWish: WishItem) => {
@@ -445,6 +455,7 @@ function RusticShell({
         locked={!gateOpen}
         onOpen={onGateOpen}
         bgUrl={bgUrl}
+        gatePhoto={gatePhoto}
       />
 
       {/* Main Invitation Container */}
@@ -660,8 +671,10 @@ function Cover({
   locked = false,
   onOpen,
   bgUrl,
+  gatePhoto,
 }: {
   eventName: string;
+  gatePhoto?: string;
   groomNick?: string;
   brideNick?: string;
   eventDate?: string;
@@ -728,6 +741,7 @@ function Cover({
         guestName={guestName}
         onOpen={onOpen}
         backgroundUrl={bgUrl}
+        photoUrl={gatePhoto}
       />
     );
   }

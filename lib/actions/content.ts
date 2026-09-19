@@ -241,3 +241,48 @@ export async function saveUserBackground(
   revalidatePath("/", "layout");
   return { success: true, message: "Background tersimpan." };
 }
+
+/**
+ * Simpan foto khusus halaman "Buka Undangan" (per-undangan — pilihan user).
+ * Nilai kosong = kembali ke prioritas otomatis (admin → mempelai → galeri[0]).
+ */
+export async function saveUserGatePhoto(
+  invitationId: string,
+  _state: BackgroundState | undefined,
+  formData: FormData,
+): Promise<BackgroundState> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const gatePhotoUrl = z
+    .string()
+    .max(500)
+    .trim()
+    .url("URL foto gerbang tidak valid.")
+    .optional()
+    .or(z.literal(""))
+    .safeParse(formData.get("gatePhotoUrl") ?? "");
+  if (!gatePhotoUrl.success) {
+    return { errors: { backgroundUrl: ["URL foto gerbang tidak valid."] } };
+  }
+
+  const invitation = await getOwnedInvitation(invitationId, session.user.id);
+  if (!invitation) return { message: "Undangan tidak ditemukan.", success: false };
+
+  const currentData = (invitation.data ?? {}) as Record<string, unknown>;
+  await prisma.invitation.update({
+    where: { id: invitationId },
+    data: {
+      data: { ...currentData, gatePhotoUrl: gatePhotoUrl.data || undefined } as object,
+    },
+  });
+
+  revalidatePath("/dashboard/foto-gerbang");
+  revalidatePath("/", "layout");
+  return {
+    success: true,
+    message: gatePhotoUrl.data
+      ? "Foto gerbang tersimpan."
+      : "Foto gerbang dikosongkan — pakai prioritas otomatis.",
+  };
+}

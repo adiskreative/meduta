@@ -35,6 +35,15 @@ export default async function KirimUndanganPage() {
   const protocol = host.includes("localhost") ? "http" : "https";
   const appUrl = `${protocol}://${host}`;
 
+  // Riwayat tamu tersimpan — tampil terus meski halaman di-refresh,
+  // sehingga user tidak pernah kehilangan link undangan tamunya.
+  const guests = await prisma.guest.findMany({
+    where: { invitationId: invitation.id },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, name: true, email: true, uniqueLink: true },
+    take: 500,
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -51,8 +60,20 @@ export default async function KirimUndanganPage() {
           appUrl={appUrl}
         />
 
-        <SendInvitationForm invitationId={invitation.id} appUrl={appUrl} />
+        <SendInvitationForm
+          invitationId={invitation.id}
+          appUrl={appUrl}
+          savedGuests={guests.map((g) => ({
+            id: g.id,
+            name: g.name,
+            email: g.email ?? undefined,
+            uniqueLink: g.uniqueLink,
+          }))}
+        />
       </div>
     </div>
   );
 }
+// Halaman membaca sesi & data DB — wajib dirender dinamis agar
+// perubahan (dan sesi) selalu terbaru, tidak ter-cache statis.
+export const dynamic = "force-dynamic";

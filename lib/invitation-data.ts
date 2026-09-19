@@ -39,6 +39,8 @@ export type InvitationData = {
   musicUrl?: string;
   /** Background kustom pilihan user — meng-override background template. */
   backgroundUrl?: string;
+  /** Foto khusus halaman "Buka Undangan" — pilihan user/admin. */
+  gatePhotoUrl?: string;
   gifts?: Array<{
     id: string;
     provider: string;

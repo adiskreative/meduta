@@ -46,6 +46,9 @@ export type InvitationView = {
   musicUrl?: string;
   /** Background kustom pilihan user — meng-override background template. */
   backgroundUrl?: string;
+  /** Foto khusus halaman "Buka Undangan" — pilihan user/admin, meng-override
+   *  prioritas bawaan (mempelai → galeri[0]). */
+  gatePhotoUrl?: string;
   groom?: CouplePerson;
   bride?: CouplePerson;
   story?: StoryItem[];
@@ -85,6 +88,52 @@ export type TemplateProps = {
   wishes?: WishItem[];
   decorations?: Decoration[];
 };
+
+/* ------------------------------------------------------------------ */
+/* Agenda: gabung Acara Utama + Rangkaian Acara tanpa duplikasi        */
+/* ------------------------------------------------------------------ */
+
+export type MainEventFields = {
+  date?: string;
+  time?: string;
+  venue?: string;
+  mapUrl?: string;
+};
+
+/**
+ * Mencegah acara akad tampil dobel: list events (Rangkaian Acara) kerap
+ * memuat entri berjudul "Akad ..." padahal info akad sudah dirender dari
+ * Acara Utama (eventDate/eventTime/venueName). Aturan:
+ * - Entri events pertama yang berjudul diawali "Akad" digabung ke main,
+ *   lalu dikeluarkan dari daftar tambahan; sisanya tetap dirender.
+ * - Mode default (section generik "Hari Bahagia"): field Acara Utama yang
+ *   sudah terisi TETAP dipakai (isian admin menang), yang kosong diisi dari
+ *   entri akad agar tidak ada info hilang.
+ * - Mode `akadWins` (kartu berjudul "Akad Nikah", mis. zen/vogue/celestial):
+ *   detail dari entri akad yang menang karena kartu itu memang acara akad.
+ */
+export function splitAgenda(
+  events: EventItem[] | undefined,
+  main: MainEventFields,
+  opts?: { akadWins?: boolean },
+): { main: MainEventFields; additional: EventItem[] } {
+  const list = events ?? [];
+  const idx = list.findIndex((e) => /^akad/i.test((e.title ?? "").trim()));
+  if (idx === -1) return { main, additional: list };
+  const akad = list[idx];
+  const pick = opts?.akadWins
+    ? (akadVal: string | undefined, mainVal: string | undefined) => akadVal || mainVal
+    : (akadVal: string | undefined, mainVal: string | undefined) => mainVal || akadVal;
+  return {
+    main: {
+      date: pick(akad.date, main.date),
+      time: pick(akad.time, main.time),
+      venue: pick(akad.location, main.venue),
+      mapUrl: pick(akad.locationMap, main.mapUrl),
+    },
+    additional: list.filter((_, i) => i !== idx),
+  };
+}
 
 export function formatDate(date?: string): string {
   if (!date) return "";

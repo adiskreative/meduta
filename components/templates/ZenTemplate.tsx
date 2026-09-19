@@ -10,15 +10,15 @@ import {
   X,
   ArrowDown,
 } from "lucide-react";
-import InvitationGate from "./InvitationGate";
+import ZenGate from "./ZenGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 import WishForm from "./WishForm";
 import WishList from "./WishList";
 import RsvpForm from "./RsvpForm";
 import CopyButton from "./CopyButton";
 import { Countdown, SaveToCalendarButton } from "./SharedWidgets";
-import { formatDate, formatTime, type TemplateProps } from "./types";
-import { getBackgroundUrl } from "@/lib/decoration";
+import { formatDate, formatTime, splitAgenda, type TemplateProps } from "./types";
+import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
 
 /**
  * Zen Minimalist — "和 Wa (Harmoni)"
@@ -132,6 +132,14 @@ function ZenShell({
 
   // Prioritas background: pilihan user > admin (template) > bawaan (sage garden)
   const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
+  // Prioritas foto gerbang: user > admin (dekorasi) > mempelai > galeri[0]
+  const gatePhoto = resolveGatePhoto({
+    gatePhotoUrl: data?.gatePhotoUrl,
+    adminGatePhotoUrl: getGatePhotoUrl(decorations),
+    groomPhotoUrl: data?.groom?.photoUrl,
+    bridePhotoUrl: data?.bride?.photoUrl,
+    firstGalleryUrl: data?.gallery?.[0]?.url,
+  });
 
   return (
     <div
@@ -156,6 +164,8 @@ function ZenShell({
           bgUrl={bgUrl}
           groomPhoto={groom?.photoUrl}
           bridePhoto={bride?.photoUrl}
+          gatePhoto={gatePhoto}
+          tagline={data.customMessage}
         />
 
         {gateOpen && (
@@ -168,7 +178,7 @@ function ZenShell({
               brideName={bride?.name}
               eventName={data.eventName ?? "Pernikahan"}
               customMessage={data.customMessage}
-              photo={groom?.photoUrl || bride?.photoUrl || gallery[0]?.url}
+              photo={gatePhoto}
             />
 
             {/* Kutipan & pesan pembuka */}
@@ -256,8 +266,12 @@ function Cover({
   bgUrl,
   groomPhoto,
   bridePhoto,
+  gatePhoto,
+  tagline,
 }: {
   eventName: string;
+  gatePhoto?: string;
+  tagline?: string;
   groomNick?: string;
   brideNick?: string;
   eventDate?: string;
@@ -353,15 +367,16 @@ function Cover({
 
   if (locked) {
     return (
-      <InvitationGate
-        theme="zen"
+      <ZenGate
         eventName={eventName}
         groomNick={groomNick}
         brideNick={brideNick}
         eventDate={eventDate}
         guestName={guestName}
+        tagline={tagline}
         onOpen={onOpen}
         backgroundUrl={bgUrl}
+        photoUrl={gatePhoto}
       />
     );
   }
@@ -632,6 +647,18 @@ function EventsSection({
   locationMap?: string;
   events: NonNullable<TemplateProps["data"]["events"]>;
 }) {
+  // Entri "Akad" pada Rangkaian Acara digabung ke kartu Akad utama agar
+  // tidak tampil dobel — detail dari entri akad yang menang (akadWins).
+  const agenda = splitAgenda(
+    events,
+    {
+      date: eventDate,
+      time: eventTime,
+      venue: [venueName, location].filter(Boolean).join(", ") || undefined,
+      mapUrl: locationMap,
+    },
+    { akadWins: true },
+  );
   return (
     <section id="acara" className="border-b px-6 py-24 md:px-16" style={{ borderColor: `${ZEN.ink}1A` }}>
       <div className="mx-auto max-w-5xl">
@@ -658,12 +685,12 @@ function EventsSection({
             seal="儀"
             sealSub="Akad"
             title="Akad Nikah"
-            date={eventDate}
-            time={eventTime}
-            venue={[venueName, location].filter(Boolean).join(", ") || undefined}
-            mapUrl={locationMap}
+            date={agenda.main.date}
+            time={agenda.main.time}
+            venue={agenda.main.venue}
+            mapUrl={agenda.main.mapUrl}
           />
-          {events.map((e, i) => (
+          {agenda.additional.map((e, i) => (
             <EventCard
               key={e.id}
               label={i % 2 === 0 ? "Celebration" : "Gathering"}

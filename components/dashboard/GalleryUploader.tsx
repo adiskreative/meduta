@@ -9,8 +9,11 @@ const MAX_SIZE_MB = 3;
 
 export default function GalleryUploader({
   targetId,
+  onUploaded,
 }: {
   targetId: string; // id input gallery.url[] yang akan diisi
+  /** Opsional: dipanggil dengan URL hasil upload (untuk state React) */
+  onUploaded?: (url: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
@@ -45,6 +48,7 @@ export default function GalleryUploader({
 
       const input = document.getElementById(targetId) as HTMLInputElement | null;
       if (input) input.value = result.url;
+      onUploaded?.(result.url);
 
       setStatus({
         ok: true,

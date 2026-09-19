@@ -100,6 +100,20 @@ async function main() {
       componentKey: "vogue",
       isPremium: true,
     },
+    {
+      name: "Celestial Night",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600&q=60",
+      componentKey: "celestial",
+      isPremium: true,
+    },
+    {
+      name: "Scrapbook Album",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=60",
+      componentKey: "scrapbook",
+      isPremium: true,
+    },
   ];
 
   for (const template of templates) {
@@ -112,7 +126,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 9 template berhasil dibuat.");
+  console.log("Seed selesai: 11 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.

@@ -37,6 +37,8 @@ export default function VogueGate({
   onOpen,
   /** Background kustom user/admin — tampil redup di belakang sampul. */
   backgroundUrl,
+  /** Foto khusus gerbang pilihan user/admin — menggantikan latar bawaan. */
+  photoUrl,
 }: {
   eventName?: string;
   groomNick?: string;
@@ -46,6 +48,7 @@ export default function VogueGate({
   location?: string;
   onOpen?: () => void;
   backgroundUrl?: string;
+  photoUrl?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -79,11 +82,11 @@ export default function VogueGate({
       aria-label="Buka undangan"
     >
       {/* Latar: background kustom user/admin (redup, grayscale) atau gradasi editorial */}
-      {backgroundUrl ? (
+      {(photoUrl || backgroundUrl) ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={backgroundUrl}
+            src={photoUrl || backgroundUrl}
             alt=""
             className="absolute inset-0 h-full w-full object-cover opacity-30 grayscale"
           />

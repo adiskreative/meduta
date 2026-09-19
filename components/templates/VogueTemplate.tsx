@@ -17,8 +17,8 @@ import WishList from "./WishList";
 import RsvpForm from "./RsvpForm";
 import CopyButton from "./CopyButton";
 import { Countdown } from "./SharedWidgets";
-import { formatDate, type TemplateProps } from "./types";
-import { getBackgroundUrl } from "@/lib/decoration";
+import { formatDate, splitAgenda, type TemplateProps } from "./types";
+import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
 
 /**
  * Vogue Editorial — "Special Wedding Issue"
@@ -99,6 +99,14 @@ function VogueShell({
 
   // Prioritas background: pilihan user > admin (template) > bawaan (ruang editorial)
   const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
+  // Prioritas foto gerbang: user > admin (dekorasi) > mempelai > galeri[0]
+  const gatePhoto = resolveGatePhoto({
+    gatePhotoUrl: data?.gatePhotoUrl,
+    adminGatePhotoUrl: getGatePhotoUrl(decorations),
+    groomPhotoUrl: groom?.photoUrl,
+    bridePhotoUrl: bride?.photoUrl,
+    firstGalleryUrl: gallery[0]?.url,
+  });
 
   return (
     <div
@@ -122,7 +130,7 @@ function VogueShell({
           bgUrl={bgUrl}
           groomPhoto={groom?.photoUrl}
           bridePhoto={bride?.photoUrl}
-          photo={groom?.photoUrl || bride?.photoUrl || gallery[0]?.url}
+          photo={gatePhoto}
         />
 
         {gateOpen && (
@@ -135,7 +143,7 @@ function VogueShell({
               eventTime={data.eventTime}
               venueName={data.venueName}
               location={data.location}
-              photo={groom?.photoUrl || bride?.photoUrl || gallery[0]?.url}
+              photo={gatePhoto}
             />
 
             {/* Kutipan pengantar + pesan resmi */}
@@ -358,6 +366,7 @@ function Cover({
         location={location}
         onOpen={onOpen}
         backgroundUrl={bgUrl}
+        photoUrl={photo}
       />
     );
   }
@@ -754,6 +763,18 @@ function EventsSection({
   locationMap?: string;
   events: NonNullable<TemplateProps["data"]["events"]>;
 }) {
+  // Entri "Akad" pada Rangkaian Acara digabung ke baris Akad utama agar
+  // tidak tampil dobel — detail dari entri akad yang menang (akadWins).
+  const agenda = splitAgenda(
+    events,
+    {
+      date: eventDate,
+      time: eventTime,
+      venue: [venueName, location].filter(Boolean).join(", ") || undefined,
+      mapUrl: locationMap,
+    },
+    { akadWins: true },
+  );
   return (
     <section id="acara" className="border-y border-[#DCD8CE] bg-[#EFECE6] py-24">
       <div className="mx-auto max-w-6xl px-6 md:px-16">
@@ -788,15 +809,15 @@ function EventsSection({
 
         <div className="space-y-8">
           <EventRow
-            time={eventTime}
+            time={agenda.main.time}
             label="Sacred Ceremony"
             title="Akad Nikah"
-            venue={[venueName, location].filter(Boolean).join(", ") || undefined}
-            mapUrl={locationMap}
-            date={eventDate}
+            venue={agenda.main.venue}
+            mapUrl={agenda.main.mapUrl}
+            date={agenda.main.date}
             tag="All Invited Guests"
           />
-          {events.map((e, i) => (
+          {agenda.additional.map((e, i) => (
             <EventRow
               key={e.id}
               time={e.time}
