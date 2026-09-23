@@ -35,17 +35,37 @@ export default function LegalLayout({
       <footer className="border-t border-white/10 bg-[#10173f] py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
           <Logo className="h-8 w-auto" />
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-zinc-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-zinc-400">
             <Link href="/syarat-ketentuan" className="transition hover:text-white">
               Syarat & Ketentuan
             </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
             <Link href="/kebijakan-privasi" className="transition hover:text-white">
               Kebijakan Privasi
             </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
             <Link href="/tim" className="transition hover:text-white">
               Tim Kami
             </Link>
-            <span className="text-zinc-600">•</span>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
+            <Link href="/faq" className="transition hover:text-white">
+              FAQ
+            </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
+            <Link href="/pusat-bantuan" className="transition hover:text-white">
+              Pusat Bantuan
+            </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
             <a
               href="mailto:adi.skreative@gmail.com"
               className="transition hover:text-white"

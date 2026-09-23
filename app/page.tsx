@@ -519,6 +519,12 @@ function Tentang() {
               <Link href="/tim" className="text-white/90 underline-offset-4 transition hover:text-white hover:underline">
                 Tim Kami
               </Link>
+              <Link href="/faq" className="text-white/90 underline-offset-4 transition hover:text-white hover:underline">
+                FAQ
+              </Link>
+              <Link href="/pusat-bantuan" className="text-white/90 underline-offset-4 transition hover:text-white hover:underline">
+                Pusat Bantuan
+              </Link>
               <Link href="/syarat-ketentuan" className="text-white/90 underline-offset-4 transition hover:text-white hover:underline">
                 Syarat & Ketentuan
               </Link>
@@ -699,15 +705,33 @@ function Footer() {
               <MessageCircle className="h-4.5 w-4.5" />
             </a>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-zinc-400 sm:justify-end">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-zinc-400 sm:justify-end">
             <Link href="/syarat-ketentuan" className="transition hover:text-white">
               Syarat & Ketentuan
             </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
             <Link href="/kebijakan-privasi" className="transition hover:text-white">
               Kebijakan Privasi
             </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
             <Link href="/tim" className="transition hover:text-white">
               Tim Kami
+            </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
+            <Link href="/faq" className="transition hover:text-white">
+              FAQ
+            </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
+            <Link href="/pusat-bantuan" className="transition hover:text-white">
+              Pusat Bantuan
             </Link>
           </div>
           <p className="text-sm text-zinc-400">

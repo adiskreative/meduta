@@ -16,8 +16,16 @@ const TEAM = [
   {
     name: "Adi Skreative",
     role: "Founder & Developer",
-    bio: "Merancang dan membangun Meduta — dari tampilan template hingga sistem di baliknya.",
+    bio: "Merancang dan membangun sistem Meduta.",
     initials: "AS",
+    accent: "from-pink-600 to-rose-500",
+  },
+
+  {
+    name: "Rahmatika",
+    role: "Template Designer",
+    bio: "Merancang dan membangun tampilan template yang indah dan menarik.",
+    initials: "Ra",
     accent: "from-pink-600 to-rose-500",
   },
 ];
