@@ -66,9 +66,8 @@ const CEL_STYLES = `
     color: transparent;
   }
   .cel-glass {
-    background: rgba(11, 17, 32, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    /* Solid gradient — TANPA backdrop-blur agar teks selalu tajam */
+    background: linear-gradient(165deg, rgba(13, 19, 36, 0.99) 0%, rgba(9, 13, 25, 0.99) 55%, rgba(16, 10, 32, 0.99) 100%);
   }
   .cel-border-glow {
     border: 1px solid ${CEL.line};
@@ -495,7 +494,7 @@ function CountdownSection({
               target={eventDate}
               valueClass="cel-gold-text font-[family-name:var(--font-display)] text-3xl md:text-4xl"
               labelClass="text-[10px] uppercase tracking-widest text-slate-400"
-              boxClass="rounded-2xl border border-amber-300/20 bg-slate-900/80 backdrop-blur-md"
+              boxClass="rounded-2xl border border-amber-300/20 bg-[#0d1324]"
             />
           </div>
         </div>

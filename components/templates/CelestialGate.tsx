@@ -30,9 +30,9 @@ const GATE_STYLES = `
       ${CEL.bg};
   }
   .celgate-card {
-    background: rgba(10, 15, 28, 0.72);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    /* Solid gradient — TANPA backdrop-blur agar teks selalu tajam
+       (blur pada elemen ber-teks dirender kabur oleh rasterisasi layer) */
+    background: linear-gradient(165deg, rgba(13, 19, 36, 0.99) 0%, rgba(9, 13, 25, 0.99) 55%, rgba(16, 10, 32, 0.99) 100%);
     border: 1px solid ${CEL.line};
     box-shadow:
       0 0 60px rgba(126, 34, 206, 0.25),

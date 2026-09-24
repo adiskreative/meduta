@@ -120,7 +120,7 @@ export default function PusatBantuanPage() {
           </h2>
         </div>
         <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-          Tim kami siap membantu. Respon tercepat melalui WhatsApp — sertakan
+          Tim kami siap membantu. Respon tercepat melalui WhatsApp - sertakan
           nama akun atau email terdaftar serta tangkapan layar masalahnya agar
           penanganan lebih cepat.
         </p>

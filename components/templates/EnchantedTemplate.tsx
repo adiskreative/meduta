@@ -64,18 +64,15 @@ const FGR_STYLES = `
     -webkit-text-fill-color: transparent;
     color: transparent;
   }
+  /* Kartu solid gradient — TANPA backdrop-blur agar teks selalu tajam */
   .fgr-glass {
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: linear-gradient(160deg, rgba(255, 248, 252, 0.97) 0%, rgba(255, 244, 240, 0.97) 55%, rgba(250, 244, 253, 0.97) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.95);
     box-shadow: 0 20px 40px rgba(123, 44, 191, 0.12), 0 8px 16px rgba(255, 77, 141, 0.08);
   }
   .fgr-glass-accent {
-    background: linear-gradient(135deg, rgba(255, 240, 245, 0.85) 0%, rgba(255, 255, 255, 0.9) 100%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 2px solid rgba(255, 179, 150, 0.4);
+    background: linear-gradient(135deg, #fff0f5 0%, #ffffff 60%, #fff5f0 100%);
+    border: 2px solid rgba(255, 179, 150, 0.45);
     box-shadow: 0 15px 35px rgba(255, 112, 82, 0.15);
   }
   @keyframes fgrSway {

@@ -50,7 +50,7 @@ const SECTIONS = [
   {
     title: "6. Pembatasan Tanggung Jawab",
     paras: [
-      "Meduta disediakan \"sebagaimana adanya\". Kami berupaya menjaga layanan tetap tersedia dan aman, namun tidak menjamin layanan bebas gangguan sepenuhnya — termasuk gangguan jaringan, perangkat tamu, atau pihak ketiga di luar kendali kami.",
+      "Meduta disediakan \"sebagaimana adanya\". Kami berupaya menjaga layanan tetap tersedia dan aman, namun tidak menjamin layanan bebas gangguan sepenuhnya - termasuk gangguan jaringan, perangkat tamu, atau pihak ketiga di luar kendali kami.",
       "Sejauh diizinkan hukum, Meduta tidak bertanggung jawab atas kerugian tidak langsung akibat penggunaan atau ketidakmampuan menggunakan layanan.",
     ],
   },
@@ -64,7 +64,7 @@ const SECTIONS = [
   {
     title: "8. Kontak",
     paras: [
-      "Pertanyaan tentang Syarat & Ketentuan ini dapat disampaikan melalui email adi.skreative@gmail.com atau WhatsApp 0823 9988 9992 (Btn Graha Bidara Blok G.6, Kab. Parigi Moutong).",
+      "Pertanyaan tentang Syarat & Ketentuan ini dapat disampaikan melalui email adi.skreative@gmail.com atau WhatsApp 0823 9988 9992 (Jl Jalur II Lebo,  Btn Graha Bidara Blok G.6, Kec. Parigi).",
     ],
   },
 ];

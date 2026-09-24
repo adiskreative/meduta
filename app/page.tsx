@@ -116,6 +116,14 @@ const templates = [
       "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=60",
     premium: true,
   },
+  {
+    key: "fairytale",
+    name: "Fairytale Dream",
+    desc: "Dongeng bunga penuh warna: kartu storybook, kupu-kupu animasi, partikel ajaib & wreath watercolor.",
+    image:
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {
@@ -183,10 +191,15 @@ const plans = [
     period: "selamanya",
     desc: "Coba semua fitur dasar untuk satu undangan.",
     features: [
-      "1 undangan pernikahan",
+      "undangan pernikahan terbatas",
+      "Masa aktif 1 bulan",
+      "Upload 5 Gambar",
+      "Bebas Ganti Background & Musik Latar",
       "Template dasar",
       "RSVP & wedding wall",
       "Link undangan pribadi",
+      "Fitur Terbatas",
+      "Watermark Meduta",
     ],
     highlighted: false,
     cta: "Mulai Gratis",
@@ -198,10 +211,18 @@ const plans = [
     period: "harga menyusul",
     desc: "Fitur lengkap untuk momen spesial Anda.",
     features: [
-      "Unlimited undangan",
+      "Unlimited undangan - Bebas Ganti-Ganti Template Sesuai Selera",
+      "Masa aktif 1 tahun",
       "Semua template premium",
-      "Musik latar & galeri foto",
-      "Prioritas dukungan",
+      "Bebas Ganti Background & Musik Latar",
+      "Upload Galeri foto Tanpa Batas",
+      "Pantau RSVP & ucapan tamu",
+      "Kustomisasi domain & branding",
+      "Integrasi pembayaran & donasi",
+      "Dukungan prioritas",
+      "Hapus watermark Meduta",
+      "Semua Fitur Lengkap",
+      
     ],
     highlighted: true,
     cta: "Hubungi Kami",
@@ -287,7 +308,7 @@ function Hero() {
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base text-zinc-200 lg:mx-0">
               Buat undangan digital yang mudah, bagikan linknya ke tamu, dan pantau
-              RSVP serta ucapan mereka — semua dalam satu tempat.
+              RSVP serta ucapan mereka - semua dalam satu tempat.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
               <Link
@@ -307,7 +328,7 @@ function Hero() {
               </a>
             </div>
             <p className="mt-5 text-xs text-zinc-400">
-              Gratis untuk memulai • Tanpa kartu kredit
+              Gratis untuk memulai • Coba Saja • Tidak Perlu Bayar
             </p>
           </div>
 
@@ -332,8 +353,8 @@ function Features() {
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
           eyebrow="Fitur"
-          title="Semua yang Anda Butuhkan untuk Undangan Digital"
-          desc="Fitur lengkap agar undangan Anda terlihat profesional dan mudah dikelola."
+          title="Semua yang Anda Butuhkan Ada di Sini"
+          desc="Fitur lengkap, Halaman User Yang Mudah Digunakan, dan Template Undangan yang Elegan. Semua dalam satu platform."
         />
         <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
@@ -403,16 +424,16 @@ const panduanTips = [
     icon: Camera,
     title: "Tips Foto",
     points: [
-      "Foto mempelai: persegi 1:1 (cth. 800×800px) — tampil bulat dengan wajah di tengah",
-      "Foto galeri: potret 4:5 (cth. 960×1200px) — mengisi frame sempurna",
-      "Format JPG/PNG/WebP — foto besar dikompres otomatis saat diunggah",
+      "Foto mempelai: persegi 1:1 (cth. 800×800px) - tampil bulat dengan wajah di tengah",
+      "Foto galeri: potret 4:5 (cth. 960×1200px) - mengisi frame sempurna",
+      "Format JPG/PNG/WebP - foto besar dikompres otomatis saat diunggah",
     ],
   },
   {
     icon: Music,
     title: "Tips Musik Latar",
     points: [
-      "Format MP3/WAV/OGG/M4A, maksimal 10MB — MP3 paling ringan",
+      "Format MP3/WAV/OGG/M4A, maksimal 10MB - MP3 paling ringan",
       "Musik otomatis mengalun saat tamu menekan Buka Undangan",
       "Tamu bisa mematikan musik lewat tombol speaker di undangan",
     ],
@@ -421,7 +442,7 @@ const panduanTips = [
     icon: ListChecks,
     title: "Tips Pengisian",
     points: [
-      "Isi bertahap — semua perubahan tersimpan per bagian",
+      "Isi bertahap - semua perubahan tersimpan per bagian",
       "Gunakan Preview di setiap form untuk memastikan tampilan",
       "Nama tamu otomatis muncul di cover lewat link pribadi",
     ],
@@ -484,7 +505,7 @@ function Tentang() {
             <p className="text-base leading-relaxed text-zinc-600">
               <span className="font-semibold text-zinc-900">Meduta</span> adalah
               layanan undangan pernikahan digital yang memudahkan pasangan
-              membuat, mengelola, dan membagikan undangan ke semua tamu — cukup
+              membuat, mengelola, dan membagikan undangan ke semua tamu - cukup
               dari satu tempat.
             </p>
             <p className="mt-4 text-base leading-relaxed text-zinc-600">
@@ -496,7 +517,7 @@ function Tentang() {
             </p>
             <div className="mt-6 flex flex-wrap gap-6">
               <div>
-                <p className="text-3xl font-bold text-pink-600">4+</p>
+                <p className="text-3xl font-bold text-pink-600">10+</p>
                 <p className="text-sm text-zinc-500">Desain template elegan</p>
               </div>
               <div>

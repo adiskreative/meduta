@@ -18,7 +18,7 @@ export default function RegisterPage() {
               Buat akun baru
             </h1>
             <p className="mt-1 text-sm text-zinc-500">
-              Mulai buat undangan digital Anda
+              Marijo buat Undangan Digital Gratis!, cepat, dan mudah. Kamu bisa buat akun sekarang atau masuk dengan akun Google.
             </p>
           </div>
 

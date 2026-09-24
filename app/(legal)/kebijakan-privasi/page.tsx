@@ -15,7 +15,7 @@ const SECTIONS = [
     title: "1. Data yang Kami Kumpulkan",
     paras: [
       "Data akun: nama, alamat email, dan kata sandi (tersimpan dalam bentuk terenkripsi) saat Anda mendaftar.",
-      "Data undangan: konten yang Anda isi sendiri — nama mempelai, tanggal & lokasi acara, foto, galeri, musik, serta nama tamu yang Anda tambahkan untuk membuat link undangan personal.",
+      "Data undangan: konten yang Anda isi sendiri - nama mempelai, tanggal & lokasi acara, foto, galeri, musik, serta nama tamu yang Anda tambahkan untuk membuat link undangan personal.",
       "Data tamu Anda: jawaban RSVP dan ucapan yang dikirim tamu melalui undangan Anda. Data ini milik Anda sebagai pembuat undangan.",
       "Data teknis: informasi perangkat & log server standar untuk menjaga keamanan dan kinerja layanan.",
     ],
@@ -33,7 +33,7 @@ const SECTIONS = [
     title: "3. Berbagi Data",
     paras: [
       "Data Anda dibagikan hanya sebatas kebutuhan: kepada penyedia infrastruktur (hosting & basis data) dan penyedia layanan email/pembayaran yang bekerja atas instruksi kami dengan kewajiban kerahasiaan.",
-      "Undangan yang Anda publikasikan akan dapat diakses oleh tamu yang menerima link undangan Anda — pastikan Anda hanya membagikannya kepada pihak yang diinginkan.",
+      "Undangan yang Anda publikasikan akan dapat diakses oleh tamu yang menerima link undangan Anda - pastikan Anda hanya membagikannya kepada pihak yang diinginkan.",
       "Kami dapat mengungkap data bila diwajibkan oleh hukum atau perintah lembaga berwenang.",
     ],
   },
@@ -57,7 +57,7 @@ const SECTIONS = [
     title: "6. Hak Anda",
     paras: [
       "Anda berhak mengakses, memperbaiki, dan menghapus data pribadi Anda; menarik persetujuan pemasaran; serta mengajukan pertanyaan tentang pemrosesan data Anda.",
-      "Permintaan dapat dikirim ke adi.skreative@gmail.com — kami akan merespons dalam waktu wajar sesuai peraturan yang berlaku.",
+      "Permintaan dapat dikirim ke adi.skreative@gmail.com - kami akan merespons dalam waktu wajar sesuai peraturan yang berlaku.",
     ],
   },
   {

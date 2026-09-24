@@ -120,6 +120,12 @@ async function main() {
         "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=60",
       componentKey: "enchanted",
     },
+    {
+      name: "Fairytale Dream",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60",
+      componentKey: "fairytale",
+    },
   ];
 
   for (const template of templates) {
@@ -132,7 +138,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 12 template berhasil dibuat.");
+  console.log("Seed selesai: 13 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.

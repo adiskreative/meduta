@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Meduta — Undangan Digital Pernikahan",
+    default: "Meduta - Undangan Digital Pernikahan",
     template: "%s",
   },
   description:

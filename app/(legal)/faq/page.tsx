@@ -14,7 +14,7 @@ const FAQS: { group: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "Apa itu Meduta?",
-        a: "Meduta adalah platform undangan pernikahan digital. Anda memilih template, mengisi data mempelai dan acara, lalu membagikan link undangan ke tamu — lengkap dengan RSVP, dinding ucapan, musik latar, galeri foto, dan peta lokasi dalam satu tempat.",
+        a: "Meduta adalah platform undangan pernikahan digital. Anda memilih template, mengisi data mempelai dan acara, lalu membagikan link undangan ke tamu - lengkap dengan RSVP, dinding ucapan, musik latar, galeri foto, dan peta lokasi dalam satu tempat.",
       },
       {
         q: "Apakah Meduta gratis?",
@@ -22,7 +22,7 @@ const FAQS: { group: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Apakah undangan bisa dibuka di semua perangkat?",
-        a: "Bisa. Semua template dirancang mobile-first — tampil sempurna di ponsel tamu — dan tetap rapi saat dibuka dari tablet maupun desktop.",
+        a: "Bisa. Semua template dirancang mobile-first - tampil sempurna di ponsel tamu - dan tetap rapi saat dibuka dari tablet maupun desktop.",
       },
     ],
   },
@@ -35,7 +35,7 @@ const FAQS: { group: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Apakah data yang saya isi bisa diedit lagi?",
-        a: "Bisa kapan saja. Semua form di dashboard tersimpan per bagian — buka kembali formnya, ubah, lalu simpan. Perubahan langsung tampil di undangan tanpa perlu kirim ulang link.",
+        a: "Bisa kapan saja. Semua form di dashboard tersimpan per bagian - buka kembali formnya, ubah, lalu simpan. Perubahan langsung tampil di undangan tanpa perlu kirim ulang link.",
       },
       {
         q: "Bagaimana cara mengganti foto mempelai dan galeri?",
@@ -43,7 +43,7 @@ const FAQS: { group: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Bisakah mengganti background template?",
-        a: "Bisa. Di dashboard tersedia menu Background — pilih dari galeri aset atau unggah foto sendiri. Pilihan background Anda dipakai di undangan, menggantikan bawaan template.",
+        a: "Bisa. Di dashboard tersedia menu Background - pilih dari galeri aset atau unggah foto sendiri. Pilihan background Anda dipakai di undangan, menggantikan bawaan template.",
       },
       {
         q: "Bisakah menambahkan musik pilihan sendiri?",
@@ -73,7 +73,7 @@ const FAQS: { group: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "Apakah link undangan saya akan kedaluwarsa?",
-        a: "Tidak. Selama akun Anda aktif, link undangan dan seluruh datanya tetap dapat diakses — tamu yang menyimpan link lama tetap bisa membukanya.",
+        a: "Tidak. Selama akun Anda aktif, link undangan dan seluruh datanya tetap dapat diakses - tamu yang menyimpan link lama tetap bisa membukanya.",
       },
       {
         q: "Saya menemukan masalah atau error, kemana harus lapor?",

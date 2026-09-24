@@ -19,7 +19,7 @@ type Props = {
   searchParams: Promise<{ embed?: string; shot?: string; frame?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale"]);
 
 export const metadata: Metadata = {
   title: "Pratinjau Template | Meduta",
@@ -110,7 +110,7 @@ export default async function PreviewPage({ params, searchParams }: Props) {
           body::-webkit-scrollbar { display: none; }
           body { pointer-events: none; }
           /* Section "satu layar" dirender setinggi viewport ponsel tiruan
-             (THUMB_INNER_H ≈ 823px) — PERSIS seperti live iframe, sehingga
+             (THUMB_INNER_H ≈ 823px) - PERSIS seperti live iframe, sehingga
              komposisi cover & kartu tamu identik piksel dengan tampilan live.
              100vh/100svh TIDAK dipakai karena window screenshot setinggi
              seluruh halaman (vh = tinggi halaman, bukan layar ponsel). */
@@ -140,7 +140,7 @@ export default async function PreviewPage({ params, searchParams }: Props) {
       <>
         <style>{`
           html, body { margin: 0; scrollbar-width: none; overflow-x: hidden; }
-          /* Scrollbar disembunyikan agar mirip overlay ponsel asli —
+          /* Scrollbar disembunyikan agar mirip overlay ponsel asli -
              dan lebar konten tetap penuh (scrollbar klasik Windows
              memakan ~17px dari viewport iframe) */
           html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }

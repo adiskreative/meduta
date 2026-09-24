@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 const TEAM = [
   {
-    name: "Adi Skreative",
+    name: "Adi Swandi",
     role: "Founder & Developer",
     bio: "Merancang dan membangun sistem Meduta.",
     initials: "AS",
@@ -34,17 +34,17 @@ const VALUES = [
   {
     icon: Heart,
     title: "Berawal dari kepedulian",
-    desc: "Kami percaya momen bahagia layak dibagikan dengan indah — tanpa ribet, tanpa mahal.",
+    desc: "Kami percaya momen bahagia layak dibagikan dengan indah - tanpa ribet, tanpa mahal.",
   },
   {
     icon: Mail,
     title: "Dukungan responsif",
-    desc: "Pertanyaan dan kendala Anda kami jawab langsung melalui email & WhatsApp.",
+    desc: "Pertanyaan dan kendala Anda kami jawab langsung melalui Email & WhatsApp.",
   },
   {
     icon: MessageCircle,
     title: "Dibangun bersama pengguna",
-    desc: "Banyak fitur Meduta lahir dari masukan pengguna. Sampaikan ide Anda — kami mendengarkan.",
+    desc: "Banyak fitur Meduta lahir dari masukan pengguna. Sampaikan ide Anda - kami mendengarkan.",
   },
 ];
 
@@ -84,7 +84,7 @@ export default function TimPage() {
         <div className="rounded-3xl bg-gradient-to-br from-pink-600 to-rose-500 p-8 text-white shadow-xl shadow-pink-600/20">
           <h2 className="text-lg font-semibold">Anda?</h2>
           <p className="mt-3 text-sm leading-relaxed text-white/90">
-            Kami terbuka untuk kolaborasi — desainer template, fotografer, dan
+            Kami terbuka untuk kolaborasi - desainer template, fotografer, dan
             kreator konten pernikahan. Perkenalkan diri Anda kepada kami.
           </p>
           <Link

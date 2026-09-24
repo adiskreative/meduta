@@ -51,9 +51,10 @@ function GateDoor({
       />
       {/* Glow ambient */}
       <div
-        className={`pointer-events-none absolute h-80 w-80 rounded-full bg-rose-300/40 blur-3xl ${
+        className={`pointer-events-none absolute h-80 w-80 rounded-full bg-rose-300/40 ${
           isLeft ? "-left-16 -top-16" : "-right-16 -bottom-16"
         }`}
+        style={{ filter: "blur(64px)" }}
       />
       {/* Ornamen setengah bunga di tepi tengah pintu */}
       <svg
@@ -133,10 +134,14 @@ export default function FlowerGate({
       role="dialog"
       aria-label="Buka undangan"
     >
-      {/* Kartu konten di tengah — memudar cepat saat pintu mulai tertarik */}
+      {/* Kartu konten di tengah — SOLID (tanpa backdrop-blur agar teks
+          selalu tajam; blur pada elemen ber-teks dirender kabur oleh
+          rasterisasi layer Chromium) — memudar cepat saat pintu mulai tertarik */}
       <div
-        className="relative z-10 w-full max-w-md rounded-3xl border-2 border-white/80 bg-white/75 p-8 text-center shadow-[0_20px_40px_rgba(123,44,191,0.18)] backdrop-blur-xl sm:p-10"
+        className="relative z-10 w-full max-w-md rounded-3xl border-2 border-white p-8 text-center shadow-[0_20px_40px_rgba(123,44,191,0.18)] sm:p-10"
         style={{
+          background:
+            "linear-gradient(160deg, #fff7fb 0%, #fff4f0 55%, #f9f4fd 100%)",
           transform: closing ? "scale(0.92)" : "scale(1)",
           opacity: closing ? 0 : 1,
           transition: "transform 450ms ease, opacity 450ms ease",
@@ -175,7 +180,7 @@ export default function FlowerGate({
         )}
 
         {/* Kotak tamu */}
-        <div className="my-6 rounded-2xl border border-orange-200/60 bg-white/60 p-4 shadow-inner">
+        <div className="my-6 rounded-2xl border border-orange-200/80 bg-white p-4 shadow-inner">
           <p className="mb-1 text-xs text-gray-500">
             Kepada Yth. Bapak/Ibu/Saudara/i:
           </p>
