@@ -1,0 +1,143 @@
+# Panduan Deploy Meduta ke VPS
+
+Arsitektur deploy:
+
+```
+Browser ──> Domain (DNS A record) ──> VPS
+                                      ├─ Caddy  (HTTPS otomatis, port 443)
+                                      └─ Node/Next.js (service systemd, port 3000 lokal)
+                                                  ├─ Database → Supabase Postgres (awan)
+                                                  └─ Upload   → Supabase Storage (awan)
+```
+
+VPS hanya menjalankan aplikasi — database dan semua file upload (foto,
+musik, background) sudah berada di Supabase, jadi VPS tidak perlu disk besar.
+
+---
+
+## Prasyarat
+
+- [ ] VPS aktif (Ubuntu 22.04/24.04, minimal 1 vCPU / 1GB RAM) — punya IP publik
+- [ ] Domain sudah Anda miliki (bisa diakses DNS-nya)
+- [ ] Akun Supabase (database + storage produksi)
+- [ ] Akun GitHub (repo `adiskreative/meduta` sudah bisa di-clone; jika repo private, pakai [deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh))
+
+## Langkah 1 — Arahkan domain ke VPS
+
+Di panel DNS registrar Anda:
+
+| Tipe | Nama | Nilai | TTL |
+|---|---|---|---|
+| A | `@` | `IP_PUBLIK_VPS` | 3600 |
+| A | `www` | `IP_PUBLIK_VPS` | 3600 |
+
+Cek setelah propagasi (biasanya < 1 jam):
+
+```bash
+dig +short domain-anda.com
+# harus mengembalikan IP VPS
+```
+
+## Langkah 2 — Persiapan VPS (sekali saja)
+
+SSH ke VPS sebagai root, lalu salin & jalankan skrip setup (atau paste manual):
+
+```bash
+# dari komputer lokal — salin skrip ke VPS
+scp deploy/setup-vps.sh root@IP_VPS:/root/
+
+# di VPS
+bash /root/setup-vps.sh
+```
+
+Yang dipasang skrip: Node.js 22, swap 2GB, firewall (SSH/HTTP/HTTPS saja),
+Caddy, user khusus `meduta` (home `/opt/meduta`), dan izin restart service.
+
+## Langkah 3 — Clone repo & isi environment
+
+```bash
+sudo -iu meduta
+git clone -b fix/keamanan-features https://github.com/adiskreative/meduta.git /opt/meduta
+cd /opt/meduta
+cp .env.example .env
+nano .env
+```
+
+Isi nilai produksi (lihat tabel berikutnya). **Wajib**: `DATABASE_URL`,
+`DIRECT_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL`.
+
+## Langkah 4 — Siapkan Supabase produksi
+
+1. Buat project baru di [supabase.com](https://supabase.com) (atau pakai yang ada).
+2. **Database**: Settings → Database → Connection string:
+   - `DATABASE_URL` ← **Transaction pooler** (port 6543, tambah `?pgbouncer=true&connection_limit=1`)
+   - `DIRECT_URL` ← **Session pooler** (port 5432) — dipakai `prisma db push`
+3. **Storage**: tidak perlu buat bucket manual — aplikasi otomatis membuat
+   bucket `avatars` (public) saat upload pertama. Pastikan service role key di-set.
+4. Copy nilainya ke `.env` VPS.
+
+> Catatan: database development dan produksi dipisah — jangan pakai project
+> Supabase yang isinya data contoh untuk produksi.
+
+## Langkah 5 — Build & jalankan service
+
+```bash
+# masih sebagai user meduta
+npm ci
+npx prisma generate
+npm run build
+npx prisma db push        # sinkronkan schema ke Supabase produksi
+npm run db:seed           # buat akun admin + template (idempoten)
+exit                      # kembali ke root
+```
+
+Pasang service systemd + Caddy (sebagai root):
+
+```bash
+cp /opt/meduta/deploy/meduta.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now meduta
+
+# Caddy — GANTI domain di dalam file dulu!
+nano /opt/meduta/deploy/Caddyfile          # ganti meduta.com → domain Anda
+cp /opt/meduta/deploy/Caddyfile /etc/caddy/Caddyfile
+systemctl reload caddy
+```
+
+Cek: `systemctl status meduta` → `active (running)`, lalu buka
+`https://domain-anda.com` — sertifikat HTTPS terbit otomatis oleh Caddy
+(dibutuhkan DNS sudah mengarah + port 80/443 terbuka).
+
+## Langkah 6 — OAuth Google & Email produksi
+
+- **Google OAuth** (console.cloud.google.com → Credentials):
+  - Authorized JavaScript origin: `https://domain-anda.com`
+  - Authorized redirect URI: `https://domain-anda.com/api/auth/callback/google`
+- **Resend** (resend.com → Domains): tambahkan & verifikasi domain Anda,
+  lalu set `EMAIL_FROM="Meduta <undangan@domain-anda.com>"`.
+- **NEXT_PUBLIC_APP_URL** = `https://domain-anda.com` (dipakai link undangan tamu —
+  penting: link undangan yang sudah tersebar mengikuti nilai ini).
+
+## Perawatan harian
+
+```bash
+# Deploy versi baru (di VPS, sebagai user meduta):
+bash /opt/meduta/deploy/deploy.sh
+
+# Log aplikasi:
+journalctl -u meduta -f
+
+# Restart manual:
+sudo systemctl restart meduta
+```
+
+## Troubleshooting
+
+| Gejala | Cek |
+|---|---|
+| 502 Bad Gateway | `systemctl status meduta` — aplikasi mati; lihat `journalctl -u meduta -n 50` |
+| HTTPS tidak terbit | DNS belum mengarah / port 80 terblokir; `journalctl -u caddy -n 50` |
+| `P1001` saat build/seed | `DATABASE_URL`/`DIRECT_URL` salah pooler; lihat Langkah 4 |
+| Upload gagal "Bucket storage belum siap" | `SUPABASE_SERVICE_ROLE_KEY` kosong atau salah project |
+| Email terkirim ke spam | Verifikasi domain (SPF/DKIM) di dashboard Resend |
+| Build kehabisan memori | Swap aktif? `swapon --show`; skrip setup sudah membuat 2GB |

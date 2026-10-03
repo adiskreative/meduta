@@ -23,6 +23,9 @@ powershell -NoProfile -Command "(Start-Process -FilePath 'npm.cmd' -ArgumentList
 - Port: script `dev` = `next dev` (default **3000** bila bebas). Di lingkungan ini Next kadang
   memilih port lain otomatis — **selalu baca baris `Local:` di log** untuk tahu port aktual,
   lalu pakai URL itu untuk `register_preview` (pid = hasil `netstat -ano | grep ":<port>" | grep LISTENING`).
+- **JANGAN** tambah `-p 3000` / `-ArgumentList 'run','dev','-p','3000'`: tanpa `--`, argumen
+  `3000` dipakai Next sebagai *project directory* (error "Invalid project directory … meduta\\3000").
+  Biarkan tanpa argumen; baca port aktual dari log.
 - Kompilasi pertama lambat (filesystem ~1 dtk/benchmark): request pertama bisa 30–45 dtk
   sebelum menjawab 200 — tunggu dengan timeout panjang sebelum menyimpulkan gagal.
 - Verifikasi hidup: `powershell -NoProfile -Command "Get-Process -Id <pid>"`,
