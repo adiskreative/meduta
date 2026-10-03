@@ -51,12 +51,13 @@ export function mapDecorations(
     size: unknown;
     rotated: number | null;
     zIndex: number;
-    asset: { url: string };
+    asset: { url: string; name?: string };
   }[],
 ): Decoration[] {
   return rows.map((d) => ({
     id: d.id,
     assetUrl: d.asset.url,
+    assetName: d.asset.name,
     placement: d.placement ?? "floating",
     layer: d.layer ?? "decor",
     zIndex: d.zIndex,
@@ -65,3 +66,21 @@ export function mapDecorations(
     rotated: d.rotated,
   }));
 }
+
+/**
+ * Ambil URL aset judul gerbang (mis. kaligrafi "the Wedding of") —
+ * diunggah admin lewat Admin Panel → Dekorasi dengan nama aset "the"
+ * (atau layer "gate-title"). Dipakai template Onyx di HALAMAN BUKA
+ * UNDANGAN saja, menggantikan judul teks neon.
+ * Catatan: DecorationLayer mengeluarkan aset bernama "the"/layer
+ * "gate-title" dari overlay melayangnya agar tidak dirender dobel.
+ */
+export function getGateTitleUrl(decorations?: Decoration[]): string | undefined {
+  const title = decorations?.find(
+    (d) =>
+      d.layer === "gate-title" || d.assetName?.trim().toLowerCase() === "the",
+  );
+  return title?.assetUrl;
+}
+
+

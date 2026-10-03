@@ -69,6 +69,8 @@ export type WishItem = {
 export type Decoration = {
   id: string;
   assetUrl: string;
+  /** Nama aset di Admin Panel (mis. "the" = judul kaligrafi gerbang Onyx). */
+  assetName?: string;
   placement: string; // floating | cover | section
   layer: string; // decor | frame
   zIndex: number;

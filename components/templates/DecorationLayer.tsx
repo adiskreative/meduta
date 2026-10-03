@@ -1,23 +1,29 @@
 import type { Decoration } from "./types";
 
+/** Layer yang dikonsumsi langsung oleh template (bukan overlay melayang):
+ *  - "background": latar penuh via getBackgroundUrl()
+ *  - "gate-title": kaligrafi judul gerbang via getGateTitleUrl()
+ */
+const TEMPLATE_CONSUMED_LAYERS = new Set(["background", "gate-title"]);
+
 export default function DecorationLayer({
   decorations,
 }: {
   decorations?: Decoration[];
 }) {
-  // Layer "background" tidak dirender di sini — dikonsumsi langsung oleh
-  // tiap template (cover + gerbang) via getBackgroundUrl() agar foto latar
-  // template benar-benar terganti, bukan sekadar ditumpuk di atasnya.
-  const bgDecorations = decorations?.filter((d) => d.layer === "background");
-  if (!decorations || decorations.length === 0) return null;
-  if (decorations.length === bgDecorations?.length) return null;
+  const overlay = decorations?.filter(
+    (d) =>
+      !TEMPLATE_CONSUMED_LAYERS.has(d.layer) &&
+      d.assetName?.trim().toLowerCase() !== "the",
+  );
+  if (!overlay || overlay.length === 0) return null;
 
   return (
     <div
       className="pointer-events-none fixed inset-0 z-[60] overflow-hidden"
       aria-hidden="true"
     >
-      {decorations.filter((d) => d.layer !== "background").map((d) => {
+      {overlay.map((d) => {
         const size = d.size ?? {};
         const pos = d.position ?? {};
 

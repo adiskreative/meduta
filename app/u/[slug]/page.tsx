@@ -44,7 +44,7 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
           componentKey: true,
           name: true,
           decorations: {
-            include: { asset: { select: { url: true } } },
+            include: { asset: { select: { url: true, name: true } } },
             orderBy: { zIndex: "asc" },
           },
         },
