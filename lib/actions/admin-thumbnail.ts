@@ -198,7 +198,13 @@ export async function regenerateThumbnail(templateId: string): Promise<ThumbStat
 
     // Hapus thumbnail lama (termasuk <key>.webp lama) — best-effort
     cleanupOldThumbs(key, fileName, outDir);
-    void previousFile;
+
+    // DB ikut menunjuk file berversi terbaru — tanpa ini thumbnailUrl
+    // tetap menunjuk file lama yang baru saja dihapus cleanupOldThumbs.
+    await prisma.template.update({
+      where: { id: templateId },
+      data: { thumbnailUrl: `/thumbs/${fileName}` },
+    });
 
     revalidatePath("/");
     revalidatePath("/dashboard/pilih-tema");

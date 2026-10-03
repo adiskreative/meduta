@@ -42,6 +42,9 @@ const KEYS = [
   "celestial",
   "enchanted",
   "fairytale",
+  "onyx",
+  "purple",
+  "wedflix",
 ];
 
 function parseArgs() {
