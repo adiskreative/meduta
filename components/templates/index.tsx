@@ -11,6 +11,9 @@ import CelestialTemplate from "./CelestialTemplate";
 import ScrapbookTemplate from "./ScrapbookTemplate";
 import EnchantedTemplate from "./EnchantedTemplate";
 import FairytaleTemplate from "./FairytaleTemplate";
+import OnyxTemplate from "./OnyxTemplate";
+import PurpleTemplate from "./PurpleTemplate";
+import WedflixTemplate from "./WedflixTemplate";
 import DecorationLayer from "./DecorationLayer";
 import type { TemplateProps } from "./types";
 
@@ -28,6 +31,9 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   scrapbook: ScrapbookTemplate,
   enchanted: EnchantedTemplate,
   fairytale: FairytaleTemplate,
+  onyx: OnyxTemplate,
+  purple: PurpleTemplate,
+  wedflix: WedflixTemplate,
 };
 
 export default function TemplateRenderer({

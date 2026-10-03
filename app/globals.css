@@ -8,6 +8,9 @@
   --font-display: "Playfair Display", ui-serif, Georgia, serif;
   --font-serif-elegant: "Cormorant Garamond", ui-serif, Georgia, serif;
   --font-script: "Great Vibes", "Brush Script MT", cursive;
+  /* Font brand Wedflix (template #16, gaya Netflix) + body Inter */
+  --font-brand: "Bebas Neue", Impact, sans-serif;
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {

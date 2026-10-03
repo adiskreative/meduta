@@ -124,6 +124,27 @@ const templates = [
       "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60",
     premium: true,
   },
+  {
+    key: "onyx",
+    name: "Onyx Elegance",
+    desc: "Gelap elegan beraksen fuchsia: ornamen cermin, bingkai quarter-arch, nama ber-shimmer & debu emas melayang.",
+    image: "/design/onyx-corner.webp",
+    premium: true,
+  },
+  {
+    key: "purple",
+    name: "Purple Blossom",
+    desc: "Plum gelap berbunga watercolor: arch kain gorden, inisial emas, monstera & lavender yang bergoyang lembut tertiup angin.",
+    image: "/design/purple-bouquet.webp",
+    premium: true,
+  },
+  {
+    key: "wedflix",
+    name: "Wedflix Original",
+    desc: "Gaya Netflix Original Series: gerbang Who's Watching, billboard hero, episode acara, Top 10 kisah cinta & amplop digital.",
+    image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {

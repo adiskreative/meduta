@@ -1,7 +1,26 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Role, AssetType } from "../generated/prisma/client";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
 import "dotenv/config";
+
+/**
+ * Thumbnail onyx dibaca dari manifest lib/thumbs-meta.json karena
+ * generate-thumbs menamai file dengan timestamp (onyx-<ts>.webp) —
+ * URL statis akan selalu basi. Fallback: foto unsplash gelap elegan.
+ */
+function onyxThumbUrl(): string {
+  try {
+    const meta = JSON.parse(
+      fs.readFileSync(path.resolve("lib/thumbs-meta.json"), "utf8"),
+    ) as { onyx?: { file?: string } };
+    if (meta.onyx?.file) return `/thumbs/${meta.onyx.file}`;
+  } catch {
+    // manifest belum ada (belum pernah generate-thumbs) — pakai fallback
+  }
+  return "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=60";
+}
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -126,6 +145,26 @@ async function main() {
         "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60",
       componentKey: "fairytale",
     },
+    {
+      name: "Onyx Elegance",
+      thumbnailUrl: onyxThumbUrl(),
+      componentKey: "onyx",
+      isPremium: true,
+    },
+    {
+      name: "Purple Blossom",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1522748906645-95d8adfd52ae?w=600&q=60",
+      componentKey: "purple",
+      isPremium: true,
+    },
+    {
+      name: "Wedflix Original",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60",
+      componentKey: "wedflix",
+      isPremium: true,
+    },
   ];
 
   for (const template of templates) {
@@ -138,7 +177,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 13 template berhasil dibuat.");
+  console.log("Seed selesai: 16 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.

@@ -19,7 +19,7 @@ type Props = {
   searchParams: Promise<{ embed?: string; shot?: string; frame?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale", "onyx", "purple", "wedflix"]);
 
 export const metadata: Metadata = {
   title: "Pratinjau Template | Meduta",
@@ -53,7 +53,7 @@ export default async function PreviewPage({ params, searchParams }: Props) {
       defaultMusicUrl: true,
       sampleData: true,
       decorations: {
-        include: { asset: { select: { url: true } } },
+        include: { asset: { select: { url: true, name: true } } },
         orderBy: { zIndex: "asc" },
       },
     },
@@ -123,6 +123,16 @@ export default async function PreviewPage({ params, searchParams }: Props) {
           [class*="max-h-[80vh]"] { max-height: ${thumbVh(80)}px !important; }
           [class*="max-h-[85vh]"] { max-height: ${thumbVh(85)}px !important; }
           [class*="max-h-[90vh]"] { max-height: ${thumbVh(90)}px !important; }
+          /* Thumbnail full-page dirender TANPA scroll — animasi
+             reveal-on-scroll (pola <prefix>-reveal / <prefix>-fade-up)
+             tidak akan terpicu IntersectionObserver sehingga section di
+             bawah lipatan tertangkap opacity 0 (kosong). Paksa semua
+             konten terlihat saat penangkapan. */
+          [class*="-reveal"], [class*="-fade-up"] {
+            opacity: 1 !important;
+            transform: none !important;
+            animation: none !important;
+          }
         `}</style>
         <div style={{ width: THUMB_PHONE_W, margin: "0" }}>{templateNode}</div>
         <ShotReporter />
