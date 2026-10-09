@@ -165,6 +165,13 @@ async function main() {
       componentKey: "wedflix",
       isPremium: true,
     },
+    {
+      name: "Medify Album",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=60",
+      componentKey: "spotify",
+      isPremium: true,
+    },
   ];
 
   for (const template of templates) {

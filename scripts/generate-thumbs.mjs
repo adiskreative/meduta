@@ -45,6 +45,7 @@ const KEYS = [
   "onyx",
   "purple",
   "wedflix",
+  "spotify",
 ];
 
 function parseArgs() {

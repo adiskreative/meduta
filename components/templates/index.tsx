@@ -14,6 +14,7 @@ import FairytaleTemplate from "./FairytaleTemplate";
 import OnyxTemplate from "./OnyxTemplate";
 import PurpleTemplate from "./PurpleTemplate";
 import WedflixTemplate from "./WedflixTemplate";
+import SpotifyTemplate from "./SpotifyTemplate";
 import DecorationLayer from "./DecorationLayer";
 import type { TemplateProps } from "./types";
 
@@ -34,6 +35,7 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   onyx: OnyxTemplate,
   purple: PurpleTemplate,
   wedflix: WedflixTemplate,
+  spotify: SpotifyTemplate,
 };
 
 export default function TemplateRenderer({

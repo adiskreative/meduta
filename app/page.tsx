@@ -145,6 +145,13 @@ const templates = [
     image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60",
     premium: true,
   },
+  {
+    key: "spotify",
+    name: "Medify Album",
+    desc: "Gaya player Spotify: gerbang Play Album, hero artwork, tracklist acara, Popular Tracks kisah cinta, discography galeri & player bar.",
+    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {
