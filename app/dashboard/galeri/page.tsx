@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isPremiumUser } from "@/lib/premium";
 import GalleryForm from "@/components/dashboard/GalleryForm";
 
 export const metadata = { title: "Galeri | Meduta" };
@@ -32,6 +33,7 @@ export default async function GaleriPage() {
 
   const data = (invitation.data ?? {}) as Record<string, unknown>;
   const gallery = Array.isArray(data.gallery) ? (data.gallery as GalleryItem[]) : [];
+  const premium = await isPremiumUser(session.user.id);
 
   return (
     <div className="space-y-6">
@@ -42,7 +44,11 @@ export default async function GaleriPage() {
         </p>
       </div>
 
-      <GalleryForm invitationId={invitation.id} defaultGallery={gallery} />
+      <GalleryForm
+        invitationId={invitation.id}
+        defaultGallery={gallery}
+        isPremium={premium}
+      />
     </div>
   );
 }

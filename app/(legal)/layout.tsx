@@ -16,7 +16,7 @@ export default function LegalLayout({
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#10173f]/85 backdrop-blur">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <Logo className="h-10 w-auto" />
           </Link>
@@ -33,7 +33,7 @@ export default function LegalLayout({
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-white/10 bg-[#10173f] py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6">
           <Logo className="h-8 w-auto" />
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-zinc-400">
             <Link href="/syarat-ketentuan" className="transition hover:text-white">

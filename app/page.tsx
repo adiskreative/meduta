@@ -235,8 +235,8 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "Segera",
-    period: "harga menyusul",
+    price: "Rp50.000",
+    period: "1 tahun",
     desc: "Fitur lengkap untuk momen spesial Anda.",
     features: [
       "Unlimited undangan - Bebas Ganti-Ganti Template Sesuai Selera",
@@ -253,8 +253,8 @@ const plans = [
       
     ],
     highlighted: true,
-    cta: "Hubungi Kami",
-    href: "#",
+    cta: "Mulai Premium",
+    href: "/register",
   },
 ];
 
@@ -279,7 +279,7 @@ export default function Home() {
 function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#10173f]/85 backdrop-blur">
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <Logo className="h-10 w-auto" />
         </Link>
@@ -322,7 +322,7 @@ function Hero() {
       {/* Lapisan penggelap halus agar teks terbaca */}
       <div aria-hidden className="absolute inset-0 bg-[#0d1340]/35" />
 
-      <div className="relative mx-auto max-w-6xl px-6 py-16 sm:py-20 lg:py-24">
+      <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
         <div className="grid items-center gap-8 sm:gap-12 lg:grid-cols-2">
           {/* Kiri: teks */}
           <div className="text-center lg:text-left">
@@ -330,7 +330,7 @@ function Hero() {
               <RingIcon className="h-4 w-4" />
               Undangan Digital untuk Momen Spesial Anda
             </p>
-            <h1 className="mt-6 text-4xl font-extrabold uppercase leading-tight tracking-tight text-white sm:text-5xl">
+            <h1 className="mt-6 text-3xl font-extrabold uppercase leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
               Undangan Pernikahan{" "}
               <span className="text-pink-500">Digital Yang</span> Elegan
             </h1>
@@ -341,7 +341,7 @@ function Hero() {
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 rounded-full bg-pink-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-600/40 transition hover:bg-pink-500"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-pink-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-600/40 transition hover:bg-pink-500 sm:w-auto"
               >
                 Buat Undangan Gratis
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25">
@@ -350,7 +350,7 @@ function Hero() {
               </Link>
               <a
                 href="#cara-kerja"
-                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-7 py-3 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/20"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/10 px-7 py-3 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/20 sm:w-auto"
               >
                 Lihat Cara Kerja
               </a>
@@ -377,8 +377,8 @@ function Hero() {
 
 function Features() {
   return (
-    <section id="fitur" className="bg-white py-24">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="fitur" className="bg-white py-14 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Fitur"
           title="Semua yang Anda Butuhkan Ada di Sini"
@@ -405,8 +405,8 @@ function Features() {
 
 function Templates() {
   return (
-    <section id="template" className="bg-zinc-50 py-24">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="template" className="bg-zinc-50 py-14 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Template"
           title="Pilih Desain Undangan"
@@ -424,8 +424,8 @@ function Templates() {
 
 function Steps() {
   return (
-    <section id="cara-kerja" className="bg-zinc-50 py-24">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="cara-kerja" className="bg-zinc-50 py-14 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Cara Kerja"
           title="Mulai Hanya dalam 4 Langkah"
@@ -479,8 +479,8 @@ const panduanTips = [
 
 function Panduan() {
   return (
-    <section id="panduan" className="bg-white py-24">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="panduan" className="bg-white py-14 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Panduan"
           title="Persiapan Sebelum Membuat Undangan"
@@ -521,8 +521,8 @@ const KONTAK = {
 
 function Tentang() {
   return (
-    <section id="tentang" className="bg-white py-24">
-      <div className="mx-auto max-w-4xl px-6">
+    <section id="tentang" className="bg-white py-14 sm:py-20">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Tentang"
           title="Tentang Meduta"
@@ -590,8 +590,8 @@ function Tentang() {
 
 function Kontak() {
   return (
-    <section id="kontak" className="bg-zinc-50 py-24">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="kontak" className="bg-zinc-50 py-14 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Kontak"
           title="Hubungi Kami"
@@ -655,8 +655,8 @@ function Kontak() {
 
 function Pricing() {
   return (
-    <section id="harga" className="bg-white py-24">
-      <div className="mx-auto max-w-5xl px-6">
+    <section id="harga" className="bg-white py-14 sm:py-20">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Harga"
           title="Pilih Paket yang Sesuai"
@@ -706,9 +706,9 @@ function Pricing() {
 
 function CTA() {
   return (
-    <section className="bg-zinc-900 py-20">
-      <div className="mx-auto max-w-3xl px-6 text-center">
-        <h2 className="text-3xl font-bold text-white sm:text-4xl">
+    <section className="bg-zinc-900 py-14 sm:py-20">
+      <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+        <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
           Siap Membuat Undangan Anda?
         </h2>
         <p className="mt-4 text-lg text-zinc-400">
@@ -716,7 +716,7 @@ function CTA() {
         </p>
         <Link
           href="/register"
-          className="mt-8 inline-flex items-center gap-2 rounded-full bg-pink-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-pink-700"
+          className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-pink-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-pink-700 sm:w-auto"
         >
           Daftar Sekarang
           <ArrowRight className="h-5 w-5" />
@@ -804,7 +804,7 @@ function SectionHeading({
   return (
     <div className="mx-auto max-w-2xl text-center">
       <p className="text-sm font-semibold uppercase tracking-widest text-pink-600">{eyebrow}</p>
-      <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">{title}</h2>
       <p className="mt-4 text-zinc-600">{desc}</p>
     </div>
   );

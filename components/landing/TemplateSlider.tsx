@@ -33,11 +33,16 @@ export default function TemplateSlider({ templates }: { templates: TemplateCardD
 
   return (
     <div className="relative">
-      {/* Skala kartu agar 2 kolom muat di ponsel & 3 kolom di desktop —
-          aturan eksplisit (bukan utility) agar selalu ter-generate */}
+      {/* Skala kartu agar bingkai ponsel (lebar dasar 304px) selalu muat
+          2 kolom di layar kecil & 3 kolom di desktop — aturan eksplisit
+          (bukan utility) agar selalu ter-generate.
+          Hitungan: 375px − padding 8px = 367px tersedia → 2 kartu @zoom .58
+          = 2×176 + gap 8 = 360px ✓. Sebelumnya zoom .72 (219px/kartu)
+          melebihi kolom grid (~183px) sehingga kartu berdempet/menabrak. */}
       <style>{`
-        .meduta-slider-card { zoom: 0.72; }
-        @media (min-width: 640px) { .meduta-slider-card { zoom: 0.85; } }
+        @media (max-width: 479px) { .meduta-slider-card { zoom: 0.5; } }
+        @media (min-width: 480px) and (max-width: 639px) { .meduta-slider-card { zoom: 0.72; } }
+        @media (min-width: 640px) and (max-width: 1023px) { .meduta-slider-card { zoom: 0.85; } }
         @media (min-width: 1024px) { .meduta-slider-card { zoom: 1; } }
       `}</style>
       {/* Jendela slider + track bergeser */}
@@ -48,7 +53,7 @@ export default function TemplateSlider({ templates }: { templates: TemplateCardD
         >
           {pages.map((group, gi) => (
             <div key={gi} className="w-full shrink-0" aria-hidden={gi !== page}>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-8 px-1 lg:grid-cols-3 lg:gap-x-8">
+              <div className="grid grid-cols-2 gap-x-2 gap-y-8 px-1 lg:grid-cols-3 lg:gap-x-8">
                 {group.map((t) => (
                   // zoom ringan di layar kecil agar bingkai ponsel 240px
                   // tetap muat 2 kolom; ukuran penuh kembali di desktop

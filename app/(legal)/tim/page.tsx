@@ -50,7 +50,7 @@ const VALUES = [
 
 export default function TimPage() {
   return (
-    <article className="mx-auto max-w-4xl px-6 py-16">
+    <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pink-600">
         Tentang Kami
       </p>

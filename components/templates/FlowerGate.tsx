@@ -161,7 +161,7 @@ export default function FlowerGate({
           {eventName}
         </p>
         <h1
-          className="mb-3 text-5xl font-bold leading-tight"
+          className="mb-3 text-4xl font-bold leading-tight sm:text-5xl"
           style={{
             fontFamily: "var(--font-script)",
             background:

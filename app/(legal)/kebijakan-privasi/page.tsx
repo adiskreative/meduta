@@ -76,7 +76,7 @@ const SECTIONS = [
 
 export default function KebijakanPrivasiPage() {
   return (
-    <article className="mx-auto max-w-3xl px-6 py-16">
+    <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pink-600">
         Legal
       </p>

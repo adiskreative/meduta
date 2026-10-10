@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isPremiumUser, FREE_GALLERY_LIMIT } from "@/lib/premium";
 
 async function getOwnedInvitation(invitationId: string, userId: string) {
   return prisma.invitation.findFirst({
@@ -86,7 +87,10 @@ export async function saveGallery(
   const urls = readArray(formData, "gallery.url[]");
   const captions = readArray(formData, "gallery.caption[]");
 
-  const gallery = urls.map((_, i) =>
+  const invitation = await getOwnedInvitation(invitationId, session.user.id);
+  if (!invitation) return { message: "Undangan tidak ditemukan.", success: false };
+
+  let gallery = urls.map((_, i) =>
     galleryItemSchema.parse({
       id: crypto.randomUUID(),
       url: urls[i],
@@ -94,8 +98,19 @@ export async function saveGallery(
     }),
   );
 
-  const invitation = await getOwnedInvitation(invitationId, session.user.id);
-  if (!invitation) return { message: "Undangan tidak ditemukan.", success: false };
+  // Akun gratis dibatasi Nx foto galeri — dipaksakan juga di server agar
+  // pembatasan UI tidak bisa dilewati lewat submit manual.
+  if (!(await isPremiumUser(session.user.id)) && gallery.length > FREE_GALLERY_LIMIT) {
+    const overflow = gallery.length - FREE_GALLERY_LIMIT;
+    gallery = gallery.slice(0, FREE_GALLERY_LIMIT);
+    return {
+      success: false,
+      message:
+        `Paket Gratis dibatasi ${FREE_GALLERY_LIMIT} foto galeri. ` +
+        `${overflow} foto melebihi batas tidak disimpan. ` +
+        `Upgrade Premium untuk upload tanpa batas.`,
+    };
+  }
 
   const currentData = (invitation.data ?? {}) as Record<string, unknown>;
   await prisma.invitation.update({

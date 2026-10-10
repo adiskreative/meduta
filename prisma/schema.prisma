@@ -145,6 +145,7 @@ model Invitation {
   slugChangeCount Int      @default(0) // max 3x ganti
   status          String   @default("draft") // draft | published
   data            Json // semua field dinamis: mempelai, cerita cinta, acara, dll
+  expiresAt       DateTime? // masa aktif undangan (gratis = 1 bulan); null = aktif selamanya
   guests          Guest[]
   wishes          Wish[]
   createdAt       DateTime @default(now())

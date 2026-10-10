@@ -71,6 +71,9 @@ export default function OnyxGate({
 }) {
   const [open, setOpen] = useState(embedded);
   const [closing, setClosing] = useState(false);
+  // Judul kaligrafi dari aset admin (nama "the"); undefined = fallback teks
+  // Catatan: hook harus di atas early-return `if (open)` agar urutan hook stabil
+  const [titleError, setTitleError] = useState(false);
 
   // Kunci scroll halaman selama gerbang tertutup
   useEffect(() => {
@@ -96,7 +99,6 @@ export default function OnyxGate({
   const initials = `${(groomNick ?? "P").charAt(0).toUpperCase()} & ${(brideNick ?? "W").charAt(0).toUpperCase()}`;
   // Judul kaligrafi dari aset admin (nama "the"); undefined = fallback teks
   const titleUrl = getGateTitleUrl(decorations);
-  const [titleError, setTitleError] = useState(false);
 
   return (
     <div

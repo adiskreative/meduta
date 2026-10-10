@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Check, Eye } from "lucide-react";
+import { Check, Eye, Lock } from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { useTemplate } from "@/lib/actions/template";
+import { isPremiumUser } from "@/lib/premium";
 import LiveTemplatePreview from "@/components/landing/LiveTemplatePreview";
 
 export const metadata = { title: "Pilih Tema | Meduta" };
@@ -11,6 +13,8 @@ export const metadata = { title: "Pilih Tema | Meduta" };
 export default async function PilihTemaPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const premiumAccess = await isPremiumUser(session.user.id);
 
   const [templates, invitation] = await Promise.all([
     prisma.template.findMany({ orderBy: [{ isPremium: "asc" }, { name: "asc" }] }),
@@ -75,15 +79,26 @@ export default async function PilihTemaPage() {
                     <Eye className="h-4 w-4" />
                     Preview
                   </a>
-                  <form action={useTemplate.bind(null, template.id)}>
-                    <button
-                      type="submit"
-                      disabled={isActive}
-                      className="w-full rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400"
+                  {/* Template premium terkunci untuk akun gratis */}
+                  {template.isPremium && !premiumAccess ? (
+                    <Link
+                      href="/dashboard/upgrade"
+                      className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100"
                     >
-                      {isActive ? "Template Aktif" : "Pakai Template Ini"}
-                    </button>
-                  </form>
+                      <Lock className="h-4 w-4" />
+                      Upgrade Premium
+                    </Link>
+                  ) : (
+                    <form action={useTemplate.bind(null, template.id)}>
+                      <button
+                        type="submit"
+                        disabled={isActive}
+                        className="w-full rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400"
+                      >
+                        {isActive ? "Template Aktif" : "Pakai Template Ini"}
+                      </button>
+                    </form>
+                  )}
                 </div>
               </div>
             </div>
