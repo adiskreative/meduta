@@ -19,6 +19,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Paket yang memakai build condition "workerd" di exports-nya (dibutuhkan
+  // adapter Prisma/PG di Cloudflare Workers) harus disalin utuh oleh OpenNext.
+  serverExternalPackages: ["pg", "pg-cloudflare"],
   experimental: {
     serverActions: {
       bodySizeLimit: "12mb",

@@ -62,3 +62,8 @@ next-env.d.ts
 # Freebuff agent artifacts
 .freebuff/*.log
 .freebuff/*.log.err
+
+# wrangler local secrets (jangan commit!)
+.dev.vars*
+.wrangler/
+.open-next/

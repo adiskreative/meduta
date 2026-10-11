@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "build:worker": "prisma generate && opennextjs-cloudflare build",
+    "preview:cf": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy:cf": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
@@ -25,7 +28,7 @@
     "bcryptjs": "^3.0.3",
     "lucide-react": "^1.39.0",
     "midtrans-client": "^1.4.3",
-    "next": "16.3.4",
+    "next": "^16.3.8",
     "next-auth": "^5.0.0-beta.32",
     "prisma": "^7.10.0",
     "react": "19.2.8",
@@ -36,6 +39,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.10",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
@@ -50,6 +54,7 @@
     "tsx": "^4.23.13",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^3.2.7"
+    "vitest": "^3.2.7",
+    "wrangler": "^4.149.0"
   }
 }
