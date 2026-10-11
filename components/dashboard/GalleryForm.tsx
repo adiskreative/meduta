@@ -1,0 +1,180 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import Link from "next/link";
+import { Save, Eye, Plus, Trash2, Image as ImageIcon, Lock } from "lucide-react";
+import { saveGallery, GalleryState } from "@/lib/actions/content";
+import GalleryUploader from "@/components/dashboard/GalleryUploader";
+
+export const FREE_GALLERY_LIMIT = 5;
+
+type GalleryItem = { id: string; url?: string; caption?: string };
+
+export default function GalleryForm({
+  invitationId,
+  defaultGallery,
+  isPremium = true,
+}: {
+  invitationId: string;
+  defaultGallery: GalleryItem[];
+  /** Akun premium bisa upload tanpa batas; gratis dibatasi 5 foto. */
+  isPremium?: boolean;
+}) {
+  const limit = isPremium ? Infinity : FREE_GALLERY_LIMIT;
+  const boundAction = saveGallery.bind(null, invitationId);
+  const [state, formAction, isPending] = useActionState<GalleryState | undefined, FormData>(
+    boundAction,
+    undefined,
+  );
+  // Awali dari data tersimpan dipotong sesuai batas paket
+  const [items, setItems] = useState<GalleryItem[]>(() =>
+    isPremium ? defaultGallery : defaultGallery.slice(0, FREE_GALLERY_LIMIT),
+  );
+
+  function add() {
+    // Guard berbasis state sebelumnya: mencegah klik beruntun melewati
+    // limit sebelum render berikutnya sempat men-disable tombol.
+    setItems((prev) => {
+      if (!isPremium && prev.length >= FREE_GALLERY_LIMIT) return prev;
+      return [...prev, { id: crypto.randomUUID() }];
+    });
+  }
+  function remove(id: string) {
+    setItems((prev) => prev.filter((e) => e.id !== id));
+  }
+
+  const atLimit = !isPremium && items.length >= FREE_GALLERY_LIMIT;
+  const remaining = isPremium ? null : FREE_GALLERY_LIMIT - items.length;
+
+  const inputClass = (hasError?: boolean) =>
+    `w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100 ${
+      hasError ? "border-red-400" : "border-zinc-300"
+    }`;
+
+  return (
+    <form action={formAction} className="space-y-6">
+      {state?.message && (
+        <div
+          className={`rounded-lg px-4 py-3 text-sm ${
+            state.success ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+          }`}
+        >
+          {state.message}
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-zinc-900">Galeri Foto</h2>
+            <p className="text-sm text-zinc-500">
+              {isPremium
+                ? "Tambahkan tautan foto untuk galeri undangan."
+                : `Paket Gratis: maksimal ${FREE_GALLERY_LIMIT} foto. ${remaining} slot tersisa.`}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={add}
+            disabled={atLimit}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+          >
+            <Plus className="h-4 w-4" />
+            Tambah Foto
+          </button>
+        </div>
+
+        {atLimit && (
+          <div className="mb-4 flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-center gap-2 text-sm text-amber-800">
+              <Lock className="h-4 w-4 shrink-0" />
+              Batas {FREE_GALLERY_LIMIT} foto paket Gratis tercapai.
+            </p>
+            <Link
+              href="/dashboard/upgrade"
+              className="shrink-0 text-sm font-semibold text-amber-800 underline decoration-amber-400 hover:text-amber-900"
+            >
+              Upgrade Premium — upload tanpa batas
+            </Link>
+          </div>
+        )}
+
+        {items.length === 0 && (
+          <p className="rounded-lg bg-zinc-50 px-4 py-3 text-sm text-zinc-500">
+            Belum ada foto galeri. Klik {`"Tambah Foto"`} untuk menambahkan.
+          </p>
+        )}
+
+        <div className="space-y-6">
+          {items.map((item) => (
+            <div key={item.id} className="rounded-xl border border-zinc-200 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-sm font-medium text-zinc-700">
+                  <ImageIcon className="h-4 w-4 text-zinc-400" />
+                  Foto galeri
+                </span>
+                <button
+                  type="button"
+                  onClick={() => remove(item.id)}
+                  className="rounded-md p-1.5 text-zinc-400 transition hover:bg-red-50 hover:text-red-600"
+                  aria-label="Hapus foto"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              <input name="gallery.id[]" type="hidden" value={item.id} />
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  {item.url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.url}
+                      alt=""
+                      className="mt-1 h-16 w-16 shrink-0 rounded-lg object-cover"
+                    />
+                  )}
+                  <input
+                    id={`gallery-url-${item.id}`}
+                    name="gallery.url[]"
+                    type="text"
+                    placeholder="URL gambar (cth: https://images.com/foto.jpg) atau unggah dari file di bawah"
+                    defaultValue={item.url ?? ""}
+                    className={inputClass()}
+                  />
+                </div>
+                <GalleryUploader targetId={`gallery-url-${item.id}`} />
+                <input
+                  name="gallery.caption[]"
+                  type="text"
+                  placeholder="Keterangan (opsional)"
+                  defaultValue={item.caption ?? ""}
+                  className={inputClass()}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Save className="h-4 w-4" />
+          {isPending ? "Menyimpan..." : "Simpan Galeri"}
+        </button>
+        <a
+          href="#"
+          onClick={(e) => e.preventDefault()}
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+        >
+          <Eye className="h-4 w-4" />
+          Preview
+        </a>
+      </div>
+    </form>
+  );
+}

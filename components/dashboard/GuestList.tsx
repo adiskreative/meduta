@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Users, Check, X, Clock } from "lucide-react";
-import { deleteGuest } from "@/lib/actions/rsvp";
+import { Trash2, Users, Check, X, Clock, Mail, MailOpen, RefreshCw, Phone } from "lucide-react";
+import { deleteGuest, updateGuestStatus } from "@/lib/actions/rsvp";
+import { resendGuestInvitation } from "@/lib/actions/guest";
 
 type GuestRow = {
   id: string;
@@ -13,6 +14,10 @@ type GuestRow = {
   guestCount: number;
   message: string;
   submittedAt: string | null;
+  email: string | null;
+  phone: string | null;
+  emailSent: boolean;
+  lastSendError: string | null;
 };
 
 export default function GuestList({
@@ -20,11 +25,13 @@ export default function GuestList({
   activeFilter,
   totalCount,
   filterLabel,
+  appUrl,
 }: {
   guests: GuestRow[];
   activeFilter: "PENDING" | "CONFIRMED" | "DECLINED" | null;
   totalCount: number;
   filterLabel: string | null;
+  appUrl: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -61,6 +68,15 @@ export default function GuestList({
     if (!confirm("Hapus tamu ini?")) return;
     startTransition(async () => {
       await deleteGuest(id);
+      router.refresh();
+    });
+  }
+
+  async function handleResend(guest: GuestRow) {
+    startTransition(async () => {
+      const form = new FormData();
+      form.set("appUrl", appUrl);
+      await resendGuestInvitation(guest.id, form);
       router.refresh();
     });
   }
@@ -133,9 +149,66 @@ export default function GuestList({
                   {guest.message && (
                     <p className="mt-1 truncate text-sm text-zinc-500">{guest.message}</p>
                   )}
+                  {(guest.phone || guest.email) && (
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      {guest.phone && (
+                        <span className="inline-flex items-center gap-1 text-xs text-zinc-400">
+                          <Phone className="h-3 w-3" />
+                          {guest.phone}
+                        </span>
+                      )}
+                      {guest.email && (
+                        <span className="inline-flex items-center gap-1 text-xs text-zinc-400">
+                          <Mail className="h-3 w-3" />
+                          {guest.email}
+                        </span>
+                      )}
+                      {guest.email ? (
+                        guest.emailSent ? (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                            title={
+                              guest.lastSendError
+                                ? `Gagal terakhir: ${guest.lastSendError}`
+                                : "Email undangan telah dikirim"
+                            }
+                          >
+                            <MailOpen className="h-3 w-3" />
+                            Email terkirim
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                            <Mail className="h-3 w-3" />
+                            Email belum dikirim
+                          </span>
+                        )
+                      ) : null}
+                      {guest.lastSendError && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600"
+                          title={guest.lastSendError}
+                        >
+                          <X className="h-3 w-3" />
+                          Gagal kirim
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
+                  {guest.email && (
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => handleResend(guest)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
+                      title="Kirim ulang email undangan"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Kirim Ulang
+                    </button>
+                  )}
                   <select
                     defaultValue={guest.status}
                     className="rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-700 outline-none focus:border-rose-400"
@@ -143,7 +216,6 @@ export default function GuestList({
                       const next = e.target.value as GuestRow["status"];
                       const form = new FormData();
                       form.set("status", next);
-                      const { updateGuestStatus } = await import("@/lib/actions/rsvp");
                       await updateGuestStatus(guest.id, form);
                       router.refresh();
                     }}

@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Palette, Images, ArrowLeft, X } from "lucide-react";
+import { LayoutDashboard, Palette, Images, Mountain, ArrowLeft, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
+import { LogoMark } from "@/components/Logo";
 
 type NavItem = { label: string; href: string; icon: React.ElementType };
 
 const navItems: NavItem[] = [
   { label: "Ringkasan", href: "/admin", icon: LayoutDashboard },
   { label: "Template", href: "/admin/templates", icon: Palette },
+  { label: "Background", href: "/admin/backgrounds", icon: Mountain },
   { label: "Aset Desain", href: "/admin/assets", icon: Images },
 ];
 
@@ -38,11 +40,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-rose-400">
-              Admin Panel
-            </p>
-            <p className="text-sm font-bold text-zinc-900">Meduta</p>
+          <div className="flex items-center gap-2.5">
+            <LogoMark className="h-8 w-auto" />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-rose-400">
+                Admin Panel
+              </p>
+              <p className="text-sm font-bold text-zinc-900">Meduta</p>
+            </div>
           </div>
           <button
             onClick={() => setOpen(false)}

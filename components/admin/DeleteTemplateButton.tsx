@@ -40,7 +40,7 @@ export default function DeleteTemplateButton({
       <button
         onClick={handleDelete}
         disabled={isPending}
-        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
+        className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
       >
         <Trash2 className="h-4 w-4" />
         {isPending ? "Menghapus..." : "Yakin hapus?"}
@@ -58,13 +58,13 @@ export default function DeleteTemplateButton({
             ? "Template masih dipakai undangan, tidak bisa dihapus"
             : "Hapus template"
         }
-        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-zinc-300 disabled:hover:bg-transparent disabled:hover:text-zinc-700"
+        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-zinc-300 disabled:hover:bg-transparent disabled:hover:text-zinc-700"
       >
         <Trash2 className="h-4 w-4" />
         Hapus
       </button>
       {error && (
-        <p className="mt-2 basis-full text-xs text-red-600">{error}</p>
+        <p className="col-span-2 mt-2 text-xs text-red-600">{error}</p>
       )}
     </>
   );

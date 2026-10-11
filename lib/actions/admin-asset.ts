@@ -33,6 +33,22 @@ function isValidAssetType(value: string): value is AssetType {
   return (ASSET_TYPES as string[]).includes(value);
 }
 
+/**
+ * Nama aset dibuat otomatis — admin tidak perlu menulis judul.
+ * Diambil dari nama file (tanpa ekstensi), tanda hubung/garis bawah
+ * jadi spasi, dibatasi 120 karakter. Fallback: "<Tipe> <tanggal>".
+ */
+function deriveAssetName(raw: string | null | undefined, type: AssetType): string {
+  const cleaned = (raw ?? "")
+    .replace(/\.[^.]+$/, "") // buang ekstensi
+    .replace(/[-_]+/g, " ") // hubung/garis bawah jadi spasi
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+  if (cleaned.length >= 2) return cleaned;
+  return `${type.charAt(0)}${type.slice(1).toLowerCase()} ${new Date().toISOString().slice(0, 10)}`;
+}
+
 export type AdminAssetState = {
   errors?: {
     name?: string[];
@@ -53,14 +69,12 @@ export async function createAssetFromUrl(
   const adminId = await requireAdmin();
 
   const schema = z.object({
-    name: z.string().min(2, "Nama aset minimal 2 karakter").max(120).trim(),
     type: z.enum(["IMAGE", "FRAME", "DECOR", "BACKGROUND", "MUSIC", "GALLERY"]),
     url: z.string().min(1, "URL wajib diisi").url("URL tidak valid").max(500).trim(),
     thumbnail: z.string().url("Thumbnail harus URL").trim().optional().or(z.literal("")),
   });
 
   const result = schema.safeParse({
-    name: formData.get("name"),
     type: formData.get("type"),
     url: formData.get("url"),
     thumbnail: formData.get("thumbnail") ?? "",
@@ -70,10 +84,18 @@ export async function createAssetFromUrl(
     return { errors: result.error.flatten().fieldErrors };
   }
 
+  // Nama otomatis dari segmen terakhir URL (tanpa ekstensi)
+  let fileName: string | null = null;
+  try {
+    fileName = new URL(result.data.url).pathname.split("/").filter(Boolean).pop() ?? null;
+  } catch {
+    fileName = null;
+  }
+
   await prisma.templateAsset.create({
     data: {
       adminId,
-      name: result.data.name,
+      name: deriveAssetName(fileName, result.data.type),
       type: result.data.type,
       url: result.data.url,
       thumbnail: result.data.thumbnail || null,
@@ -92,13 +114,9 @@ export async function createAssetFromUpload(
 ): Promise<AdminAssetState> {
   const adminId = await requireAdmin();
 
-  const name = String(formData.get("name") ?? "").trim();
   const type = String(formData.get("type") ?? "");
   if (!isValidAssetType(type)) {
     return { errors: { type: ["Tipe aset tidak valid."] } };
-  }
-  if (name.length < 2) {
-    return { errors: { name: ["Nama aset minimal 2 karakter."] } };
   }
 
   const file = formData.get("file");
@@ -122,6 +140,9 @@ export async function createAssetFromUpload(
   if (file.size > MAX_SIZE) {
     return { errors: { file: ["Ukuran file maksimal 10MB."] } };
   }
+
+  // Nama otomatis dari nama file yang diunggah
+  const name = deriveAssetName(file.name, type as AssetType);
 
   const ext = file.type.split("/")[1] === "jpeg" ? "jpg" : file.type.split("/")[1];
   const path = `${type.toLowerCase()}/${randomUUID()}.${ext}`;

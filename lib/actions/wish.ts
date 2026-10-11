@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
 
 const wishSchema = z.object({
   guestName: z.string().min(2, "Nama minimal 2 karakter").max(120).trim(),
@@ -46,6 +47,14 @@ export async function submitWish(
       guestName: parse.data.guestName,
       message: parse.data.message,
     },
+  });
+
+  await createNotification({
+    userId: invitation.userId,
+    type: "WISH",
+    title: `${parse.data.guestName} mengirim ucapan`,
+    body: parse.data.message.slice(0, 120),
+    link: "/dashboard/ucapan",
   });
 
   revalidatePath(`/u/${invitation.slug}`);

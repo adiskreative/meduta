@@ -24,6 +24,13 @@ enum AssetType {
   GALLERY
 }
 
+enum NotificationType {
+  RSVP
+  WISH
+  TRANSACTION
+  SYSTEM
+}
+
 model User {
   id               String          @id @default(cuid())
   email            String          @unique
@@ -40,6 +47,7 @@ model User {
   transactions     Transaction[]
   assets           TemplateAsset[]
   createdTemplates Template[]
+  notifications    Notification[]
 }
 
 model Account {
@@ -80,15 +88,17 @@ model VerificationToken {
 }
 
 model Template {
-  id           String               @id @default(cuid())
-  name         String
-  thumbnailUrl String
-  componentKey String               @unique // penanda component React yang di-render
-  isPremium    Boolean              @default(false)
-  createdBy    String?
-  creator      User?                @relation(fields: [createdBy], references: [id])
-  invitations  Invitation[]
-  decorations  TemplateDecoration[]
+  id              String               @id @default(cuid())
+  name            String
+  thumbnailUrl    String
+  componentKey    String               @unique // penanda component React yang di-render
+  isPremium       Boolean              @default(false)
+  defaultMusicUrl String? // musik latar bawaan template (diwarisi undangan)
+  sampleData      Json? // data contoh preview/thumbnail (override default); null = bawaan
+  createdBy       String?
+  creator         User?                @relation(fields: [createdBy], references: [id])
+  invitations     Invitation[]
+  decorations     TemplateDecoration[]
 }
 
 model TemplateAsset {
@@ -135,6 +145,7 @@ model Invitation {
   slugChangeCount Int      @default(0) // max 3x ganti
   status          String   @default("draft") // draft | published
   data            Json // semua field dinamis: mempelai, cerita cinta, acara, dll
+  expiresAt       DateTime? // masa aktif undangan (gratis = 1 bulan); null = aktif selamanya
   guests          Guest[]
   wishes          Wish[]
   createdAt       DateTime @default(now())
@@ -149,11 +160,16 @@ model Guest {
   invitationId String
   invitation   Invitation @relation(fields: [invitationId], references: [id])
   name         String
+  email        String?
+  phone        String? // nomor WhatsApp tamu
   uniqueLink   String     @unique
   rsvpStatus   String? // hadir | tidak_hadir | belum_konfirmasi
   guestCount   Int?
   message      String?
   submittedAt  DateTime?
+  emailSent    Boolean    @default(false) // apakah email undangan sudah dikirim
+  emailSentAt  DateTime? // kapan email undangan terakhir dikirim
+  lastSendError String? // error dari pengiriman email terakhir (jika ada)
   createdAt    DateTime   @default(now())
 
   @@index([invitationId])
@@ -182,4 +198,19 @@ model Transaction {
   createdAt   DateTime @default(now())
 
   @@index([userId])
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+  type       NotificationType @default(SYSTEM)
+  title      String
+  body       String?
+  link       String?
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
 }

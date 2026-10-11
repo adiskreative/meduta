@@ -1,9 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, IdCard } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import TemplateForm from "@/components/admin/TemplateForm";
+import TemplateMusicManager from "@/components/admin/TemplateMusicManager";
 
 export const metadata = { title: "Edit Template | Meduta" };
 
@@ -52,6 +53,26 @@ export default async function AdminTemplateDetailPage({
           isPremium: template.isPremium,
         }}
       />
+
+      <TemplateMusicManager
+        templateId={template.id}
+        defaultMusicUrl={template.defaultMusicUrl}
+      />
+
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+        <h2 className="text-lg font-semibold text-zinc-900">Data Contoh Preview</h2>
+        <p className="mt-1 text-sm text-zinc-500">
+          Ubah nama pasangan, tamu, dan detail lain yang tampil di pratinjau
+          &amp; thumbnail live template ini.
+        </p>
+        <Link
+          href={`/admin/templates/${template.id}/sample-data`}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-4 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+        >
+          <IdCard className="h-4 w-4" />
+          Kelola Data Contoh
+        </Link>
+      </div>
     </div>
   );
 }

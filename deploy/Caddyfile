@@ -1,0 +1,29 @@
+# Caddyfile Meduta — reverse proxy + HTTPS otomatis (Let's Encrypt)
+# Ganti meduta.com dengan domain Anda (2 baris), lalu:
+#   cp deploy/Caddyfile /etc/caddy/Caddyfile && systemctl reload caddy
+
+meduta.com {
+	# Next.js berjalan di localhost:3000 (service systemd `meduta`)
+	reverse_proxy localhost:3000
+
+	# Ukuran upload maksimal yang lolos proxy (upload foto 3MB + kompres,
+	# musik 10MB — beri kelonggaran)
+	request_body {
+		max_size 16MB
+	}
+
+	# Kompresi teks (HTML/CSS/JS/JSON)
+	encode gzip
+
+	header {
+		# HSTS sudah dikirim Next.js; jangan duplikat agar tidak dobel header
+		-Strict-Transport-Security
+		# Sembunyikan info server
+		-Server
+	}
+}
+
+# Redirect www -> apex (hapus blok ini kalau Anda lebih suka www)
+www.meduta.com {
+	redir https://meduta.com{uri} permanent
+}

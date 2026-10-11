@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   FileText,
   ClipboardCheck,
@@ -10,11 +11,28 @@ import {
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  isPremiumUser,
+  PREMIUM_PRICE,
+  PREMIUM_ORIGINAL_PRICE,
+  FREE_ACTIVE_DAYS,
+} from "@/lib/premium";
+import { Clock } from "lucide-react";
 import { getEventName } from "@/lib/invitation-data";
+import CopyLinkButton from "@/components/dashboard/CopyLinkButton";
+import DeleteInvitationButton from "@/components/dashboard/DeleteInvitationButton";
 
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const headerList = await headers();
+  const protocol = headerList.get("x-forwarded-proto") ?? "http";
+  const host =
+    headerList.get("x-forwarded-host") ??
+    headerList.get("host") ??
+    "localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`;
 
   const invitation = await prisma.invitation.findFirst({
     where: { userId: session.user.id },
@@ -23,6 +41,18 @@ export default async function DashboardPage() {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  const premiumAccess = await isPremiumUser(session.user.id);
+
+  // Sisa masa aktif (hari, dibulatkan ke atas); null = premium/tanpa batas
+  const expiresAt = invitation?.expiresAt ? new Date(invitation.expiresAt) : null;
+  const daysLeft =
+    expiresAt && !premiumAccess
+      ? Math.max(
+          0,
+          Math.ceil((expiresAt.getTime() - Date.now()) / 86400000),
+        )
+      : null;
 
   const [rsvpCount, wishCount] = await Promise.all([
     invitation
@@ -51,7 +81,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/dashboard/pilih-tema"
-          className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           Buat Undangan Baru
@@ -80,10 +110,63 @@ export default async function DashboardPage() {
         <StatusCard
           icon={CalendarClock}
           label="Status Paket"
-          value="Gratis"
-          sub="Lihat paket berbayar"
+          value={premiumAccess ? "Premium" : "Gratis"}
+          sub={premiumAccess ? "Semua fitur aktif" : "Upgrade untuk fitur penuh"}
         />
       </div>
+
+      {/* Banner masa aktif untuk akun gratis */}
+      {!premiumAccess && invitation && (
+        <div
+          className={`flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:gap-3 ${
+            daysLeft !== null && daysLeft <= 5
+              ? "border-red-200 bg-red-50"
+              : "border-zinc-200 bg-white"
+          }`}
+        >
+          <Clock
+            className={`h-5 w-5 shrink-0 ${
+              daysLeft !== null && daysLeft <= 5 ? "text-red-500" : "text-zinc-400"
+            }`}
+          />
+          <p className="text-sm text-zinc-700">
+            {daysLeft !== null && daysLeft <= 5
+              ? `Segera berakhir: undangan Anda aktif ${daysLeft} hari lagi (paket Gratis = ${FREE_ACTIVE_DAYS} hari).`
+              : `Masa aktif undangan Anda ${daysLeft ?? FREE_ACTIVE_DAYS} hari lagi (paket Gratis = ${FREE_ACTIVE_DAYS} hari).`}{" "}
+            <Link
+              href="/dashboard/upgrade"
+              className="font-semibold text-rose-600 hover:underline"
+            >
+              Upgrade Premium — aktif 1 tahun
+            </Link>
+          </p>
+        </div>
+      )}
+
+      {!premiumAccess && (
+        <div className="flex flex-col gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-white p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold text-zinc-900">
+              Buka semua template premium 👑
+            </p>
+            <p className="mt-1 text-sm text-zinc-600">
+              <span className="text-zinc-400 line-through">
+                Rp{PREMIUM_ORIGINAL_PRICE.toLocaleString("id-ID")}
+              </span>{" "}
+              <span className="font-bold text-rose-600">
+                Rp{PREMIUM_PRICE.toLocaleString("id-ID")}
+              </span>{" "}
+              / 1 tahun — bebas ganti template & tanpa watermark.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/upgrade"
+            className="inline-flex shrink-0 items-center justify-center rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-amber-950 transition hover:bg-amber-600 hover:text-white"
+          >
+            Upgrade Sekarang
+          </Link>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6">
         <h2 className="mb-4 text-lg font-semibold text-zinc-900">
@@ -91,26 +174,30 @@ export default async function DashboardPage() {
         </h2>
 
         {invitation ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium text-zinc-900">
-                {getEventName(invitation.data) ?? invitation.slug}
-              </p>
-              <p className="text-sm text-zinc-500">
-                Template: {invitation.template.name} •{" "}
-                <span
-                  className={`font-medium ${
-                    invitation.status === "published"
-                      ? "text-emerald-600"
-                      : "text-amber-600"
-                  }`}
-                >
-                  {invitation.status === "published" ? "Published" : "Draft"}
-                </span>
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {invitation.status === "published" && (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-medium text-zinc-900">
+                  {getEventName(invitation.data) ?? invitation.slug}
+                </p>
+                <p className="text-sm text-zinc-500">
+                  Template: {invitation.template.name} •{" "}
+                  <span
+                    className={`font-medium ${
+                      invitation.status === "published"
+                        ? "text-emerald-600"
+                        : "text-amber-600"
+                    }`}
+                  >
+                    {invitation.status === "published" ? "Published" : "Draft"}
+                  </span>
+                </p>
+                <p className="mt-1 truncate text-xs text-zinc-400">
+                  {appUrl}/u/{invitation.slug}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <CopyLinkButton url={`${appUrl}/u/${invitation.slug}`} />
                 <Link
                   href={`/u/${invitation.slug}`}
                   target="_blank"
@@ -119,14 +206,31 @@ export default async function DashboardPage() {
                   <Eye className="h-4 w-4" />
                   Lihat Undangan
                 </Link>
-              )}
-              <Link
-                href="/dashboard/pengaturan-umum"
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
-              >
-                Edit
-              </Link>
+                <Link
+                  href="/dashboard/pengaturan-umum"
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
+                >
+                  Edit
+                </Link>
+                <DeleteInvitationButton
+                  invitationId={invitation.id}
+                  eventName={getEventName(invitation.data)}
+                />
+              </div>
             </div>
+            {invitation.status !== "published" && (
+              <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                Undangan masih berstatus <strong>Draft</strong>. Tamu hanya bisa
+                melihatnya setelah Anda{" "}
+                <Link
+                  href="/dashboard/pengaturan-umum"
+                  className="font-semibold underline"
+                >
+                  publish
+                </Link>{" "}
+                di Pengaturan Umum.
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
@@ -170,3 +274,6 @@ function StatusCard({
     </div>
   );
 }
+// Halaman membaca sesi & data DB — wajib dirender dinamis agar
+// perubahan (dan sesi) selalu terbaru, tidak ter-cache statis.
+export const dynamic = "force-dynamic";

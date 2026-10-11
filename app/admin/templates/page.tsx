@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Plus, Palette, Pencil, Crown, Sparkles } from "lucide-react";
+import { Plus, Palette, Pencil, Crown, IdCard } from "lucide-react";
+import RingIcon from "@/components/icons/RingIcon";
 import { prisma } from "@/lib/prisma";
 import { deleteTemplate } from "@/lib/actions/admin-template";
 import DeleteTemplateButton from "@/components/admin/DeleteTemplateButton";
+import RegenerateThumbButton from "@/components/admin/RegenerateThumbButton";
 
 export const metadata = { title: "Kelola Template | Meduta" };
 
@@ -73,26 +75,38 @@ export default async function AdminTemplatesPage() {
                   {template._count.decorations} dekorasi
                 </p>
 
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-4 grid grid-cols-2 gap-2">
                   <Link
                     href={`/admin/templates/${template.id}`}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
                   >
                     <Pencil className="h-4 w-4" />
                     Edit
                   </Link>
                   <Link
                     href={`/admin/templates/${template.id}/decorations`}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
                   >
-                    <Sparkles className="h-4 w-4" />
+                    <RingIcon className="h-4 w-4" />
                     Dekorasi
+                  </Link>
+                  <Link
+                    href={`/admin/templates/${template.id}/sample-data`}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                  >
+                    <IdCard className="h-4 w-4" />
+                    Contoh
                   </Link>
                   <DeleteTemplateButton
                     templateId={template.id}
                     usedBy={template._count.invitations}
                     action={deleteTemplate}
                   />
+                </div>
+
+                {/* Regenerasi thumbnail statis (screenshot Chrome headless) */}
+                <div className="mt-2 grid grid-cols-1">
+                  <RegenerateThumbButton templateId={template.id} />
                 </div>
               </div>
             </div>

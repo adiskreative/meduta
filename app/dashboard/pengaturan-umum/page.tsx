@@ -48,7 +48,11 @@ export default async function PengaturanUmumPage() {
         defaultCustomMessage={
           typeof data?.customMessage === "string" ? data.customMessage : ""
         }
+        isPublished={invitation.status === "published"}
       />
     </div>
   );
 }
+// Halaman membaca sesi & data DB — wajib dirender dinamis agar
+// perubahan (dan sesi) selalu terbaru, tidak ter-cache statis.
+export const dynamic = "force-dynamic";

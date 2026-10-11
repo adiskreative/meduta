@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Save, Eye, Link2 } from "lucide-react";
 import { saveGeneralSettings, GeneralState } from "@/lib/actions/general";
+import PublishButton from "@/components/dashboard/PublishButton";
 
 export default function GeneralSettingsForm({
   invitationId,
@@ -10,12 +11,14 @@ export default function GeneralSettingsForm({
   defaultSlug,
   slugChangeCount,
   defaultCustomMessage,
+  isPublished,
 }: {
   invitationId: string;
   defaultEventName: string;
   defaultSlug: string;
   slugChangeCount: number;
   defaultCustomMessage: string;
+  isPublished: boolean;
 }) {
   const boundAction = saveGeneralSettings.bind(null, invitationId);
   const [state, formAction, isPending] = useActionState<GeneralState | undefined, FormData>(
@@ -142,13 +145,20 @@ export default function GeneralSettingsForm({
         </button>
 
         <a
-          href="#"
-          onClick={(e) => e.preventDefault()}
+          href={`/u/${defaultSlug}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
         >
           <Eye className="h-4 w-4" />
           Preview
         </a>
+
+        <PublishButton
+          invitationId={invitationId}
+          isPublished={isPublished}
+          disabled={isPending}
+        />
       </div>
     </form>
   );

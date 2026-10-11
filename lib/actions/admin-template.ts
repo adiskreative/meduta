@@ -3,8 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { Prisma } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_SAMPLE_DATA } from "@/lib/sample-data";
+
+const REVALIDATE_SAMPLE_PATHS = ["/", "/preview/[key]", "/dashboard/pilih-tema"] as const;
+
+function revalidateAfterSampleDataChange(templateId: string) {
+  revalidatePath(`/admin/templates/${templateId}/sample-data`);
+  revalidatePath("/admin/templates");
+  for (const path of REVALIDATE_SAMPLE_PATHS) {
+    revalidatePath(path, "page");
+  }
+}
 
 const templateSchema = z.object({
   name: z.string().min(3, "Nama template minimal 3 karakter").max(120).trim(),
@@ -148,4 +160,237 @@ export async function deleteTemplate(templateId: string) {
   await prisma.template.delete({ where: { id: templateId } });
 
   revalidatePath("/admin/templates");
+}
+
+/* ------------------------------------------------------------------ */
+/* Data contoh preview/thumbnail (Template.sampleData)                 */
+/* ------------------------------------------------------------------ */
+
+export type SampleDataState = {
+  ok?: boolean;
+  message?: string;
+  errors?: Record<string, string[]>;
+};
+
+/**
+ * Simpan data contoh dari form admin. Semua kolom opsional — kolom yang
+ * dikosongkan otomatis kembali memakai nilai bawaan (lihat lib/sample-data).
+ * Gaya field: sample.groom.name, sample.bride.photoUrl, dst (prefix "sample.").
+ */
+export async function updateSampleData(
+  templateId: string,
+  _state: SampleDataState | undefined,
+  formData: FormData,
+): Promise<SampleDataState> {
+  await requireAdmin();
+
+  const template = await prisma.template.findUnique({
+    where: { id: templateId },
+    select: { id: true, componentKey: true },
+  });
+  if (!template) {
+    return { ok: false, message: "Template tidak ditemukan." };
+  }
+
+  const schema = z.object({
+    "sample.eventName": z.string().max(120).trim().optional(),
+    "sample.eventDate": z.string().max(40).trim().optional(),
+    "sample.eventTime": z.string().max(60).trim().optional(),
+    "sample.venueName": z.string().max(120).trim().optional(),
+    "sample.location": z.string().max(200).trim().optional(),
+    "sample.locationMap": z
+      .union([z.string().url("URL peta tidak valid").max(500), z.literal("")])
+      .optional(),
+    "sample.customMessage": z.string().max(2000).trim().optional(),
+    "sample.groom.name": z.string().max(120).trim().optional(),
+    "sample.groom.nickname": z.string().max(60).trim().optional(),
+    "sample.groom.parentName": z.string().max(160).trim().optional(),
+    "sample.groom.bio": z.string().max(500).trim().optional(),
+    "sample.groom.photoUrl": z
+      .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
+      .optional(),
+    "sample.bride.name": z.string().max(120).trim().optional(),
+    "sample.bride.nickname": z.string().max(60).trim().optional(),
+    "sample.bride.parentName": z.string().max(160).trim().optional(),
+    "sample.bride.bio": z.string().max(500).trim().optional(),
+    "sample.bride.photoUrl": z
+      .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
+      .optional(),
+    "sample.gatePhotoUrl": z
+      .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
+      .optional(),
+    "sample.guestName": z.string().max(120).trim().optional(),
+    "sample.giftProvider": z.string().max(60).trim().optional(),
+    "sample.giftAccountNumber": z.string().max(40).trim().optional(),
+    "sample.giftHolderName": z.string().max(120).trim().optional(),
+    // Rangkaian acara contoh (3 slot: 2 bawaan + 1 tambahan)
+    "sample.eventTitle1": z.string().max(120).trim().optional(),
+    "sample.eventDate1": z.string().max(40).trim().optional(),
+    "sample.eventTime1": z.string().max(60).trim().optional(),
+    "sample.eventLocation1": z.string().max(200).trim().optional(),
+    "sample.eventMap1": z
+      .union([z.string().url("URL peta tidak valid").max(500), z.literal("")])
+      .optional(),
+    "sample.eventTitle2": z.string().max(120).trim().optional(),
+    "sample.eventDate2": z.string().max(40).trim().optional(),
+    "sample.eventTime2": z.string().max(60).trim().optional(),
+    "sample.eventLocation2": z.string().max(200).trim().optional(),
+    "sample.eventMap2": z
+      .union([z.string().url("URL peta tidak valid").max(500), z.literal("")])
+      .optional(),
+    "sample.eventTitle3": z.string().max(120).trim().optional(),
+    "sample.eventDate3": z.string().max(40).trim().optional(),
+    "sample.eventTime3": z.string().max(60).trim().optional(),
+    "sample.eventLocation3": z.string().max(200).trim().optional(),
+    "sample.eventMap3": z
+      .union([z.string().url("URL peta tidak valid").max(500), z.literal("")])
+      .optional(),
+  });
+
+  const raw: Record<string, string> = {};
+  for (const key of Object.keys(schema.shape)) {
+    const v = formData.get(key);
+    if (typeof v === "string") raw[key] = v;
+  }
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, errors: parsed.error.flatten().fieldErrors as Record<string, string[]> };
+  }
+
+  const d = parsed.data;
+  const str = (v?: string) => (v && v.length > 0 ? v : undefined);
+
+  const override = {
+    ...(str(d["sample.eventName"]) ? { eventName: str(d["sample.eventName"]) } : {}),
+    ...(str(d["sample.eventDate"]) ? { eventDate: str(d["sample.eventDate"]) } : {}),
+    ...(str(d["sample.eventTime"]) ? { eventTime: str(d["sample.eventTime"]) } : {}),
+    ...(str(d["sample.venueName"]) ? { venueName: str(d["sample.venueName"]) } : {}),
+    ...(str(d["sample.location"]) ? { location: str(d["sample.location"]) } : {}),
+    ...(str(d["sample.locationMap"]) ? { locationMap: str(d["sample.locationMap"]) } : {}),
+    ...(str(d["sample.customMessage"]) ? { customMessage: str(d["sample.customMessage"]) } : {}),
+    groom: {
+      ...(str(d["sample.groom.name"]) ? { name: str(d["sample.groom.name"]) } : {}),
+      ...(str(d["sample.groom.nickname"]) ? { nickname: str(d["sample.groom.nickname"]) } : {}),
+      ...(str(d["sample.groom.parentName"]) ? { parentName: str(d["sample.groom.parentName"]) } : {}),
+      ...(str(d["sample.groom.bio"]) ? { bio: str(d["sample.groom.bio"]) } : {}),
+      ...(str(d["sample.groom.photoUrl"])
+        ? { photoUrl: str(d["sample.groom.photoUrl"]) }
+        : {}),
+    },
+    bride: {
+      ...(str(d["sample.bride.name"]) ? { name: str(d["sample.bride.name"]) } : {}),
+      ...(str(d["sample.bride.nickname"]) ? { nickname: str(d["sample.bride.nickname"]) } : {}),
+      ...(str(d["sample.bride.parentName"]) ? { parentName: str(d["sample.bride.parentName"]) } : {}),
+      ...(str(d["sample.bride.bio"]) ? { bio: str(d["sample.bride.bio"]) } : {}),
+      ...(str(d["sample.bride.photoUrl"])
+        ? { photoUrl: str(d["sample.bride.photoUrl"]) }
+        : {}),
+    },
+  };
+
+  const overrideRecord = override as unknown as Record<string, unknown>;
+
+  // Rekening contoh: hanya jika salah satu kolom terisi
+  const giftProvider = str(d["sample.giftProvider"]);
+  const giftAccount = str(d["sample.giftAccountNumber"]);
+  const giftHolder = str(d["sample.giftHolderName"]);
+  if (giftProvider || giftAccount || giftHolder) {
+    overrideRecord.gifts = [
+      {
+        id: "sample-gift-1",
+        provider: giftProvider ?? DEFAULT_SAMPLE_DATA.gifts![0].provider,
+        name: giftProvider ?? DEFAULT_SAMPLE_DATA.gifts![0].name,
+        accountNumber: giftAccount ?? DEFAULT_SAMPLE_DATA.gifts![0].accountNumber,
+        holderName: giftHolder ?? DEFAULT_SAMPLE_DATA.gifts![0].holderName,
+      },
+    ];
+  }
+
+  // Foto gerbang contoh (dipakai halaman "Buka Undangan" pratinjau)
+  if (str(d["sample.gatePhotoUrl"])) {
+    overrideRecord.gatePhotoUrl = str(d["sample.gatePhotoUrl"]);
+  }
+
+  // Nama tamu contoh (bukan bagian InvitationView — disimpan sebagai kunci
+  // tambahan dan dibaca halaman preview)
+  const guestName = str(d["sample.guestName"]);
+  if (guestName) overrideRecord.guestName = guestName;
+
+  // Rangkaian acara contoh: 3 slot. Slot yang dikosongkan memakai acara
+  // bawaan pada indeks yang sama (array override mengganti utuh, jadi slot
+  // kosong tetap harus diisi nilai bawaan agar tidak hilang).
+  const eventSlots: Array<Record<string, string>> = [];
+  let eventsTouched = false;
+  const fields = d as unknown as Record<string, string | undefined>;
+  for (let i = 1; i <= 3; i++) {
+    const title = str(fields[`sample.eventTitle${i}`]);
+    const date = str(fields[`sample.eventDate${i}`]);
+    const time = str(fields[`sample.eventTime${i}`]);
+    const location = str(fields[`sample.eventLocation${i}`]);
+    const locationMap = str(fields[`sample.eventMap${i}`]);
+    const def = DEFAULT_SAMPLE_DATA.events?.[i - 1];
+
+    if (!title && !date && !time && !location && !locationMap) {
+      if (def) {
+        eventSlots.push({
+          id: def.id,
+          title: def.title ?? "",
+          date: def.date ?? "",
+          time: def.time ?? "",
+          location: def.location ?? "",
+          locationMap: def.locationMap ?? "",
+        });
+      }
+      continue;
+    }
+    eventsTouched = true;
+    eventSlots.push({
+      id: def?.id ?? `sample-event-${i}`,
+      title: title ?? def?.title ?? "",
+      date: date ?? def?.date ?? "",
+      time: time ?? def?.time ?? "",
+      location: location ?? def?.location ?? "",
+      locationMap: locationMap ?? def?.locationMap ?? "",
+    });
+  }
+  if (eventsTouched) {
+    overrideRecord.events = eventSlots;
+  }
+
+  // groom/bride selalu ada sebagai kunci (mungkin kosong) — override dianggap
+  // ada bila ada kunci lain selain keduanya, ATAU isi di dalam keduanya.
+  const hasOverride =
+    Object.keys(overrideRecord).some((k) => k !== "groom" && k !== "bride") ||
+    Object.keys(override.groom).length > 0 ||
+    Object.keys(override.bride).length > 0;
+
+  await prisma.template.update({
+    where: { id: templateId },
+    data: {
+      sampleData: hasOverride
+        ? (overrideRecord as unknown as Prisma.InputJsonValue)
+        : Prisma.JsonNull,
+    },
+  });
+
+  revalidateAfterSampleDataChange(templateId);
+  return { ok: true, message: "Data contoh berhasil disimpan." };
+}
+
+/** Kembalikan data contoh template ke bawaan sistem. */
+export async function resetSampleData(templateId: string) {
+  await requireAdmin();
+
+  const template = await prisma.template.findUnique({
+    where: { id: templateId },
+    select: { id: true },
+  });
+  if (!template) throw new Error("Template tidak ditemukan.");
+
+  await prisma.template.update({
+    where: { id: templateId },
+    data: { sampleData: Prisma.JsonNull },
+  });
+
+  revalidateAfterSampleDataChange(templateId);
 }

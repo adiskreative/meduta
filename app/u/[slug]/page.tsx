@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { getEventName } from "@/lib/invitation-data";
 import { mapDecorations } from "@/lib/decoration";
+import { isExpired } from "@/lib/premium";
+import ExpiredPage from "@/components/invitation/ExpiredPage";
 import TemplateRenderer from "@/components/templates";
 import type { InvitationData } from "@/lib/invitation-data";
 
@@ -39,12 +42,13 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
   const invitation = await prisma.invitation.findUnique({
     where: { slug },
     include: {
+      user: { select: { name: true } },
       template: {
         select: {
           componentKey: true,
           name: true,
           decorations: {
-            include: { asset: { select: { url: true } } },
+            include: { asset: { select: { url: true, name: true } } },
             orderBy: { zIndex: "asc" },
           },
         },
@@ -53,6 +57,16 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
   });
 
   if (!invitation) notFound();
+
+  // Pemilik undangan tetap bisa melihat & edit meski masa aktif habis;
+  // tamu (user biasa atau anonim) melihat halaman expired.
+  const session = await auth();
+  if (
+    isExpired(invitation.expiresAt) &&
+    invitation.userId !== session?.user?.id
+  ) {
+    return <ExpiredPage owner={invitation.user?.name ?? null} />;
+  }
 
   const data = (invitation.data ?? {}) as InvitationData;
   const guestName = to ? decodeURIComponent(to).replace(/-/g, " ") : undefined;

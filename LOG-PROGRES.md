@@ -1,10 +1,10 @@
 # Meduta — Log Progres
 
-> Terakhir diperbarui: 03 Sep 2026
-> Branch: `feature/initial-setup`
-> Server: `http://localhost:3000` (PID server perlu dijalankan ulang)
+> Terakhir diperbarui: 08 Sep 2026
+> Branch: `fix/keamanan-features`
+> Server: `http://localhost:3000` (dev server via `npm run dev`)
 
-> Status: Langkah 2 & 3 admin (CRUD template, aset, dekorasi) + renderer dekorasi & seed aset contoh sudah dikerjakan (belum di-commit per update terakhir).
+> Status: Fitur publish/preview/share, share ke WhatsApp (auto-simpan tamu), email integration (kirim + kirim ulang + tracking), dan notifikasi sudah selesai. Semua belum di-commit per update terakhir.
 
 ---
 
@@ -22,8 +22,22 @@
 | 8 | `a5b0ce8` | feat(upload): tambah upload foto mempelai ke Supabase Storage |
 | 9 | `8c3504e` | docs: tambah rancangan arsitektur template dan aset desain |
 | 10 | `19747e7` | feat(admin): tambah sistem role admin, guard route, dan panel admin |
+| 11 | `8da2aba` | docs: tambah log progres project |
+| 12 | `99d1e51` | feat(db): tambah TemplateAsset, TemplateDecoration, dan enum AssetType |
+| 13 | `51a174a` | feat(admin): kelola template, aset desain, dan dekorasi template |
+| 14 | `bbd0b70` | feat(templates): render dekorasi di halaman publik dan preview |
+| 15 | `a2084d6` | feat(db): seed aset dan dekorasi contoh |
+| 16 | `4c80616` | docs: perbarui log progres admin template dan aset desain |
+| 17 | `360c902` | feat(dashboard): tambah halaman konten undangan dan pengaturan akun |
+| 18 | `1d6cf17` | feat(db): tambah model Notification dan field email pada Guest |
+| 19 | `40325e5` | feat(undangan): kirim undangan via email dan import tamu CSV/Excel |
+| 20 | `6ca0ef1` | feat(notifikasi): sistem notifikasi RSVP, ucapan, dan badge unread |
+| 21 | `ee5c47c` | test: setup Vitest dan unit test helper undangan |
+| 22 | `c1f49a6` | fix(security): tambah security headers, proxy guard, dan perkuat konfigurasi auth |
+| 23 | `f9f39aa` | docs: perbarui log progres dashboard konten dan akun |
+| 24 | `3d10478` | fix(auth): perbaiki login Google lewat signIn() alih-alih link GET |
 
-> **CATATAN**: Commit `19747e7` sebelumnya tercatat sebagai #10, tapi log aktual menunjukkan urutan commit menyusul setelah `8da2aba` (docs: log progres). Karena LOG ini diedit sendiri, urutan #11 dst mengikuti commit terakhir yang terverifikasi di `git log`. Fitur **Admin CRUD Template** (commit #11) **belum di-commit** per update terakhir.
+> **CATATAN**: Fitur-fitur sesi terbaru (publish/preview/share, share WhatsApp, email resend/tracking, perbaikan bug sendEmail) **belum di-commit** — lihat `git status`.
 
 ---
 
@@ -125,23 +139,75 @@
 - `seedAssets()` di `prisma/seed.ts` — 2 aset contoh (DECOR bungga, FRAME bingkai) + 1 dekorasi di template floral
 - Idempotent (hanya dibuat bila nama aset belum ada)
 
+### Halaman Dashboard Konten (cerita, galeri, musik, kado)
+- `/dashboard/cerita-cinta` — timeline kisah (date/title/description), list dinamis add-remove
+- `/dashboard/galeri` — galeri foto (url + caption) dengan preview thumbnail
+- `/dashboard/background-music` — set URL musik latar (musikUrl)
+- `/dashboard/kado-nikah` — daftar rekening/e-wallet (provider, name, accountNumber, holderName)
+- Server action `lib/actions/content.ts` (saveStory/saveGallery/saveMusic/saveGifts) menyimpan ke `Invitation.data`
+
+### Halaman Dashboard Akun & Sistem (akun, transaksi, notifikasi)
+- `/dashboard/akun` — ubah nama/email (cek duplikat) + ganti password (verifikasi password lama, bcrypt)
+- `/dashboard/transaksi` — daftar riwayat `Transaction` user (badge status pending/success/failed, format Rupiah)
+- `/dashboard/notifikasi` — daftar notifikasi + mark read / mark all read
+- Server action `lib/actions/account.ts` (updateProfile/changePassword)
+- Sistem notifikasi (backend sudah jalan, lihat bagian "Sistem Notifikasi" di bawah)
+
+### Email Integration — Kirim Undangan via Resend
+- Library `lib/email.ts` — SDK Resend + template HTML undangan (escape aman, CTA "Buka Undangan") + `sendInvitationEmail` (dev-safe no-op bila `RESEND_API_KEY` kosong)
+- **Fix**: checkbox "Kirim email" di form kini benar-benar mengontrol pengiriman (sebelumnya dibaca tapi tak dipakai)
+- **Fix**: flow import CSV/Excel kini menghormati checkbox `sendEmail` (bisa opt-out kirim email)
+- **Tracking email di model `Guest`**: field `emailSent` (bool), `emailSentAt` (datetime), `lastSendError` (string) — dashboard tahu status kirim per tamu
+- **Rate limiting**: `EMAIL_DELAY_MS` (default 200ms) jeda antar email saat kirim massal/import
+- **Kirim ulang**: 
+  - `resendGuestInvitation` — tombol "Kirim Ulang" per tamu di `/dashboard/rsvp` (hanya bila tamu punya email)
+  - `resendAllPendingInvitations` — tombol "Kirim Ulang Email (n)" untuk semua tamu yang emailnya belum terkirim / gagal
+- Badge status email di list tamu: "Email terkirim" (hijau), "Email belum dikirim" (kuning), "Gagal kirim" (merah, hover tampil error)
+- Notifikasi sistem saat email undangan berhasil terkirim
+
+### Publish / Unpublish Undangan
+- Server action `setInvitationStatus` di `lib/actions/general.ts` (guard login + kepemilikan) — toggle `draft` ↔ `published`
+- Komponen `PublishButton` (client) — tombol Publish (hijau) / Unpublish (abu-abu) + spinner
+- Dipasang di `/dashboard/pengaturan-umum` (di samping tombol Simpan & Preview)
+
+### Preview & Share Link Undangan
+- **Fix tombol Preview** di Pengaturan Umum: sebelumnya `href="#"` (mati) → kini membuka `/u/[slug]` di tab baru
+- Dashboard (`/dashboard`): tombol **"Salin Link"** (`CopyLinkButton`) untuk copy link undangan
+- "Lihat Undangan" kini **selalu muncul** (sebelumnya hanya saat published) — bisa preview draft
+- Menampilkan URL undangan di dashboard + banner kuning pengingat publish bila masih draft
+
+### Share ke WhatsApp (auto-simpan tamu)
+- Komponen `WhatsAppShareForm` di `/dashboard/kirim-undangan` (di atas form tamu massal)
+- Form: nama penerima + nomor WhatsApp → link personal `/u/slug?to=<nama>` dibuat otomatis
+- Klik **"Share ke WhatsApp"**: simpan tamu dulu (`addGuestFromShare`), lalu buka `wa.me/<nomor>` dengan pesan template (sapaan nama + link undangan)
+- `addGuestFromShare` di `lib/actions/guest.ts`: simpan tamu + nomor WA; bila nama sudah ada hanya update nomornya (tidak duplikat); buat notifikasi sistem
+- Tombol **"Salin Link"** di form untuk cara share manual
+- **Field baru `phone` di model `Guest`** — nomor WhatsApp tamu tersimpan & ditampilkan di list RSVP
+
+### Sistem Notifikasi (backend)
+- Helper `createNotification` di `lib/notifications.ts` — dipakai di berbagai server action
+- Sumber notifikasi aktif:
+  - **RSVP** (`rsvp-visitor.ts`) — tamu konfirmasi hadir/berhalangan
+  - **WISH** (`wish.ts`) — tamu kirim ucapan
+  - **SYSTEM** (`guest.ts`) — tambah tamu, email terkirim, kirim ulang email
+- Halaman `/dashboard/notifikasi` + `NotificationList` — mark read per item, mark all read, badge unread di header dashboard (99+)
+
 ---
 
 ## Yang Belum / Next Steps
 
-### Halaman yang Belum Dibuat
-- `/dashboard/cerita-cinta` (sidebar sudah ada link, halaman belum)
-- `/dashboard/galeri` (sidebar sudah ada link, halaman belum)
-- `/dashboard/background-music` (sidebar sudah ada link, halaman belum)
-- `/dashboard/kado-nikah` (sidebar sudah ada link, halaman belum)
-- `/dashboard/transaksi` (sidebar sudah ada link, halaman belum)
-- `/dashboard/notifikasi` (sidebar sudah ada link, halaman belum)
-- `/dashboard/akun` (sidebar sudah ada link, halaman belum)
-
 ### Integrasi
-- Pembayaran Midtrans (schema `Transaction` + `midtransId` sudah ada, env kosong)
-- Import CSV/Excel tamu (tombol sudah ada tapi disabled)
-- Email integration untuk kirim undangan
+- Pembayaran Midtrans (schema `Transaction` + `midtransId` sudah ada, env kosong, notifikasi tipe TRANSACTION menunggu ini)
+- Emoji/paket berbayar ("Status Paket: Gratis" di dashboard masih statis)
+
+### Template Custom
+- Panduan lengkap struktur template custom (registry `components/templates/index.tsx`, `TemplateProps`, langkah mendaftarkan componentKey) — dijelaskan lisan; bisa dituangkan ke docs bila perlu
+
+### Email (pengembangan lanjutan opsional)
+- Webhook Resend untuk status delivery/bounce/complaint (belum ada handler)
+- Format email mengikuti desain template undangan (saat ini satu template generik)
+- Preview/pratinjau email + kirim email tes sebelum go-live
+- Domain verifikasi Resend — saat ini memakai `onboarding@resend.dev` (tes); perlu domain sendiri untuk produksi agar tidak masuk spam
 
 ---
 
@@ -161,6 +227,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ADMIN_EMAIL=admin@meduta.com    # untuk seed akun admin
 ADMIN_PASSWORD=password123       # untuk seed akun admin
 SUPABASE_SERVICE_ROLE_KEY=       # agar upload foto berfungsi
+RESEND_API_KEY=                  # agar email undangan benar-benar terkirim (via Resend)
+EMAIL_FROM=                      # pengirim email, harus domain terverifikasi Resend
 MIDTRANS_SERVER_KEY=             # untuk pembayaran
 MIDTRANS_CLIENT_KEY=             # untuk pembayaran
 AUTH_GOOGLE_ID=                  # untuk Google OAuth
@@ -201,6 +269,14 @@ components/
   dashboard/CoupleForm.tsx     # form mempelai + upload foto
   dashboard/PhotoUploader.tsx  # upload ke Supabase
   dashboard/Sidebar.tsx        # sidebar (admin link visible untuk admin)
+  dashboard/StoryForm.tsx      # form cerita cinta (list dinamis)
+  dashboard/GalleryForm.tsx    # form galeri foto (list dinamis + preview)
+  dashboard/GiftForm.tsx       # form kado nikah (list dinamis)
+  dashboard/MusicForm.tsx      # form musik latar
+  dashboard/AccountForm.tsx    # form profil + ganti password
+  dashboard/PublishButton.tsx  # toggle publish/unpublish undangan
+  dashboard/CopyLinkButton.tsx # tombol salin link undangan
+  dashboard/WhatsAppShareForm.tsx # share undangan ke WhatsApp + auto-simpan tamu
   landing/TemplateCard.tsx     # kartu template di landing page
   templates/
     index.tsx                  # registry componentKey → komponen (+ DecorationLayer)
@@ -224,6 +300,8 @@ components/
     guest.ts, rsvp.ts, template.ts, wish.ts
     rsvp-visitor.ts      # RSVP publik (tanpa login)
     upload.ts            # upload avatar ke Supabase
+    content.ts           # save story/gallery/music/gifts
+    account.ts           # updateProfile / changePassword
     admin-template.ts    # CRUD template (guard ADMIN)
     admin-asset.ts       # CRUD aset desain (guard ADMIN)
     admin-decoration.ts  # CRUD dekorasi template (guard ADMIN)
@@ -238,8 +316,9 @@ prisma/
 ## Catatan Teknis
 
 - **Dev server**: `npm run dev` → `http://localhost:3000`. Filesystem lambat (network drive?), kompilasi pertama ~50s, selanjutnya ~11s.
-- **Build**: `npm run build` lolos. Route `/admin/templates`, `/admin/templates/new`, `/admin/templates/[id]`, `/admin/templates/[id]/decorations`, dan `/admin/assets` sudah terdaftar.
-- **Schema**: `TemplateAsset`, `TemplateDecoration`, dan enum `AssetType` ditambahkan; DB di-sync via `prisma db push` (PostgreSQL Supabase).
+- **Build**: `npm run build` lolos. Seluruh route `/dashboard/*` (termasuk 7 halaman baru: akun, background-music, cerita-cinta, galeri, kado-nikah, notifikasi, transaksi) sudah terdaftar.
+- **Schema**: `TemplateAsset`, `TemplateDecoration`, enum `AssetType`, field email tracking (`emailSent`/`emailSentAt`/`lastSendError`) dan `phone` di `Guest` ditambahkan; DB di-sync via `prisma db push` (PostgreSQL Supabase).
 - **Bug fixed**: `couple.ts` sebelumnya menyimpan objek zod result, sudah diperbaiki menyimpan `groom.data` / `bride.data`.
+- **Bug fixed**: `sendEmail` di `guest.ts` sebelumnya dibaca tapi tidak dipakai — kini diteruskan ke logic kirim email (manual & import).
 - **`.agents/`, `.claude/`, `.windsurf/`**: tidak sengaja ter-commit di commit terakhir. Bisa dihapus dari repo dengan `git rm -r --cached .agents .claude .windsurf` lalu commit.
 - **Supabase Storage**: bucket `avatars` (foto mempelai) & `templates` (aset desain) — belum dibuat manual. Server action `uploadAvatar` / `createAssetFromUpload` otomatis buat bucket bila `SUPABASE_SERVICE_ROLE_KEY` terisi.
