@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "build:worker": "prisma generate && opennextjs-cloudflare build",
-    "preview:cf": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy:cf": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "build:worker": "opennextjs-cloudflare build",
+    "preview:cf": "npm run build:worker && opennextjs-cloudflare preview",
+    "deploy:cf": "npm run build:worker && opennextjs-cloudflare deploy",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
