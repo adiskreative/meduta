@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         await createNotification({
           userId,
           type: "TRANSACTION",
-          title: "Pembayaran Premium diterima 🎉",
+          title: "Pembayaran Telah diterima 🎉",
           body: "Paket Premium Anda aktif — semua template & fitur lengkap sudah terbuka. Terima kasih!",
           link: "/dashboard/pilih-tema",
         });

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash } from "crypto";
+import { createHash, timingSafeEqual } from "crypto";
 import midtransClient from "midtrans-client";
 import { prisma } from "@/lib/prisma";
 import { PREMIUM_PACKAGE, PREMIUM_PRICE } from "@/lib/premium";
@@ -127,8 +127,7 @@ export async function createPremiumSnapCheckout(
 
 /**
  * Verifikasi signature_key dari HTTP notifikasi Midtrans:
- * sha256(order_id + status_code + gross_amount + server_key).
- * Reduced version dari docs:
+ * sha512(order_id + status_code + gross_amount + server_key).
  * https://docs.midtrans.com/en/technical-consideration/midtrans-http-notification
  */
 export function verifyMidtransSignature(
@@ -137,11 +136,16 @@ export function verifyMidtransSignature(
   grossAmount: string,
   signatureKey: string,
 ): boolean {
-  const apiKey = process.env.MIDTRANS_SERVER_KEY ?? "";
-  const expected = createHash("sha256")
+  const apiKey = (process.env.MIDTRANS_SERVER_KEY ?? "").trim();
+  if (!apiKey) return false;
+
+  const expected = createHash("sha512")
     .update(`${orderId}${statusCode}${grossAmount}${apiKey}`)
     .digest("hex");
-  return expected === signatureKey;
+
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signatureKey);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 /** Transaksi berhasil → aktifkan premium. */
