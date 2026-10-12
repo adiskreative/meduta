@@ -1,15 +1,12 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const session = await auth();
-  if (!session?.user) {
+export async function GET(request: Request) {
+  const token = request.headers.get("x-dbcheck-token");
+  const expected = process.env.DBCHECK_TOKEN;
+  if (!expected || token !== expected) {
     return Response.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-  }
-  if (session.user.role !== "ADMIN") {
-    return Response.json({ ok: false, message: "Forbidden" }, { status: 403 });
   }
 
   const start = Date.now();
