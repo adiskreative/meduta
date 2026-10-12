@@ -22,6 +22,17 @@ const nextConfig: NextConfig = {
   // Paket yang memakai build condition "workerd" di exports-nya (dibutuhkan
   // adapter Prisma/PG di Cloudflare Workers) harus disalin utuh oleh OpenNext.
   serverExternalPackages: ["pg", "pg-cloudflare"],
+  // Prisma CLI & tool dev-nya tidak dipakai saat runtime. Tanpa pengecualian
+  // ini file wasm-nya (pglite, schema_engine, dll.) ikut masuk Worker dan
+  // membuat ukurannya melebihi batas 64 MiB Cloudflare.
+  outputFileTracingExcludes: {
+    "/*": [
+      "node_modules/prisma/**",
+      "node_modules/@prisma/dev/**",
+      "node_modules/@prisma/engines/**",
+      "node_modules/@electric-sql/pglite/**",
+    ],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "12mb",
