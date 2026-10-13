@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { User, Phone, Send, MessageCircle, Check, Copy, Loader2 } from "lucide-react";
+import { User, Send, MessageCircle, Check, Copy, Loader2 } from "lucide-react";
 import { slugifyName } from "@/lib/guest-link";
 import { addGuestFromShare } from "@/lib/actions/guest";
 
@@ -15,9 +15,9 @@ export default function WhatsAppShareForm({
   appUrl: string;
 }) {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [statusIsError, setStatusIsError] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const trimmedName = name.trim();
@@ -28,13 +28,24 @@ export default function WhatsAppShareForm({
 
   function buildMessage(): string {
     return [
-      `Assalamu'alaikum ${trimmedName},`,
+      `Assalamu'alaikum wr. wb.
+      
+      Kepada Yth:
+      Bapak/Ibu 
+      
+      ${trimmedName},`,
       "",
-      "Dengan penuh rasa syukur, kami mengundang Anda untuk hadir pada acara pernikahan kami. Mohon buka undangan digital berikut:",
+
+      "Dengan penuh rasa syukur, kami mengundang bapak/ibu untuk menghadiri acara pernikahan kami. Berikut Link undangan digital yang bisa Bapak/Ibu akses:",
       "",
       digitalLink,
       "",
       "Terima kasih 🙏",
+
+      "Wassalamu'alaikum wr. wb.",
+
+      "mohon maaf 🙏 apabila ada kesalahan dalam penulisan nama atau gelar. Semoga Bapak/Ibu berkenan hadir dan memberikan doa restu.",
+      
     ].join("\n");
   }
 
@@ -42,24 +53,20 @@ export default function WhatsAppShareForm({
     e.preventDefault();
     if (!hasName) return;
 
-    const cleanPhone = phone.replace(/[^\d]/g, "");
-    if (cleanPhone.length < 8) {
-      setStatus("Masukkan nomor WhatsApp yang valid.");
-      return;
-    }
-
+    setStatus(null);
+    setStatusIsError(false);
     const message = encodeURIComponent(buildMessage());
-    const target = `https://wa.me/${cleanPhone}?text=${message}`;
+    const target = `https://wa.me/?text=${message}`;
+    const whatsappWindow = window.open(target, "_blank");
+    if (whatsappWindow) whatsappWindow.opener = null;
 
-    // Simpan tamu ke daftar dulu, lalu buka WhatsApp.
+    // Simpan tamu tanpa nomor telepon; penerima dipilih langsung di WhatsApp.
     startTransition(async () => {
       const form = new FormData();
       form.set("name", trimmedName);
-      form.set("phone", cleanPhone);
       const state = await addGuestFromShare(invitationId, form);
       setStatus(state.message ?? null);
-      setPhone("");
-      window.open(target, "_blank", "noopener,noreferrer");
+      setStatusIsError(!state.success);
     });
   }
 
@@ -85,16 +92,14 @@ export default function WhatsAppShareForm({
           Share ke WhatsApp
         </h2>
         <p className="mt-1 text-sm text-zinc-500">
-          Isi nama + nomor WhatsApp penerima, lalu kirim undangan personalisasi langsung ke mereka.
+          Isi nama penerima, lalu pilih kontak tujuan langsung di WhatsApp untuk mengirim undangan personalisasi.
         </p>
       </div>
 
       {status && (
         <div
           className={`mb-4 rounded-lg px-4 py-3 text-sm ${
-            status.startsWith("Masukkan")
-              ? "bg-red-50 text-red-600"
-              : "bg-emerald-50 text-emerald-700"
+            statusIsError ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-700"
           }`}
         >
           {status}
@@ -102,33 +107,18 @@ export default function WhatsAppShareForm({
       )}
 
       <form onSubmit={shareToWhatsApp} className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-zinc-700">
-              <User className="h-4 w-4 text-zinc-400" />
-              Nama penerima
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="cth: Rizky Pratama"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-zinc-700">
-              <Phone className="h-4 w-4 text-zinc-400" />
-              Nomor WhatsApp
-            </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="cth: 081234567890"
-              className={inputClass}
-            />
-          </div>
+        <div>
+          <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-zinc-700">
+            <User className="h-4 w-4 text-zinc-400" />
+            Nama penerima
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="cth: Rizky Pratama"
+            className={inputClass}
+          />
         </div>
 
         {hasName && (
