@@ -136,7 +136,7 @@ export default function ScrapbookGate({
 
   return (
     <div
-      className={`fixed inset-0 z-[70] flex items-center justify-center overflow-hidden ${
+      className={`fixed inset-0 z-[70] flex items-center justify-center overflow-x-hidden overflow-y-auto ${
         closing ? "animate-gate-open" : ""
       }`}
       style={{ background: SB.cream }}
@@ -158,7 +158,7 @@ export default function ScrapbookGate({
         />
       )}
 
-      <div className="relative z-10 flex w-full max-w-[400px] flex-col items-center px-5 py-8">
+      <div className="relative z-10 flex min-h-full w-full max-w-[400px] flex-col items-center justify-center px-5 py-8">
         {/* Badge "Wedding Photo Album" */}
         <div
           className="sbgate-hand -rotate-3 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold"
