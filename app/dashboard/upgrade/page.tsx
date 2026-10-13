@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Script from "next/script";
-import { Check, Crown, Sparkles } from "lucide-react";
+import { Check, Crown } from "lucide-react";
 import { auth } from "@/lib/auth";
 import {
   PREMIUM_PRICE,
@@ -62,15 +62,13 @@ export default async function UpgradePage() {
             Akun Anda sudah Premium
           </h2>
           <p className="mt-2 text-sm text-emerald-700">
-            Semua template & fitur lengkap sudah terbuka. Terima kasih telah
-            upgrade!
+            Semua template & fitur lengkap sudah terbuka. Terima kasih atas kepercayaan Anda!
           </p>
         </div>
       ) : (
         <div className="mx-auto max-w-xl">
           <div className="relative overflow-hidden rounded-3xl border-2 border-amber-300 bg-gradient-to-b from-amber-50 to-white p-8 shadow-lg">
             <span className="absolute right-6 top-6 inline-flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1 text-xs font-semibold text-amber-950">
-              <Sparkles className="h-3 w-3" />
               Promo
             </span>
             <div className="flex items-center gap-2">

@@ -80,7 +80,7 @@ export default function SnapCheckoutButton({
         ) : (
           <Crown className="h-5 w-5" />
         )}
-        {loading ? "Menyiapkan pembayaran..." : "Bayar Sekarang via Midtrans"}
+        {loading ? "Menyiapkan pembayaran..." : "Bayar Sekarang"}
       </button>
       {error && <p className="text-center text-sm text-red-600">{error}</p>}
     </div>
