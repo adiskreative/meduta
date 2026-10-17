@@ -5,6 +5,7 @@ import {
   markDokuTransactionSuccess,
   markDokuTransactionFailed,
 } from "@/lib/doku";
+import { parseDokuNotification } from "@/lib/doku-notification";
 
 /**
  * POST /api/doku/notification
@@ -30,13 +31,20 @@ function getNotificationTargetPath(): string {
 }
 
 export async function POST(request: NextRequest) {
-  const rawBody = await request.text().catch(() => "");
+  const rawBody = await request.text();
 
-  let body: Record<string, unknown>;
+  let payload: unknown;
   try {
-    body = JSON.parse(rawBody) as Record<string, unknown>;
+    payload = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Body harus JSON." }, { status: 400 });
+  }
+  const notification = parseDokuNotification(payload);
+  if (!notification?.invoiceNumber || !notification.transactionStatus) {
+    return NextResponse.json(
+      { error: "Invoice atau status transaksi tidak ditemukan." },
+      { status: 400 },
+    );
   }
 
   const clientId = String(request.headers.get("Client-Id") ?? "");
@@ -66,13 +74,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Signature tidak valid." }, { status: 403 });
   }
 
-  const transactionStatus = String(body["transaction.status"] ?? "");
-  const invoiceNumber = String(
-    body["order.invoice_number"] ??
-      (body.order as Record<string, unknown> | undefined)?.invoice_number ??
-      "",
-  );
-  const amount = Number(body["transaction.amount"] ?? NaN);
+  const { transactionStatus, invoiceNumber, amount } = notification;
 
   try {
     if (transactionStatus === "SUCCESS") {
