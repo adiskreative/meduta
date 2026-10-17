@@ -7,8 +7,10 @@ import {
   PREMIUM_ORIGINAL_PRICE,
   isPremiumUser,
 } from "@/lib/premium";
-import { SNAP_IS_PRODUCTION, getAppOriginUrl } from "@/lib/midtrans";
+import { SNAP_IS_PRODUCTION } from "@/lib/midtrans";
+import { isDokuConfigured } from "@/lib/doku";
 import SnapCheckoutButton from "@/components/dashboard/SnapCheckoutButton";
+import DokuCheckoutButton from "@/components/dashboard/DokuCheckoutButton";
 
 export const metadata = { title: "Upgrade Premium | Meduta" };
 export const dynamic = "force-dynamic";
@@ -38,6 +40,7 @@ export default async function UpgradePage() {
   const snapUrl = SNAP_IS_PRODUCTION
     ? "https://app.midtrans.com/snap/snap.js"
     : "https://app.sandbox.midtrans.com/snap/snap.js";
+  const dokuReady = isDokuConfigured();
 
   return (
     <div className="space-y-6">
@@ -106,16 +109,29 @@ export default async function UpgradePage() {
               ))}
             </ul>
 
-            <div className="mt-8">
+            <div className="mt-8 space-y-3">
               <SnapCheckoutButton
                 clientKey={snapClientKey}
                 isProduction={SNAP_IS_PRODUCTION}
               />
+              {dokuReady && (
+                <>
+                  <div className="flex items-center gap-3">
+                    <span className="h-px flex-1 bg-zinc-200" />
+                    <span className="text-xs uppercase tracking-wide text-zinc-400">
+                      atau
+                    </span>
+                    <span className="h-px flex-1 bg-zinc-200" />
+                  </div>
+                  <DokuCheckoutButton />
+                </>
+              )}
             </div>
 
             <p className="mt-4 text-center text-xs text-zinc-400">
-              Pembayaran aman via Midtrans (VA bank, e-wallet, QRIS, kartu).
-              Akses premium aktif otomatis setelah pembayaran terkonfirmasi.
+              Pembayaran aman via Midtrans &amp; DOKU (VA bank, e-wallet, QRIS,
+              kartu). Akses premium aktif otomatis setelah pembayaran
+              terkonfirmasi.
             </p>
           </div>
         </div>
