@@ -138,7 +138,7 @@ export type DokuCheckoutResult =
 
 /**
  * Buat checkout DOKU untuk 1 user; simpan Transaction "pending" lalu
- * kembalikan paymentUrl untuk redirect user.
+ * kembalikan paymentUrl untuk ditampilkan dalam dialog pembayaran.
  */
 export async function createPremiumDokuCheckout(
   userId: string,
@@ -214,7 +214,7 @@ export async function createPremiumDokuCheckout(
     await prisma.transaction.create({
       data: {
         userId,
-        midtransId: invoiceNumber, // kolom generik untuk referensi gateway
+        gatewayReference: invoiceNumber,
         packageName: PREMIUM_PACKAGE,
         amount: PREMIUM_PRICE,
         status: "pending",
@@ -245,7 +245,7 @@ export async function markDokuTransactionSuccess(
   paidAmount?: number,
 ): Promise<string | null> {
   const txn = await prisma.transaction.findFirst({
-    where: { midtransId: invoiceNumber },
+    where: { gatewayReference: invoiceNumber },
     include: { user: { select: { id: true } } },
   });
   if (!txn) return null;
@@ -269,7 +269,7 @@ export async function markDokuTransactionFailed(
   invoiceNumber: string,
 ): Promise<void> {
   const txn = await prisma.transaction.findFirst({
-    where: { midtransId: invoiceNumber },
+    where: { gatewayReference: invoiceNumber },
   });
   if (!txn) return;
   if (txn.status !== "success") {

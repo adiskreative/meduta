@@ -197,7 +197,6 @@
 ## Yang Belum / Next Steps
 
 ### Integrasi
-- Pembayaran Midtrans (schema `Transaction` + `midtransId` sudah ada, env kosong, notifikasi tipe TRANSACTION menunggu ini)
 - Emoji/paket berbayar ("Status Paket: Gratis" di dashboard masih statis)
 
 ### Template Custom
@@ -229,8 +228,9 @@ ADMIN_PASSWORD=password123       # untuk seed akun admin
 SUPABASE_SERVICE_ROLE_KEY=       # agar upload foto berfungsi
 RESEND_API_KEY=                  # agar email undangan benar-benar terkirim (via Resend)
 EMAIL_FROM=                      # pengirim email, harus domain terverifikasi Resend
-MIDTRANS_SERVER_KEY=             # untuk pembayaran
-MIDTRANS_CLIENT_KEY=             # untuk pembayaran
+DOKU_CLIENT_ID=                  # untuk pembayaran Premium
+DOKU_SECRET_KEY=                 # untuk pembayaran Premium
+DOKU_IS_PRODUCTION=false
 AUTH_GOOGLE_ID=                  # untuk Google OAuth
 AUTH_GOOGLE_SECRET=              # untuk Google OAuth
 ```

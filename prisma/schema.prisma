@@ -192,7 +192,7 @@ model Transaction {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  midtransId  String? // Payment gateway reference: Midtrans order_id atau DOKU invoice_number
+  gatewayReference String? @map("midtransId")
   packageName String
   amount      Int
   status      String // pending | success | failed

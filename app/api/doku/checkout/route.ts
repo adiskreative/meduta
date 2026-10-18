@@ -8,7 +8,7 @@ import { isPremiumUser } from "@/lib/premium";
  *
  * Membuat checkout DOKU untuk paket Premium user yang login,
  * menyimpan Transaction "pending" lalu mengembalikan paymentUrl
- * untuk di-redirect ke halaman pembayaran hosted DOKU.
+ * untuk ditampilkan dalam dialog pembayaran.
  * 401 bila belum login, 409 bila sudah premium, 503 bila env DOKU belum diisi.
  */
 export async function POST() {
