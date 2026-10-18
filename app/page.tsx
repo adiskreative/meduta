@@ -155,7 +155,7 @@ const templates = [
 ];
 
 export const metadata = {
-  title: "Meduta — Undangan Digital Pernikahan",
+  title: "MEDUTA",
   description:
     "Buat undangan pernikahan digital yang elegan. Pilih tema, bagikan link, pantau RSVP & ucapan tamu dalam satu tempat.",
 };
@@ -216,7 +216,7 @@ const plans = [
   {
     name: "Gratis",
     price: "Rp0",
-    period: "selamanya",
+    period: "1 bulan",
     desc: "Coba semua fitur dasar untuk satu undangan.",
     features: [
       "undangan pernikahan terbatas",
@@ -284,6 +284,7 @@ function Navbar() {
           <Logo className="h-10 w-auto" />
         </Link>
         <div className="hidden items-center gap-8 text-sm font-medium text-zinc-300 md:flex">
+          <a href="#Home" className="transition hover:text-white">Home</a>
           <a href="#fitur" className="transition hover:text-white">Fitur</a>
           <a href="#cara-kerja" className="transition hover:text-white">Cara Kerja</a>
           <a href="#panduan" className="transition hover:text-white">Panduan</a>
@@ -312,7 +313,7 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#10173f]">
+    <section id="Home" className="relative scroll-mt-16 overflow-hidden bg-[#10173f]">
       {/* Background pola daun navy (layer normal, di atas bg fallback section) */}
       <div
         aria-hidden
@@ -563,7 +564,7 @@ function Tentang() {
             <p className="mt-4 text-lg font-medium leading-relaxed">
               “Membagikan kabar bahagia seharusnya semudah tersenyum.”
             </p>
-            <p className="mt-4 text-sm text-white/80">— Tim Meduta</p>
+            <p className="mt-4 text-sm text-white/80">- Tim Meduta</p>
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/20 pt-5 text-sm font-medium">
               <Link href="/tim" className="text-white/90 underline-offset-4 transition hover:text-white hover:underline">
                 Tim Kami

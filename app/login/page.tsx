@@ -5,7 +5,7 @@ import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 import { LogoWithText } from "@/components/Logo";
 
 export const metadata: Metadata = {
-  title: "Masuk | Meduta",
+  title: "MEDUTA | Login",
   description: "Masuk ke akun Meduta Anda",
 };
 

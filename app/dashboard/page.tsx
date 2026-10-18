@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   const host =
     headerList.get("x-forwarded-host") ??
     headerList.get("host") ??
-    "localhost:3000";
+    "meduta.my.id";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`;
 
   const invitation = await prisma.invitation.findFirst({

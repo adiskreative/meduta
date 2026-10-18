@@ -14,14 +14,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Meduta - Undangan Digital Pernikahan",
+    default: "MEDUTA",
     template: "%s",
   },
   description:
     "Buat undangan digital pernikahan yang elegan, bagikan dengan tamu, dan kelola RSVP dengan mudah.",
   applicationName: "Meduta",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://meduta.my.id",
   ),
 };
 

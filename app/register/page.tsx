@@ -3,7 +3,7 @@ import RegisterForm from "@/components/auth/RegisterForm";
 import { LogoWithText } from "@/components/Logo";
 
 export const metadata: Metadata = {
-  title: "Daftar | Meduta",
+  title: "MEDUTA | Register",
   description: "Buat akun Meduta gratis",
 };
 
