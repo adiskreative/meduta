@@ -47,11 +47,12 @@ export default async function DashboardPage() {
 
   // Sisa masa aktif (hari, dibulatkan ke atas); null = premium/tanpa batas
   const expiresAt = invitation?.expiresAt ? new Date(invitation.expiresAt) : null;
+  const currentTime = new Date().getTime();
   const daysLeft =
     expiresAt && !premiumAccess
       ? Math.max(
           0,
-          Math.ceil((expiresAt.getTime() - Date.now()) / 86400000),
+          Math.ceil((expiresAt.getTime() - currentTime) / 86400000),
         )
       : null;
 
