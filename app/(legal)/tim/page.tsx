@@ -8,7 +8,7 @@ import { Heart, Mail, MessageCircle } from "lucide-react";
  */
 
 export const metadata: Metadata = {
-  title: "Tim Kami — Meduta",
+  title: "Tim Kami - Meduta",
   description: "Orang-orang di balik Meduta, platform undangan digital pernikahan.",
 };
 
