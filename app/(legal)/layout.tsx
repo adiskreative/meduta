@@ -67,10 +67,10 @@ export default function LegalLayout({
               |
             </span>
             <a
-              href="mailto:adi.skreative@gmail.com"
+              href="mailto:admin@meduta.my.id"
               className="transition hover:text-white"
             >
-              adi.skreative@gmail.com
+              admin@meduta.my.id
             </a>
           </div>
         </div>

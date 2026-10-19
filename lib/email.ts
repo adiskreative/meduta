@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const apiKey = process.env.RESEND_API_KEY;
 const from =
-  process.env.EMAIL_FROM ?? "Meduta <undangan@meduta.com>";
+  process.env.EMAIL_FROM ?? "Meduta <admin@meduta.my.id>";
 
 const resend = apiKey ? new Resend(apiKey) : null;
 

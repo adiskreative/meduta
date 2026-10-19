@@ -134,11 +134,11 @@ export default function PusatBantuanPage() {
             WhatsApp 0823 9988 9992
           </a>
           <a
-            href="mailto:adi.skreative@gmail.com"
+            href="mailto:admin@meduta.my.id"
             className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:border-pink-300 hover:text-pink-600"
           >
             <Mail className="h-4 w-4" />
-            adi.skreative@gmail.com
+            admin@meduta.my.id
           </a>
         </div>
       </div>

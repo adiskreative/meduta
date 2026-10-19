@@ -514,7 +514,7 @@ function Panduan() {
 }
 
 const KONTAK = {
-  email: "adi.skreative@gmail.com",
+  email: "admin@meduta.my.id",
   wa: "6282399889992",
   waDisplay: "0823 9988 9992",
   alamat: "Kab. Parigi Moutong, Kec. Parigi, Jl. Jalur Dua Lebo, Btn Graha Bidara Blok G.6",
