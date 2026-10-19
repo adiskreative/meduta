@@ -118,6 +118,28 @@ Cek: `systemctl status meduta` → `active (running)`, lalu buka
 - **NEXT_PUBLIC_APP_URL** = `https://domain-anda.com` (dipakai link undangan tamu —
   penting: link undangan yang sudah tersebar mengikuti nilai ini).
 
+## Langkah 7 — Aktifkan pembayaran Premium (Midtrans)
+
+Isi key Midtrans pada environment aplikasi dengan pasangan key dari environment
+yang sama:
+
+- Sandbox: `MIDTRANS_IS_PRODUCTION=false` dan gunakan Server Key serta Client Key
+  Sandbox. Gunakan ini hanya pada lingkungan pengujian.
+- Production: `MIDTRANS_IS_PRODUCTION=true` dan gunakan Server Key serta Client
+  Key Production.
+
+Di Midtrans Dashboard untuk environment yang sama, atur Payment Notification URL
+ke `https://domain-anda.com/api/midtrans/notification`. URL harus mengarah ke
+deployment aplikasi yang sudah memuat route Midtrans; respons `404` berarti
+deployment belum memiliki route tersebut. Checkout premium menggunakan
+`/api/midtrans/checkout`.
+
+Status `Settlement` di Sandbox hanya transaksi uji dan tidak membuktikan
+pembayaran Production. Jangan memasangkan notifikasi Sandbox dengan Server Key
+Production atau sebaliknya. Endpoint notifikasi DOKU tetap tersedia untuk
+menyelesaikan notifikasi transaksi DOKU lama, tetapi checkout baru memakai
+Midtrans.
+
 ## Perawatan harian
 
 ```bash

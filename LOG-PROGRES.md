@@ -228,9 +228,11 @@ ADMIN_PASSWORD=password123       # untuk seed akun admin
 SUPABASE_SERVICE_ROLE_KEY=       # agar upload foto berfungsi
 RESEND_API_KEY=                  # agar email undangan benar-benar terkirim (via Resend)
 EMAIL_FROM=                      # pengirim email, harus domain terverifikasi Resend
-DOKU_CLIENT_ID=                  # untuk pembayaran Premium
-DOKU_SECRET_KEY=                 # untuk pembayaran Premium
-DOKU_IS_PRODUCTION=false
+MIDTRANS_SERVER_KEY=             # Server Key sesuai environment Sandbox/Production
+MIDTRANS_CLIENT_KEY=             # Client Key sesuai environment Sandbox/Production
+MIDTRANS_IS_PRODUCTION=false     # true untuk Production, false untuk Sandbox
+DOKU_CLIENT_ID=                  # hanya untuk notifikasi transaksi DOKU lama
+DOKU_SECRET_KEY=                 # hanya untuk notifikasi transaksi DOKU lama
 AUTH_GOOGLE_ID=                  # untuk Google OAuth
 AUTH_GOOGLE_SECRET=              # untuk Google OAuth
 ```

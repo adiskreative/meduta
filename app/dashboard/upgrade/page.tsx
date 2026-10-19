@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Script from "next/script";
 import { Check, Crown } from "lucide-react";
 import { auth } from "@/lib/auth";
 import {
@@ -6,8 +7,11 @@ import {
   PREMIUM_ORIGINAL_PRICE,
   isPremiumUser,
 } from "@/lib/premium";
-import { isDokuConfigured } from "@/lib/doku";
-import DokuCheckoutButton from "@/components/dashboard/DokuCheckoutButton";
+import {
+  isMidtransConfigured,
+  SNAP_IS_PRODUCTION,
+} from "@/lib/midtrans";
+import SnapCheckoutButton from "@/components/dashboard/SnapCheckoutButton";
 
 export const metadata = { title: "Upgrade Premium | Meduta" };
 export const dynamic = "force-dynamic";
@@ -33,10 +37,21 @@ export default async function UpgradePage() {
 
   const premium = await isPremiumUser(session.user.id);
 
-  const dokuReady = isDokuConfigured();
+  const snapClientKey = process.env.MIDTRANS_CLIENT_KEY?.trim() ?? "";
+  const snapUrl = SNAP_IS_PRODUCTION
+    ? "https://app.midtrans.com/snap/snap.js"
+    : "https://app.sandbox.midtrans.com/snap/snap.js";
+  const midtransReady = isMidtransConfigured();
 
   return (
     <div className="space-y-6">
+      {midtransReady && (
+        <Script
+          src={snapUrl}
+          data-client-key={snapClientKey}
+          strategy="afterInteractive"
+        />
+      )}
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">Upgrade Premium</h1>
         <p className="mt-1 text-sm text-zinc-500">
@@ -96,17 +111,20 @@ export default async function UpgradePage() {
             </ul>
 
             <div className="mt-8 space-y-3">
-              {dokuReady ? (
-                <DokuCheckoutButton />
+              {midtransReady ? (
+                <SnapCheckoutButton
+                  clientKey={snapClientKey}
+                  isProduction={SNAP_IS_PRODUCTION}
+                />
               ) : (
                 <p className="text-center text-sm text-amber-700">
-                  Pembayaran DOKU belum tersedia. Silakan hubungi administrator.
+                  Pembayaran Midtrans belum tersedia. Silakan hubungi administrator.
                 </p>
               )}
             </div>
 
             <p className="mt-4 text-center text-xs text-zinc-400">
-              Pembayaran aman via DOKU (VA bank, e-wallet, QRIS, kartu). Akses
+              Pembayaran aman via Midtrans (VA bank, e-wallet, QRIS, kartu). Akses
               premium aktif otomatis setelah pembayaran terkonfirmasi.
             </p>
           </div>
