@@ -24,6 +24,12 @@ export type InvitationEmailData = {
   location?: string;
 };
 
+export type VerificationEmailData = {
+  to: string;
+  name: string;
+  confirmationUrl: string;
+};
+
 export function isEmailEnabled(): boolean {
   return Boolean(resend);
 }
@@ -35,6 +41,29 @@ export function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+export function buildVerificationEmailHtml(
+  data: VerificationEmailData,
+): string {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+      <h1 style="color: #9f1239; font-size: 24px;">Konfirmasi email Meduta</h1>
+      <p style="color: #3f3f46; font-size: 15px; line-height: 1.6;">
+        Halo ${escapeHtml(data.name)}, terima kasih telah mendaftar di Meduta.
+        Klik tombol berikut untuk mengonfirmasi alamat email Anda.
+      </p>
+      <div style="margin: 24px 0; text-align: center;">
+        <a href="${escapeHtml(data.confirmationUrl)}" style="display: inline-block; background: #be123c; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-size: 15px;">
+          Konfirmasi Email
+        </a>
+      </div>
+      <p style="color: #71717a; font-size: 13px; line-height: 1.6;">
+        Tautan ini berlaku selama 24 jam. Jika Anda tidak merasa mendaftar,
+        abaikan email ini.
+      </p>
+    </div>
+  `;
 }
 
 export function buildInvitationHtml(data: InvitationEmailData): string {
@@ -88,6 +117,36 @@ export function buildInvitationHtml(data: InvitationEmailData): string {
       </p>
     </div>
   `;
+}
+
+export async function sendVerificationEmail(
+  data: VerificationEmailData,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!resend) {
+    return {
+      ok: false,
+      error: "RESEND_API_KEY belum dikonfigurasi.",
+    };
+  }
+
+  try {
+    const { error } = await resend.emails.send({
+      from,
+      to: data.to,
+      subject: "Konfirmasi email akun Meduta",
+      html: buildVerificationEmailHtml(data),
+    });
+
+    if (error) {
+      console.error("[email] Gagal kirim konfirmasi:", error);
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[email] Gagal kirim konfirmasi:", err);
+    return { ok: false, error: message };
+  }
 }
 
 export async function sendInvitationEmail(data: InvitationEmailData): Promise<{

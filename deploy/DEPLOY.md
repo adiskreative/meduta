@@ -104,6 +104,10 @@ cp /opt/meduta/deploy/Caddyfile /etc/caddy/Caddyfile
 systemctl reload caddy
 ```
 
+`npm run build` menggunakan Prisma Client untuk Node.js. Untuk deployment
+Cloudflare Workers, gunakan `npm run build:worker`; script tersebut memilih
+Prisma Client dengan runtime `workerd` secara otomatis.
+
 Cek: `systemctl status meduta` → `active (running)`, lalu buka
 `https://domain-anda.com` — sertifikat HTTPS terbit otomatis oleh Caddy
 (dibutuhkan DNS sudah mengarah + port 80/443 terbuka).
@@ -114,8 +118,10 @@ Cek: `systemctl status meduta` → `active (running)`, lalu buka
   - Authorized JavaScript origin: `https://domain-anda.com`
   - Authorized redirect URI: `https://domain-anda.com/api/auth/callback/google`
 - **Resend** (resend.com → Domains): tambahkan & verifikasi domain Anda,
-  lalu set `EMAIL_FROM="Meduta <admin@meduta.my.id>"` setelah alamat tersebut
-  memenuhi persyaratan sender terverifikasi Resend.
+  lalu set `RESEND_API_KEY` dan `EMAIL_FROM="Meduta <admin@meduta.my.id>"`
+  setelah alamat tersebut memenuhi persyaratan sender terverifikasi Resend.
+  `RESEND_API_KEY` diperlukan untuk mengirim email konfirmasi akun saat
+  pendaftaran.
 - **NEXT_PUBLIC_APP_URL** = `https://domain-anda.com` (dipakai link undangan tamu —
   penting: link undangan yang sudah tersebar mengikuti nilai ini).
 

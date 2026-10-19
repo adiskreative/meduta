@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildVerificationEmailHtml,
   buildInvitationHtml,
   escapeHtml,
   isEmailEnabled,
@@ -58,6 +59,22 @@ describe("buildInvitationHtml", () => {
     const html = buildInvitationHtml({ ...base, guestName: "<b>Jahat</b>" });
     expect(html).toContain("&lt;b&gt;Jahat&lt;/b&gt;");
     expect(html).not.toContain("<b>Jahat</b>");
+  });
+});
+
+describe("buildVerificationEmailHtml", () => {
+  it("menyertakan tautan konfirmasi dan meng-escape nama", () => {
+    const html = buildVerificationEmailHtml({
+      to: "user@example.com",
+      name: "<script>alert(1)</script>",
+      confirmationUrl: "https://meduta.my.id/api/auth/verify?token=abc",
+    });
+
+    expect(html).toContain(
+      'href="https://meduta.my.id/api/auth/verify?token=abc"',
+    );
+    expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+    expect(html).not.toContain("<script>");
   });
 });
 

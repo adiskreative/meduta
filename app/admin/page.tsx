@@ -3,6 +3,7 @@ import { Palette, Images, Users, FileText, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Admin Panel | Meduta" };
+export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
   const [templateCount, userCount, invitationCount, assetCount] = await Promise.all([

@@ -7,7 +7,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
 const credentialsSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email().trim(),
   password: z.string().min(8).max(128),
 });
 
@@ -32,8 +32,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email },
+        const user = await prisma.user.findFirst({
+          where: { email: { equals: parsed.data.email, mode: "insensitive" } },
         });
         if (!user || !user.password) return null;
 
@@ -42,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.password,
         );
         if (!passwordValid) return null;
+        if (user.emailConfirmationPending) return null;
 
         return {
           id: user.id,

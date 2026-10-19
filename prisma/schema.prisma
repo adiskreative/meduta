@@ -3,8 +3,14 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../generated/prisma-workerd"
   runtime  = "workerd"
+}
+
+generator clientNode {
+  provider = "prisma-client"
+  output   = "../generated/prisma-node"
+  runtime  = "nodejs"
 }
 
 datasource db {
@@ -33,22 +39,23 @@ enum NotificationType {
 }
 
 model User {
-  id               String          @id @default(cuid())
-  email            String          @unique
-  emailVerified    DateTime?
-  password         String
-  name             String?
-  image            String?
-  avatarUrl        String?
-  role             Role            @default(USER)
-  createdAt        DateTime        @default(now())
-  accounts         Account[]
-  sessions         Session[]
-  invitations      Invitation[]
-  transactions     Transaction[]
-  assets           TemplateAsset[]
-  createdTemplates Template[]
-  notifications    Notification[]
+  id                       String          @id @default(cuid())
+  email                    String          @unique
+  emailVerified            DateTime?
+  emailConfirmationPending Boolean         @default(false)
+  password                 String
+  name                     String?
+  image                    String?
+  avatarUrl                String?
+  role                     Role            @default(USER)
+  createdAt                DateTime        @default(now())
+  accounts                 Account[]
+  sessions                 Session[]
+  invitations              Invitation[]
+  transactions             Transaction[]
+  assets                   TemplateAsset[]
+  createdTemplates         Template[]
+  notifications            Notification[]
 }
 
 model Account {

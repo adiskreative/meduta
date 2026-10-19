@@ -31,6 +31,7 @@ export default function LoginForm() {
   });
 
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const status = searchParams.get("status");
 
   async function onSubmit(data: LoginInput) {
     setIsLoading(true);
@@ -45,7 +46,9 @@ export default function LoginForm() {
     setIsLoading(false);
 
     if (res?.error) {
-      setServerError("Email atau password salah.");
+      setServerError(
+        "Email atau password salah, atau email belum dikonfirmasi.",
+      );
       return;
     }
 
@@ -58,6 +61,41 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {status === "registered" && (
+        <div
+          role="status"
+          className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+        >
+          Pendaftaran berhasil. Buka email Anda dan klik tautan konfirmasi
+          sebelum masuk.
+        </div>
+      )}
+      {status === "verified" && (
+        <div
+          role="status"
+          className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+        >
+          Email berhasil dikonfirmasi. Silakan masuk.
+        </div>
+      )}
+      {status === "verification-invalid" && (
+        <div
+          role="alert"
+          className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
+          Tautan konfirmasi tidak valid atau sudah kedaluwarsa. Daftar kembali
+          untuk mengirim tautan baru.
+        </div>
+      )}
+      {status === "verification-error" && (
+        <div
+          role="alert"
+          className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
+          Email belum dapat dikonfirmasi karena terjadi kesalahan. Silakan coba
+          lagi nanti.
+        </div>
+      )}
       {serverError && (
         <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
           {serverError}
