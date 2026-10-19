@@ -77,7 +77,7 @@ const FAQS: { group: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Saya menemukan masalah atau error, kemana harus lapor?",
-        a: "Hubungi kami lewat WhatsApp 0823 9988 9992 (respon tercepat) atau email adi.skreative@gmail.com. Sertakan nama akun/email terdaftar dan tangkapan layar masalahnya agar kami bisa membantu lebih cepat.",
+        a: "Hubungi kami lewat WhatsApp 0823 9988 9992 (respon tercepat) atau email admin@meduta.my.id. Sertakan nama akun/email terdaftar dan tangkapan layar masalahnya agar kami bisa membantu lebih cepat.",
       },
     ],
   },

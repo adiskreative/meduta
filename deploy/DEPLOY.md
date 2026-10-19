@@ -114,7 +114,8 @@ Cek: `systemctl status meduta` → `active (running)`, lalu buka
   - Authorized JavaScript origin: `https://domain-anda.com`
   - Authorized redirect URI: `https://domain-anda.com/api/auth/callback/google`
 - **Resend** (resend.com → Domains): tambahkan & verifikasi domain Anda,
-  lalu set `EMAIL_FROM="Meduta <undangan@domain-anda.com>"`.
+  lalu set `EMAIL_FROM="Meduta <admin@meduta.my.id>"` setelah alamat tersebut
+  memenuhi persyaratan sender terverifikasi Resend.
 - **NEXT_PUBLIC_APP_URL** = `https://domain-anda.com` (dipakai link undangan tamu —
   penting: link undangan yang sudah tersebar mengikuti nilai ini).
 

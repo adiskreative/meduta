@@ -88,7 +88,7 @@ export default function TimPage() {
             kreator konten pernikahan. Perkenalkan diri Anda kepada kami.
           </p>
           <Link
-            href={`mailto:adi.skreative@gmail.com`}
+            href="mailto:admin@meduta.my.id"
             className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-pink-700 transition hover:bg-pink-50"
           >
             <Mail className="h-4 w-4" />

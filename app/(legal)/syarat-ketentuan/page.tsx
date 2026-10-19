@@ -64,7 +64,7 @@ const SECTIONS = [
   {
     title: "8. Kontak",
     paras: [
-      "Pertanyaan tentang Syarat & Ketentuan ini dapat disampaikan melalui email adi.skreative@gmail.com atau WhatsApp 0823 9988 9992 (Jl Jalur II Lebo,  Btn Graha Bidara Blok G.6, Kec. Parigi).",
+      "Pertanyaan tentang Syarat & Ketentuan ini dapat disampaikan melalui email admin@meduta.my.id atau WhatsApp 0823 9988 9992 (Jl Jalur II Lebo,  Btn Graha Bidara Blok G.6, Kec. Parigi).",
     ],
   },
 ];

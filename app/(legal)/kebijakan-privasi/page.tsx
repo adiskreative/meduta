@@ -57,7 +57,7 @@ const SECTIONS = [
     title: "6. Hak Anda",
     paras: [
       "Anda berhak mengakses, memperbaiki, dan menghapus data pribadi Anda; menarik persetujuan pemasaran; serta mengajukan pertanyaan tentang pemrosesan data Anda.",
-      "Permintaan dapat dikirim ke adi.skreative@gmail.com - kami akan merespons dalam waktu wajar sesuai peraturan yang berlaku.",
+      "Permintaan dapat dikirim ke admin@meduta.my.id - kami akan merespons dalam waktu wajar sesuai peraturan yang berlaku.",
     ],
   },
   {

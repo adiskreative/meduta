@@ -206,7 +206,7 @@
 - Webhook Resend untuk status delivery/bounce/complaint (belum ada handler)
 - Format email mengikuti desain template undangan (saat ini satu template generik)
 - Preview/pratinjau email + kirim email tes sebelum go-live
-- Domain verifikasi Resend — saat ini memakai `onboarding@resend.dev` (tes); perlu domain sendiri untuk produksi agar tidak masuk spam
+- Pastikan `admin@meduta.my.id` terverifikasi sebagai sender di Resend sebelum pengiriman email produksi
 
 ---
 
@@ -223,7 +223,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Belum terisi (perlu diisi agar fitur berfungsi)
-ADMIN_EMAIL=admin@meduta.com    # untuk seed akun admin
+ADMIN_EMAIL=admin@meduta.my.id  # untuk seed akun admin
 ADMIN_PASSWORD=password123       # untuk seed akun admin
 SUPABASE_SERVICE_ROLE_KEY=       # agar upload foto berfungsi
 RESEND_API_KEY=                  # agar email undangan benar-benar terkirim (via Resend)

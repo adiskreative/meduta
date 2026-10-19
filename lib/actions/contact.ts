@@ -5,7 +5,7 @@ import { isEmailEnabled, escapeHtml } from "@/lib/email";
 
 /** Email penerima pesan kontak (bisa dioverride via env). */
 const KONTAK_PENERIMA =
-  process.env.CONTACT_EMAIL ?? "adi.skreative@gmail.com";
+  process.env.CONTACT_EMAIL ?? "admin@meduta.my.id";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter").max(100).trim(),
@@ -89,7 +89,7 @@ export async function sendContactMessage(
     return {
       ok: false,
       message:
-        "Layanan email belum aktif. Silakan hubungi kami langsung di adi.skreative@gmail.com.",
+        "Layanan email belum aktif. Silakan hubungi kami langsung di admin@meduta.my.id.",
     };
   }
 
@@ -103,7 +103,7 @@ export async function sendContactMessage(
 
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const from = process.env.EMAIL_FROM ?? "Meduta <undangan@meduta.com>";
+  const from = process.env.EMAIL_FROM ?? "Meduta <admin@meduta.my.id>";
 
   try {
     const { error } = await resend.emails.send({
