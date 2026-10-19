@@ -10,7 +10,7 @@ export const SNAP_IS_PRODUCTION =
   process.env.MIDTRANS_IS_PRODUCTION === "1";
 
 const APP_ORIGIN =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://meduta.my.id";
 
 export function isMidtransConfigured(): boolean {
   return Boolean(
@@ -123,39 +123,43 @@ export function verifyMidtransSignature(
   );
 }
 
+/**
+ * Mengembalikan userId HANYA jika transaksi baru saja berubah menjadi success.
+ * Notifikasi duplikat / sudah success / nominal tidak cocok → null.
+ */
 export async function markTransactionSuccessAndGetUserId(
   orderId: string,
   paidAmount?: number,
 ): Promise<string | null> {
   const transaction = await prisma.transaction.findFirst({
     where: { gatewayReference: orderId },
-    include: { user: { select: { id: true } } },
+    select: { id: true, userId: true, amount: true, status: true },
   });
-  if (!transaction) return null;
+  if (!transaction || transaction.status === "success") return null;
 
-  if (transaction.status !== "success") {
-    await prisma.transaction.update({
-      where: { id: transaction.id },
-      data: {
-        status: "success",
-        amount:
-          typeof paidAmount === "number" && Number.isFinite(paidAmount)
-            ? Math.round(paidAmount)
-            : transaction.amount,
-      },
-    });
+  if (
+    typeof paidAmount === "number" &&
+    Number.isFinite(paidAmount) &&
+    Math.round(paidAmount) !== Number(transaction.amount)
+  ) {
+    console.error(
+      `Midtrans amount mismatch for ${orderId}: expected ${transaction.amount}, got ${paidAmount}`,
+    );
+    return null;
   }
-  return transaction.userId;
+
+  // Atomic: hanya satu request yang berhasil mengubah status
+  const { count } = await prisma.transaction.updateMany({
+    where: { id: transaction.id, status: { not: "success" } },
+    data: { status: "success" },
+  });
+
+  return count > 0 ? transaction.userId : null;
 }
 
 export async function markTransactionFailed(orderId: string): Promise<void> {
-  const transaction = await prisma.transaction.findFirst({
-    where: { gatewayReference: orderId },
-  });
-  if (!transaction || transaction.status === "success") return;
-
-  await prisma.transaction.update({
-    where: { id: transaction.id },
+  await prisma.transaction.updateMany({
+    where: { gatewayReference: orderId, status: "pending" },
     data: { status: "failed" },
   });
 }

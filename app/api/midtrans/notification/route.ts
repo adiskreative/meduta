@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
 import {
   markTransactionFailed,
@@ -24,15 +23,14 @@ export async function POST(request: NextRequest) {
   }
 
   const body = payload as Record<string, unknown>;
-  const orderId = typeof body.order_id === "string" ? body.order_id : "";
-  const statusCode =
-    typeof body.status_code === "string" ? body.status_code : "";
-  const grossAmount =
-    typeof body.gross_amount === "string" ? body.gross_amount : "";
-  const signatureKey =
-    typeof body.signature_key === "string" ? body.signature_key : "";
-  const transactionStatus =
-    typeof body.transaction_status === "string" ? body.transaction_status : "";
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+
+  const orderId = str(body.order_id);
+  const statusCode = str(body.status_code);
+  const grossAmount = str(body.gross_amount);
+  const signatureKey = str(body.signature_key);
+  const transactionStatus = str(body.transaction_status);
+  const fraudStatus = str(body.fraud_status);
 
   if (!orderId || !statusCode || !grossAmount || !signatureKey) {
     return NextResponse.json(
@@ -41,26 +39,20 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (
-    !verifyMidtransSignature(orderId, statusCode, grossAmount, signatureKey)
-  ) {
-    return NextResponse.json(
-      { error: "Signature tidak valid." },
-      { status: 403 },
-    );
+  if (!verifyMidtransSignature(orderId, statusCode, grossAmount, signatureKey)) {
+    return NextResponse.json({ error: "Signature tidak valid." }, { status: 403 });
   }
 
   const paidAmount = Number(grossAmount);
 
   try {
-    if (
-      transactionStatus === "capture" ||
-      transactionStatus === "settlement"
-    ) {
-      const userId = await markTransactionSuccessAndGetUserId(
-        orderId,
-        paidAmount,
-      );
+    const isPaid =
+      transactionStatus === "settlement" ||
+      (transactionStatus === "capture" &&
+        (fraudStatus === "accept" || fraudStatus === ""));
+
+    if (isPaid) {
+      const userId = await markTransactionSuccessAndGetUserId(orderId, paidAmount);
       if (userId) {
         await createNotification({
           userId,
@@ -83,10 +75,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (transactionStatus === "pending") {
-      await prisma.transaction.updateMany({
-        where: { gatewayReference: orderId, status: "pending" },
-        data: { status: "pending" },
-      });
       return NextResponse.json({ ok: true, handled: "pending" });
     }
 
