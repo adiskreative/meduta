@@ -19,7 +19,7 @@ export default function ContactForm() {
     <div className="rounded-2xl border border-zinc-200 bg-white p-6 md:p-8">
       <h3 className="text-lg font-semibold text-zinc-900">Kirim Pesan</h3>
       <p className="mt-1 text-sm text-zinc-500">
-        Isi form di bawah, pesan langsung masuk ke email kami dan kami balas secepat mungkin ke email Kamu.
+        Isi form di bawah, pesan langsung masuk ke email kami dan kami balas secepat mungkin ke email Anda.
       </p>
 
       {state?.message && (
@@ -55,7 +55,7 @@ export default function ContactForm() {
               id="contact-name"
               name="name"
               type="text"
-              placeholder="Nama Kamu"
+              placeholder="Nama Anda"
               className={inputClass(!!state?.errors?.name)}
             />
             {state?.errors?.name && (
@@ -70,7 +70,7 @@ export default function ContactForm() {
               id="contact-email"
               name="email"
               type="email"
-              placeholder="email@kamu.com"
+              placeholder="email@anda.com"
               className={inputClass(!!state?.errors?.email)}
             />
             {state?.errors?.email && (

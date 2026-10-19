@@ -14,11 +14,14 @@ import {
   Mail,
   MessageCircle,
   Building2,
+  Crown,
+  UserRound,
 } from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
 import TemplateSlider from "@/components/landing/TemplateSlider";
 import ContactForm from "@/components/landing/ContactForm";
 import Logo from "@/components/Logo";
+import { auth } from "@/lib/auth";
 
 const templates = [
   {
@@ -258,17 +261,19 @@ const plans = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
   return (
     <main className="flex min-h-screen flex-col bg-white text-zinc-900">
-      <Navbar />
+      <Navbar isLoggedIn={Boolean(session?.user)} />
       <Hero />
       <Features />
       <Templates />
       <Steps />
       <Panduan />
       <Tentang />
-      <Pricing />
+      <Pricing isLoggedIn={Boolean(session?.user)} />
       <CTA />
       <Kontak />
       <Footer />
@@ -276,7 +281,7 @@ export default function Home() {
   );
 }
 
-function Navbar() {
+function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#10173f]/85 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -293,18 +298,31 @@ function Navbar() {
           <a href="#kontak" className="transition hover:text-white">Kontak</a>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="flex min-h-[44px] items-center px-3 text-sm font-medium text-zinc-200 transition hover:text-white"
-          >
-            Masuk
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-700"
-          >
-            Daftar
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              aria-label="Kembali ke dashboard"
+              title="Kembali ke dashboard"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-zinc-200 transition hover:bg-white/10 hover:text-white"
+            >
+              <UserRound className="h-5 w-5" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="flex min-h-[44px] items-center px-3 text-sm font-medium text-zinc-200 transition hover:text-white"
+              >
+                Masuk
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-700"
+              >
+                Daftar
+              </Link>
+            </>
+          )}
         </div>
       </nav>
     </header>
@@ -654,7 +672,7 @@ function Kontak() {
   );
 }
 
-function Pricing() {
+function Pricing({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <section id="harga" className="bg-white py-14 sm:py-20">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
@@ -673,7 +691,15 @@ function Pricing() {
                   : "border-zinc-200"
               }`}
             >
-              <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <h3 className="flex items-center gap-2 text-lg font-semibold">
+                {plan.name}
+                {plan.highlighted && (
+                  <Crown
+                    aria-label="Paket Premium"
+                    className="h-5 w-5 text-amber-500"
+                  />
+                )}
+              </h3>
               <p className="mt-1 text-sm text-zinc-500">{plan.desc}</p>
               <div className="mt-5 flex items-baseline gap-2">
                 <span className="text-4xl font-bold">{plan.price}</span>
@@ -688,7 +714,7 @@ function Pricing() {
                 ))}
               </ul>
               <Link
-                href={plan.href}
+                href={isLoggedIn && plan.highlighted ? "/dashboard" : plan.href}
                 className={`mt-8 block rounded-xl px-6 py-3 text-center font-semibold transition ${
                   plan.highlighted
                     ? "bg-pink-600 text-white hover:bg-pink-700"
@@ -785,7 +811,7 @@ function Footer() {
             </Link>
           </div>
           <p className="text-sm text-zinc-400">
-            Copyright © {new Date().getFullYear()} Meduta. Adi.Skreative. All rights reserved.
+            Copyright © {new Date().getFullYear()} Meduta. All rights reserved.
           </p>
         </div>
       </div>

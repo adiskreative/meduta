@@ -5,6 +5,7 @@
   "compatibility_date": "2025-05-05",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
+    "MIDTRANS_IS_PRODUCTION": "true",
     "NEXT_PUBLIC_APP_URL": "https://meduta.my.id"
   },
   "assets": {

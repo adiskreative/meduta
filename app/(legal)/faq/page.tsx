@@ -81,6 +81,15 @@ const FAQS: { group: string; items: { q: string; a: string }[] }[] = [
       },
     ],
   },
+  {
+    group: "Transaksi & Pembayaran",
+    items: [
+      {
+        q: "Apakah Uang Saya Akan dikembalikan jika gagal pembayaran?",
+        a: "Ya, jika pembayaran gagal, uang Anda akan dikembalikan ke rekening yang digunakan untuk pembayaran.",
+      },
+    ],
+  },
 ];
 
 export default function FaqPage() {

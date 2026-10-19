@@ -8,6 +8,7 @@ import {
   CalendarClock,
   Plus,
   Eye,
+  House,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -85,6 +86,16 @@ export default async function DashboardPage() {
         >
           <Plus className="h-4 w-4" />
           Buat Undangan Baru
+        </Link>
+      </div>
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+        >
+          <House className="h-4 w-4" />
+          Ke Beranda
         </Link>
       </div>
 
