@@ -1,10 +1,5 @@
 import type { NextConfig } from "next";
 
-const prismaRuntime = process.env.MEDUTA_PRISMA_RUNTIME ?? "nodejs";
-if (prismaRuntime !== "nodejs" && prismaRuntime !== "workerd") {
-  throw new Error(`Runtime Prisma tidak valid: ${prismaRuntime}`);
-}
-
 const securityHeaders = [
   // SAMEORIGIN: halaman preview boleh di-frame oleh landing page sendiri
   // (thumbnail live), situs eksternal tetap diblokir (anti-klikjacking).
@@ -42,17 +37,6 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "12mb",
     },
-  },
-  webpack(config, { isServer }) {
-    if (isServer) {
-      if (prismaRuntime === "workerd") {
-        config.experiments = {
-          ...config.experiments,
-          asyncWebAssembly: true,
-        };
-      }
-    }
-    return config;
   },
   async headers() {
     return [

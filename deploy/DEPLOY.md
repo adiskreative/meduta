@@ -106,7 +106,13 @@ systemctl reload caddy
 
 `npm run build` menggunakan Prisma Client untuk Node.js. Untuk deployment
 Cloudflare Workers, gunakan `npm run build:worker`; script tersebut memilih
-Prisma Client dengan runtime `workerd` secara otomatis.
+Prisma Client dengan runtime `workerd` dan membangun Next.js dengan Turbopack
+agar query compiler WASM Prisma dibundel untuk Worker (Webpack mencoba memuatnya
+melalui `fs.readFile`, yang tidak tersedia di runtime Cloudflare). Sebelum
+deployment Cloudflare pertama dan setiap kali schema berubah, jalankan
+`npx prisma db push` dari lingkungan tepercaya dengan `DIRECT_URL` yang mengarah
+ke database target yang benar. Periksa perubahan schema yang direncanakan dan
+pastikan ada cadangan sebelum menyetujuinya.
 
 Cek: `systemctl status meduta` → `active (running)`, lalu buka
 `https://domain-anda.com` — sertifikat HTTPS terbit otomatis oleh Caddy

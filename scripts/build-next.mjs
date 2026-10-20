@@ -26,7 +26,7 @@ if (selectClient.error) {
 } else {
   const result = spawnSync(
     process.execPath,
-    [nextCli, "build", "--webpack"],
+    [nextCli, "build", "--turbopack"],
     { stdio: "inherit", env: process.env },
   );
 
