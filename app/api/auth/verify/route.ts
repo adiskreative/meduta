@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { sendWelcomeEmail } from "@/lib/email";
 
 const verificationQuerySchema = z.object({
   email: z.string().email().transform((email) => email.trim()),
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
   const now = new Date();
 
   try {
-    const verified = await prisma.$transaction(async (transaction) => {
+    const verifiedUser = await prisma.$transaction(async (transaction) => {
       const consumedToken = await transaction.verificationToken.deleteMany({
         where: {
           identifier: email,
@@ -41,20 +42,25 @@ export async function GET(request: NextRequest) {
         },
       });
       if (consumedToken.count !== 1) {
-        return false;
+        return null;
       }
 
       const user = await transaction.user.findUnique({
         where: { email },
         select: {
           id: true,
+          name: true,
           emailVerified: true,
           emailConfirmationPending: true,
         },
       });
-      if (!user) return false;
+      if (!user) return null;
 
-      if (!user.emailVerified || user.emailConfirmationPending) {
+      // Welcome email hanya dikirim pada konfirmasi pertama.
+      const firstVerification =
+        !user.emailVerified || user.emailConfirmationPending;
+
+      if (firstVerification) {
         await transaction.user.update({
           where: { id: user.id },
           data: {
@@ -63,8 +69,21 @@ export async function GET(request: NextRequest) {
           },
         });
       }
-      return true;
+      return { name: user.name, firstVerification };
     });
+
+    const verified = verifiedUser !== null;
+
+    // Kegagalan welcome email tidak boleh menggagalkan verifikasi.
+    // Di-await (bukan fire-and-forget) karena Worker bisa menghentikan
+    // proses setelah response dikirim.
+    if (verifiedUser?.firstVerification) {
+      try {
+        await sendWelcomeEmail(email, verifiedUser.name?.trim() || "Sahabat Meduta");
+      } catch (error) {
+        console.error("[auth] Welcome email gagal:", error);
+      }
+    }
 
     return loginRedirect(
       request,

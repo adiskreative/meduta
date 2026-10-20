@@ -149,6 +149,44 @@ export async function sendVerificationEmail(
   }
 }
 
+// ID template "Welcome Email" di Resend (harus sudah di-Publish).
+// Bisa diganti lewat env RESEND_WELCOME_TEMPLATE_ID tanpa deploy ulang kode.
+const WELCOME_TEMPLATE_ID =
+  process.env.RESEND_WELCOME_TEMPLATE_ID ??
+  "94b1d5a8-9909-4fcb-b879-61a7641ba075";
+
+export async function sendWelcomeEmail(
+  to: string,
+  name: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!resend) {
+    return { ok: false, error: "RESEND_API_KEY belum dikonfigurasi." };
+  }
+
+  try {
+    // Dengan `template`, jangan sertakan html/text/react di panggilan yang sama.
+    const { error } = await resend.emails.send({
+      from,
+      to,
+      subject: "Selamat datang di Meduta",
+      template: {
+        id: WELCOME_TEMPLATE_ID,
+        variables: { name },
+      },
+    });
+
+    if (error) {
+      console.error("[email] Gagal kirim welcome email:", error);
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[email] Gagal kirim welcome email:", err);
+    return { ok: false, error: message };
+  }
+}
+
 export async function sendInvitationEmail(data: InvitationEmailData): Promise<{
   ok: boolean;
   error?: string;
