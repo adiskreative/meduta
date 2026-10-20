@@ -16,6 +16,7 @@ import {
   Building2,
   Crown,
   UserRound,
+  Menu,
 } from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
 import TemplateSlider from "@/components/landing/TemplateSlider";
@@ -265,7 +266,7 @@ export default async function Home() {
   const session = await auth();
 
   return (
-    <main className="flex min-h-screen flex-col bg-white text-zinc-900">
+    <main className="flex min-h-screen flex-col bg-white font-sans text-zinc-900">
       <Navbar isLoggedIn={Boolean(session?.user)} />
       <Hero />
       <Features />
@@ -282,22 +283,51 @@ export default async function Home() {
 }
 
 function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
+  const navigationLinks = [
+    { href: "#fitur", label: "Fitur" },
+    { href: "#template", label: "Template" },
+    { href: "#cara-kerja", label: "Cara Kerja" },
+    { href: "#panduan", label: "Panduan" },
+    { href: "#tentang", label: "Tentang" },
+    { href: "#harga", label: "Harga" },
+    { href: "#kontak", label: "Kontak" },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#10173f]/85 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#10173f]/90 shadow-sm shadow-black/5 backdrop-blur-xl">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <Logo className="h-10 w-auto" />
         </Link>
-        <div className="hidden items-center gap-8 text-sm font-medium text-zinc-300 md:flex">
-          <a href="#Home" className="transition hover:text-white">Home</a>
-          <a href="#fitur" className="transition hover:text-white">Fitur</a>
-          <a href="#cara-kerja" className="transition hover:text-white">Cara Kerja</a>
-          <a href="#panduan" className="transition hover:text-white">Panduan</a>
-          <a href="#tentang" className="transition hover:text-white">Tentang</a>
-          <a href="#harga" className="transition hover:text-white">Harga</a>
-          <a href="#kontak" className="transition hover:text-white">Kontak</a>
+        <div className="hidden items-center gap-1 text-sm font-medium text-zinc-300 lg:flex">
+          {navigationLinks.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="rounded-full px-3 py-2 transition hover:bg-white/10 hover:text-white"
+            >
+              {item.label}
+            </a>
+          ))}
         </div>
         <div className="flex items-center gap-3">
+          <details className="group relative lg:hidden">
+            <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10 [&::-webkit-details-marker]:hidden">
+              <Menu className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Buka navigasi</span>
+            </summary>
+            <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-white/10 bg-[#10173f] p-2 shadow-2xl shadow-black/30">
+              {navigationLinks.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="block rounded-xl px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10 hover:text-white"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </details>
           {isLoggedIn ? (
             <Link
               href="/dashboard"
@@ -311,13 +341,13 @@ function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
             <>
               <Link
                 href="/login"
-                className="flex min-h-[44px] items-center px-3 text-sm font-medium text-zinc-200 transition hover:text-white"
+                className="flex min-h-[44px] items-center px-2 text-sm font-medium text-zinc-200 transition hover:text-white sm:px-3"
               >
                 Masuk
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-700"
+                className="rounded-full bg-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-950/20 transition hover:bg-pink-500"
               >
                 Daftar
               </Link>
@@ -332,61 +362,90 @@ function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
 function Hero() {
   return (
     <section id="Home" className="relative scroll-mt-16 overflow-hidden bg-[#10173f]">
-      {/* Background pola daun navy (layer normal, di atas bg fallback section) */}
       <div
         aria-hidden
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/design/bg-new-opt.jpg')" }}
       />
-      {/* Lapisan penggelap halus agar teks terbaca */}
-      <div aria-hidden className="absolute inset-0 bg-[#0d1340]/35" />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-[#10173f]/95 via-[#10173f]/85 to-[#10173f]/55" />
+      <div aria-hidden className="absolute -right-32 top-12 h-96 w-96 rounded-full bg-pink-600/20 blur-3xl" />
+      <div aria-hidden className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-indigo-500/15 blur-3xl" />
 
-      <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
-        <div className="grid items-center gap-8 sm:gap-12 lg:grid-cols-2">
-          {/* Kiri: teks */}
-          <div className="text-center lg:text-left">
-            <p className="mx-auto inline-flex items-center gap-2 rounded-full bg-pink-600 px-5 py-2 text-sm font-medium text-white shadow-lg shadow-pink-600/30 lg:mx-0">
-              <RingIcon className="h-4 w-4" />
-              Undangan Digital untuk Momen Spesial Anda
-            </p>
-            <h1 className="mt-6 text-3xl font-extrabold uppercase leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
-              Undangan Pernikahan{" "}
-              <span className="text-pink-500">Digital Yang</span> Elegan
-            </h1>
-            <p className="mx-auto mt-5 max-w-xl text-base text-zinc-200 lg:mx-0">
-              Buat undangan digital yang mudah, bagikan linknya ke tamu, dan pantau
-              RSVP serta ucapan mereka - semua dalam satu tempat.
-            </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
-              <Link
-                href="/register"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-pink-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-600/40 transition hover:bg-pink-500 sm:w-auto"
-              >
-                Buat Undangan Gratis
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25">
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </span>
-              </Link>
-              <a
-                href="#cara-kerja"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/10 px-7 py-3 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/20 sm:w-auto"
-              >
-                Lihat Cara Kerja
-              </a>
-            </div>
-            <p className="mt-5 text-xs text-zinc-400">
-              Gratis untuk memulai • Coba Saja • Tidak Perlu Bayar
-            </p>
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:min-h-[650px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:py-24">
+        <div className="text-center lg:text-left">
+          <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-pink-300/25 bg-pink-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-pink-200 lg:mx-0">
+            <RingIcon className="h-4 w-4" />
+            Hari istimewa, undangan istimewa
+          </p>
+          <h1 className="mx-auto mt-6 max-w-2xl text-4xl font-bold leading-[1.12] tracking-tight text-white sm:text-5xl lg:mx-0 lg:text-6xl">
+            Undangan pernikahan digital yang{" "}
+            <span className="text-pink-300">elegan dan personal.</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-zinc-200 sm:text-lg sm:leading-8 lg:mx-0">
+            Buat undangan cantik dalam beberapa langkah, bagikan satu tautan ke
+            orang tersayang, lalu pantau RSVP dan ucapan dalam satu tempat.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
+            <Link
+              href="/register"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-pink-600 px-7 py-3 text-sm font-semibold text-white shadow-xl shadow-pink-950/30 transition hover:-translate-y-0.5 hover:bg-pink-500 sm:w-auto"
+            >
+              Buat Undangan Gratis
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
+                <ArrowRight className="h-4 w-4" />
+              </span>
+            </Link>
+            <a
+              href="#template"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-white/25 bg-white/[0.06] px-7 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15 sm:w-auto"
+            >
+              Jelajahi Template
+            </a>
           </div>
+          <p className="mt-5 text-sm text-zinc-300">
+            Mulai gratis <span className="px-1 text-pink-300">·</span> Upgrade
+            kapan saja
+          </p>
+          <div className="mx-auto mt-10 flex max-w-xl flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-zinc-200 lg:mx-0 lg:justify-start">
+            {["RSVP praktis", "Link tamu personal", "Nyaman di ponsel"].map(
+              (benefit) => (
+                <span key={benefit} className="inline-flex items-center gap-2">
+                  <Check className="h-4 w-4 text-pink-300" />
+                  {benefit}
+                </span>
+              ),
+            )}
+          </div>
+        </div>
 
-          {/* Kanan: ilustrasi utuh (arch + pasangan + bunga) — versi kecil di ponsel */}
-          <div className="relative mx-auto w-full max-w-[240px] sm:max-w-[360px] lg:max-w-[440px]">
+        <div className="relative mx-auto w-full max-w-[440px] lg:max-w-[480px]">
+          <div aria-hidden className="absolute inset-8 rounded-full bg-pink-500/20 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/20 bg-white/[0.08] p-2 shadow-2xl shadow-black/30 backdrop-blur-sm sm:rounded-[2.5rem] sm:p-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/design/ilustrasi.webp"
               alt="Ilustrasi pasangan pengantin dengan buket bunga"
-              className="animate-float-slow w-full object-contain drop-shadow-2xl"
+              className="animate-float-slow w-full rounded-[1.5rem] object-contain sm:rounded-[2rem]"
             />
+          </div>
+          <div className="absolute -bottom-5 left-2 flex items-center gap-3 rounded-2xl border border-white/70 bg-white px-4 py-3 shadow-xl shadow-black/20 sm:-left-8 sm:px-5 sm:py-4">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+              <Check className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block text-sm font-semibold text-zinc-900">
+                Siap dibagikan
+              </span>
+              <span className="block text-xs text-zinc-500">
+                Satu tautan untuk semua tamu
+              </span>
+            </span>
+          </div>
+          <div className="absolute -right-2 top-8 hidden rounded-2xl border border-white/15 bg-[#171e4e]/90 px-4 py-3 text-left shadow-xl backdrop-blur sm:block sm:-right-6">
+            <span className="block text-xs text-zinc-300">Semua momen</span>
+            <span className="mt-1 block text-sm font-semibold text-white">
+              Dalam satu undangan
+            </span>
           </div>
         </div>
       </div>
@@ -396,24 +455,24 @@ function Hero() {
 
 function Features() {
   return (
-    <section id="fitur" className="bg-white py-14 sm:py-20">
+    <section id="fitur" className="scroll-mt-20 bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Fitur"
           title="Semua yang Anda Butuhkan Ada di Sini"
           desc="Fitur lengkap, Halaman User Yang Mudah Digunakan, dan Template Undangan yang Elegan. Semua dalam satu platform."
         />
-        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-16 lg:grid-cols-3">
           {features.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-zinc-200 p-6 transition hover:border-pink-200 hover:shadow-md"
+              className="group rounded-3xl border border-zinc-200/80 bg-white p-7 shadow-sm shadow-zinc-900/[0.025] transition duration-300 hover:-translate-y-1 hover:border-pink-200 hover:shadow-xl hover:shadow-pink-950/5"
             >
-              <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
-                <f.icon className="h-6 w-6" />
+              <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 transition duration-300 group-hover:bg-pink-600 group-hover:text-white">
+                <f.icon className="h-5 w-5" />
               </span>
               <h3 className="font-semibold text-zinc-900">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600">{f.desc}</p>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -424,7 +483,7 @@ function Features() {
 
 function Templates() {
   return (
-    <section id="template" className="bg-zinc-50 py-14 sm:py-20">
+    <section id="template" className="scroll-mt-20 bg-[#fbf8f7] py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Template"
@@ -443,18 +502,18 @@ function Templates() {
 
 function Steps() {
   return (
-    <section id="cara-kerja" className="bg-zinc-50 py-14 sm:py-20">
+    <section id="cara-kerja" className="scroll-mt-20 bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Cara Kerja"
           title="Mulai Hanya dalam 4 Langkah"
           desc="Proses cepat dan sederhana, undangan Anda siap dibagikan."
         />
-        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
           {steps.map((s, i) => (
-            <div key={s.title} className="relative rounded-2xl border border-zinc-200 bg-white p-6">
-              <span className="mb-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-pink-600 text-sm font-bold text-white">
-                {i + 1}
+            <div key={s.title} className="relative rounded-3xl border border-zinc-200/80 bg-[#fbf8f7] p-6 sm:p-7">
+              <span className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-100 text-sm font-bold text-pink-700">
+                {String(i + 1).padStart(2, "0")}
               </span>
               <h3 className="font-semibold text-zinc-900">{s.title}</h3>
               <p className="mt-2 text-sm text-zinc-600">{s.desc}</p>
@@ -498,7 +557,7 @@ const panduanTips = [
 
 function Panduan() {
   return (
-    <section id="panduan" className="bg-white py-14 sm:py-20">
+    <section id="panduan" className="scroll-mt-20 bg-white py-14 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Panduan"
@@ -540,7 +599,7 @@ const KONTAK = {
 
 function Tentang() {
   return (
-    <section id="tentang" className="bg-white py-14 sm:py-20">
+    <section id="tentang" className="scroll-mt-20 bg-white py-14 sm:py-20">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Tentang"
@@ -609,7 +668,7 @@ function Tentang() {
 
 function Kontak() {
   return (
-    <section id="kontak" className="bg-zinc-50 py-14 sm:py-20">
+    <section id="kontak" className="scroll-mt-20 bg-zinc-50 py-14 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Kontak"
@@ -674,7 +733,7 @@ function Kontak() {
 
 function Pricing({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
-    <section id="harga" className="bg-white py-14 sm:py-20">
+    <section id="harga" className="scroll-mt-20 bg-white py-14 sm:py-20">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Harga"
