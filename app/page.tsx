@@ -15,12 +15,11 @@ import {
   MessageCircle,
   Building2,
   Crown,
-  UserRound,
-  Menu,
 } from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
 import TemplateSlider from "@/components/landing/TemplateSlider";
 import ContactForm from "@/components/landing/ContactForm";
+import Navbar from "@/components/landing/Navbar";
 import Logo from "@/components/Logo";
 import { auth } from "@/lib/auth";
 
@@ -279,83 +278,6 @@ export default async function Home() {
       <Kontak />
       <Footer />
     </main>
-  );
-}
-
-function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
-  const navigationLinks = [
-    { href: "#fitur", label: "Fitur" },
-    { href: "#template", label: "Template" },
-    { href: "#cara-kerja", label: "Cara Kerja" },
-    { href: "#panduan", label: "Panduan" },
-    { href: "#tentang", label: "Tentang" },
-    { href: "#harga", label: "Harga" },
-    { href: "#kontak", label: "Kontak" },
-  ];
-
-  return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#10173f]/90 shadow-sm shadow-black/5 backdrop-blur-xl">
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Logo className="h-10 w-auto" />
-        </Link>
-        <div className="hidden items-center gap-1 text-sm font-medium text-zinc-300 lg:flex">
-          {navigationLinks.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="rounded-full px-3 py-2 transition hover:bg-white/10 hover:text-white"
-            >
-              {item.label}
-            </a>
-          ))}
-        </div>
-        <div className="flex items-center gap-3">
-          <details className="group relative lg:hidden">
-            <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10 [&::-webkit-details-marker]:hidden">
-              <Menu className="h-5 w-5" aria-hidden="true" />
-              <span className="sr-only">Buka navigasi</span>
-            </summary>
-            <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-white/10 bg-[#10173f] p-2 shadow-2xl shadow-black/30">
-              {navigationLinks.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="block rounded-xl px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10 hover:text-white"
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          </details>
-          {isLoggedIn ? (
-            <Link
-              href="/dashboard"
-              aria-label="Kembali ke dashboard"
-              title="Kembali ke dashboard"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-zinc-200 transition hover:bg-white/10 hover:text-white"
-            >
-              <UserRound className="h-5 w-5" />
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="flex min-h-[44px] items-center px-2 text-sm font-medium text-zinc-200 transition hover:text-white sm:px-3"
-              >
-                Masuk
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-full bg-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-950/20 transition hover:bg-pink-500"
-              >
-                Daftar
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
-    </header>
   );
 }
 
