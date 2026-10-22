@@ -13,7 +13,8 @@
     "binding": "ASSETS"
   },
   "routes": [
-    { "pattern": "meduta.my.id", "custom_domain": true }
+    { "pattern": "meduta.my.id", "custom_domain": true },
+    { "pattern": "www.meduta.my.id", "custom_domain": true }
   ],
   "observability": {
     "enabled": true
