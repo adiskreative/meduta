@@ -5,6 +5,13 @@ export type InvitationData = {
   location?: string;
   locationMap?: string;
   customMessage?: string;
+  /** Kutipan/quote di undangan — dapat diganti sesuai kepercayaan pasangan.
+   *  Urutan prioritas: user → admin (data contoh template) → bawaan template. */
+  quoteTitle?: string;
+  quoteText?: string;
+  quoteSource?: string;
+  /** Sembunyikan seluruh bagian kutipan (pasangan tak ingin menampilkan ayat/quote). */
+  quoteHidden?: boolean;
   groom?: {
     name?: string;
     nickname?: string;

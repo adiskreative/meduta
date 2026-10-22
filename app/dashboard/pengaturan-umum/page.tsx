@@ -48,6 +48,16 @@ export default async function PengaturanUmumPage() {
         defaultCustomMessage={
           typeof data?.customMessage === "string" ? data.customMessage : ""
         }
+        defaultQuoteTitle={
+          typeof data?.quoteTitle === "string" ? data.quoteTitle : ""
+        }
+        defaultQuoteText={
+          typeof data?.quoteText === "string" ? data.quoteText : ""
+        }
+        defaultQuoteSource={
+          typeof data?.quoteSource === "string" ? data.quoteSource : ""
+        }
+        defaultQuoteHidden={data?.quoteHidden === true}
         isPublished={invitation.status === "published"}
       />
     </div>

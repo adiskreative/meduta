@@ -16,6 +16,13 @@ const generalSchema = z.object({
     .toLowerCase()
     .regex(/^[a-z0-9-]+$/, "Hanya huruf kecil, angka, dan tanda hubung"),
   customMessage: z.string().max(500).trim().optional(),
+  // Kutipan (judul / isi / sumber) — bebas dirubah sesuai kepercayaan.
+  // Kosong = pakai bawaan template (mis. Ar-Rum: 21 untuk Wayang).
+  quoteTitle: z.string().max(120).trim().optional(),
+  quoteText: z.string().max(900).trim().optional(),
+  quoteSource: z.string().max(120).trim().optional(),
+  // Checkbox "Tampilkan kutipan": "on" saat dicentang, null saat tidak.
+  quoteHidden: z.string().optional(),
 });
 
 export type GeneralState = {
@@ -23,6 +30,10 @@ export type GeneralState = {
     eventName?: string[];
     slug?: string[];
     customMessage?: string[];
+    quoteTitle?: string[];
+    quoteText?: string[];
+    quoteSource?: string[];
+    quoteHidden?: string[];
   };
   message?: string;
   success?: boolean;
@@ -40,13 +51,21 @@ export async function saveGeneralSettings(
     eventName: formData.get("eventName"),
     slug: formData.get("slug"),
     customMessage: formData.get("customMessage"),
+    quoteTitle: formData.get("quoteTitle"),
+    quoteText: formData.get("quoteText"),
+    quoteSource: formData.get("quoteSource"),
+    quoteHidden: formData.get("quoteHidden")
+      ? formData.get("quoteHidden")!.toString()
+      : undefined,
   });
 
   if (!result.success) {
     return { errors: result.error.flatten().fieldErrors };
   }
 
-  const { eventName, slug, customMessage } = result.data;
+  const { eventName, slug, customMessage, quoteTitle, quoteText, quoteSource } = result.data;
+  // Checkbox tidak dikirim saat tidak dicentang → "off"
+  const quoteHidden = !result.data.quoteHidden;
 
   const invitation = await prisma.invitation.findFirst({
     where: { id: invitationId, userId: session.user.id },
@@ -91,6 +110,10 @@ export async function saveGeneralSettings(
         ...currentData,
         eventName,
         customMessage,
+        quoteTitle,
+        quoteText,
+        quoteSource,
+        quoteHidden,
       },
     },
   });

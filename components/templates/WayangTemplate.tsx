@@ -394,8 +394,16 @@ function WayangShell({
       </section>
       <ParangStrip />
 
-      {/* 2. Kutipan Ar-Rum 21 ala referensi (frame emas) */}
-      <QuoteSection customMessage={data.customMessage} />
+      {/* 2. Kutipan (judul/isi/sumber) — bisa diganti user/admin sesuai kepercayaan,
+          atau disembunyikan sepenuhnya lewat "Tampilkan bagian kutipan" */}
+      {!data.quoteHidden && (
+        <QuoteSection
+          title={data.quoteTitle}
+          text={data.quoteText}
+          source={data.quoteSource}
+          fallbackTitle={data.customMessage}
+        />
+      )}
 
       {/* 3. Mempelai */}
       {(groom?.name || bride?.name) && (
@@ -753,26 +761,38 @@ function Gate({
   );
 }
 
-function QuoteSection({ customMessage }: { customMessage?: string }) {
-  // Kutipan default Ar-Rum: 21 seperti referensi; jika admin/user mengisi
-  // customMessage maka pakai itu.
+function QuoteSection({
+  title,
+  text,
+  source,
+  fallbackTitle,
+}: {
+  title?: string;
+  text?: string;
+  source?: string;
+  fallbackTitle?: string;
+}) {
+  // Bawaan: Ar-Rum 21 (sesuai referensi). Semua baris dapat diganti user
+  // (Pengaturan Umum → Kutipan) atau admin (Data Contoh) agar pasangan
+  // penganut agama/kepercayaan lain bisa menyesuaikan kutipannya.
   return (
     <section className="wy-section alt">
       <div className="wy-wrap">
         <div className="wy-frame py-11 px-6">
           <p className="wy-script" style={{ fontSize: "clamp(27px,6vw,36px)" }}>
-            {customMessage?.trim() || "Ar-Rum : 21"}
+            {title?.trim() || fallbackTitle?.trim() || "Ar-Rum : 21"}
           </p>
           <p
             className="wy-quote"
             style={{ fontStyle: "italic", color: SOGAN_D }}
           >
-            &ldquo;Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan
-            untukmu pasangan hidup dari jenismu sendiri, supaya kamu mendapatkan
-            ketenangan hati dan dijadikan-Nya di antaramu rasa kasih dan sayang.&rdquo;
+            &ldquo;{
+              text?.trim() ||
+              "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu mendapatkan ketenangan hati dan dijadikan-Nya di antaramu rasa kasih dan sayang."
+            }&rdquo;
           </p>
           <p className="mt-3 tracking-[0.14em]" style={{ color: GOLD }}>
-            QS. Ar-Rum: 21
+            {source?.trim() || "QS. Ar-Rum: 21"}
           </p>
         </div>
       </div>

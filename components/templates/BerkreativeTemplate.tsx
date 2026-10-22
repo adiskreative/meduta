@@ -139,7 +139,15 @@ function BerkreativeShell({
       />
 
       {groom?.name || bride?.name ? (
-        <Couple groom={groom} bride={bride} eventName={data.eventName ?? "Pernikahan"} />
+        <Couple
+          groom={groom}
+          bride={bride}
+          eventName={data.eventName ?? "Pernikahan"}
+          quoteTitle={data.quoteTitle}
+          quoteText={data.quoteText}
+          quoteSource={data.quoteSource}
+          quoteHidden={data.quoteHidden}
+        />
       ) : null}
 
       <MainEvent
@@ -419,10 +427,21 @@ function Couple({
   groom,
   bride,
   eventName,
+  quoteTitle,
+  quoteText,
+  quoteSource,
+  quoteHidden,
 }: {
   groom?: TemplateProps["data"]["groom"];
   bride?: TemplateProps["data"]["bride"];
   eventName: string;
+  // Kutipan (judul/isi/sumber) — bisa diganti user/admin sesuai kepercayaan.
+  // Prioritas: user → admin → bawaan (Ar-Rum 21).
+  quoteTitle?: string;
+  quoteText?: string;
+  quoteSource?: string;
+  // Set true untuk menyembunyikan seluruh bagian kutipan.
+  quoteHidden?: boolean;
 }) {
   return (
     <section className="w-full max-w-3xl px-6 py-20 text-center">
@@ -433,16 +452,25 @@ function Couple({
         <PersonCard person={bride} role="Mempelai Wanita" gradient="from-violet-500 to-blue-500" />
       </div>
 
+      {!quoteHidden && (
       <div className="mx-auto mt-10 max-w-xl rounded-3xl border border-amber-200/25 bg-white/[0.07] p-6 backdrop-blur-md">
         <Quote className="mx-auto mb-3 h-5 w-5 text-amber-300" />
+        {quoteTitle?.trim() ? (
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-fuchsia-300">
+            {quoteTitle}
+          </p>
+        ) : null}
         <p className="text-sm italic leading-relaxed text-white/85">
-          “Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu
-          pasangan hidup dari jenismu sendiri...”
+          &ldquo;{
+            quoteText?.trim() ||
+            "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri..."
+          }&rdquo;
         </p>
         <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-fuchsia-300">
-          (QS Ar-Rum: 21)
+          {quoteSource?.trim() || "(QS Ar-Rum: 21)"}
         </p>
       </div>
+      )}
     </section>
   );
 }

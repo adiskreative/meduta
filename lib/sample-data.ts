@@ -15,6 +15,10 @@ export const DEFAULT_SAMPLE_DATA: InvitationView = {
   locationMap: "https://www.google.com/maps/place/Auditorium+Bupati/@-0.8055733,120.1587894,780m/data=!3m2!1e3!4b1!4m6!3m5!1s0x2d895f89ac402f3f:0x707fe824b0a15cc8!8m2!3d-0.8055733!4d120.1613643!16s%2Fg%2F11c1qn1dt2?entry=ttu&g_ep=EgoyMDI2MTAxNC4wIKXMDSoASAFQAw%3D%3D",
   customMessage:
     "Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.",
+  quoteTitle: "Ar-Rum : 21",
+  quoteText:
+    "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu mendapatkan ketenangan hati dan dijadikan-Nya di antaramu rasa kasih dan sayang.",
+  quoteSource: "QS. Ar-Rum: 21",
   groom: {
     name: "Andi Pratama",
     nickname: "Andi",

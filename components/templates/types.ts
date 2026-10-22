@@ -43,6 +43,13 @@ export type InvitationView = {
   location?: string;
   locationMap?: string;
   customMessage?: string;
+  /** Kutipan/quote di undangan — bisa diganti sesuai kepercayaan pasangan.
+   *  Urutan prioritas: user → admin (data contoh template) → bawaan template. */
+  quoteTitle?: string;
+  quoteText?: string;
+  quoteSource?: string;
+  /** Sembunyikan seluruh bagian kutipan (pasangan tak ingin menampilkan ayat/quote). */
+  quoteHidden?: boolean;
   musicUrl?: string;
   /** Background kustom pilihan user — meng-override background template. */
   backgroundUrl?: string;

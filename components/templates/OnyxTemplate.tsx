@@ -311,7 +311,16 @@ function OnyxShell({
       />
 
       {/* Urutan ala Artboard 4: mempelai dulu, lalu hitung mundur */}
-      {groom?.name || bride?.name ? <Couple groom={groom} bride={bride} /> : null}
+      {groom?.name || bride?.name ? (
+        <Couple
+          groom={groom}
+          bride={bride}
+          quoteTitle={data.quoteTitle}
+          quoteText={data.quoteText}
+          quoteSource={data.quoteSource}
+          quoteHidden={data.quoteHidden}
+        />
+      ) : null}
 
       <CountdownSection eventDate={agenda.main.date} eventName={data.eventName} />
 
@@ -588,9 +597,21 @@ function CountdownSection({
 function Couple({
   groom,
   bride,
+  quoteTitle,
+  quoteText,
+  quoteSource,
+  quoteHidden,
 }: {
   groom?: TemplateProps["data"]["groom"];
   bride?: TemplateProps["data"]["bride"];
+  // Kutipan (judul/isi/sumber) dari user (Pengaturan Umum) atau admin
+  // (Data Contoh). Desain Onyx tidak membawa ayat bawaan, jadi bagian ini
+  // hanya tampil bila salah satu kolom diisi.
+  quoteTitle?: string;
+  quoteText?: string;
+  quoteSource?: string;
+  // Set true untuk menyembunyikan seluruh bagian kutipan.
+  quoteHidden?: boolean;
 }) {
   return (
     <section className="relative px-4 py-20">
@@ -612,6 +633,30 @@ function Couple({
           />
           <PersonCard person={bride} role="Mempelai Wanita" side="right" />
         </div>
+
+        {/* Kutipan — hanya tampil bila diisi user/admin (sesuai kepercayaan),
+            dan tidak disembunyikan */}
+        {!quoteHidden && (quoteText?.trim() || quoteTitle?.trim() || quoteSource?.trim()) ? (
+          <div className="ox-reveal mx-auto mt-12 max-w-xl rounded-3xl border border-fuchsia-300/25 bg-white/[0.06] p-6 text-center backdrop-blur-md">
+            {quoteTitle?.trim() ? (
+              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-fuchsia-300">
+                {quoteTitle}
+              </p>
+            ) : null}
+            <p
+              className={`font-[family-name:var(--font-serif-elegant)] text-sm italic leading-relaxed text-white/85 ${
+                quoteTitle?.trim() ? "mt-3" : ""
+              }`}
+            >
+              &ldquo;{quoteText}&rdquo;
+            </p>
+            {quoteSource?.trim() ? (
+              <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-fuchsia-300">
+                {quoteSource}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </section>
   );

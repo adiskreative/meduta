@@ -181,8 +181,15 @@ function ZenShell({
               photo={gatePhoto}
             />
 
-            {/* Kutipan & pesan pembuka */}
-            {data.customMessage ? <QuoteSection text={data.customMessage} /> : null}
+            {/* Kutipan & pesan pembuka — prioritas: user (quoteText) →
+                customMessage → tidak ditampilkan bila keduanya kosong atau
+                "Tampilkan kutipan" dimatikan */}
+            {!data.quoteHidden && (data.quoteText?.trim() || data.customMessage?.trim()) ? (
+              <QuoteSection
+                text={data.quoteText?.trim() || data.customMessage?.trim() || ""}
+                source={data.quoteSource}
+              />
+            ) : null}
 
             {groom?.name || bride?.name ? (
               <Couple groom={groom} bride={bride} />
@@ -495,7 +502,13 @@ function HeroSection({
 /* Kutipan                                                             */
 /* ------------------------------------------------------------------ */
 
-function QuoteSection({ text }: { text: string }) {
+function QuoteSection({
+  text,
+  source,
+}: {
+  text: string;
+  source?: string;
+}) {
   return (
     <section className="border-b px-6 py-20" style={{ borderColor: `${ZEN.ink}1A`, backgroundColor: `${ZEN.beige}80` }}>
       <div className="mx-auto max-w-2xl space-y-6 text-center">
@@ -504,7 +517,7 @@ function QuoteSection({ text }: { text: string }) {
           &ldquo;{text}&rdquo;
         </blockquote>
         <p className="text-xs uppercase tracking-[0.25em]" style={{ color: ZEN.sage }}>
-          — {new Date().getFullYear()}
+          — {source?.trim() || new Date().getFullYear()}
         </p>
       </div>
     </section>

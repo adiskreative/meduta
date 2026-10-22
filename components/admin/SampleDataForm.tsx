@@ -18,6 +18,9 @@ type Defaults = Pick<
   | "location"
   | "locationMap"
   | "customMessage"
+  | "quoteTitle"
+  | "quoteText"
+  | "quoteSource"
   | "events"
 >;
 
@@ -217,6 +220,23 @@ export default function SampleDataForm({
         </div>
         <div className="mt-4">
           {field({ label: "Pesan pembuka", name: "sample.customMessage", path: "customMessage", placeholder: defaults.customMessage ?? "", area: true })}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+        <h2 className="mb-1 text-lg font-semibold text-zinc-900">
+          Kutipan Contoh
+        </h2>
+        <p className="mb-4 text-xs text-zinc-400">
+          Ganti sesuai agama/kepercayaan (ayat, quote, atau kalimat lain) agar
+          pratinjau &amp; thumbnail mewakili beragam pengguna.
+        </p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {field({ label: "Judul kutipan", name: "sample.quoteTitle", path: "quoteTitle", placeholder: defaults.quoteTitle ?? "" })}
+          {field({ label: "Sumber kutipan", name: "sample.quoteSource", path: "quoteSource", placeholder: defaults.quoteSource ?? "" })}
+        </div>
+        <div className="mt-4">
+          {field({ label: "Isi kutipan", name: "sample.quoteText", path: "quoteText", placeholder: defaults.quoteText ?? "", area: true })}
         </div>
       </div>
 

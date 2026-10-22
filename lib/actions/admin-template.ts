@@ -202,6 +202,9 @@ export async function updateSampleData(
       .union([z.string().url("URL peta tidak valid").max(500), z.literal("")])
       .optional(),
     "sample.customMessage": z.string().max(2000).trim().optional(),
+    "sample.quoteTitle": z.string().max(120).trim().optional(),
+    "sample.quoteText": z.string().max(900).trim().optional(),
+    "sample.quoteSource": z.string().max(120).trim().optional(),
     "sample.groom.name": z.string().max(120).trim().optional(),
     "sample.groom.nickname": z.string().max(60).trim().optional(),
     "sample.groom.parentName": z.string().max(160).trim().optional(),
@@ -268,6 +271,9 @@ export async function updateSampleData(
     ...(str(d["sample.location"]) ? { location: str(d["sample.location"]) } : {}),
     ...(str(d["sample.locationMap"]) ? { locationMap: str(d["sample.locationMap"]) } : {}),
     ...(str(d["sample.customMessage"]) ? { customMessage: str(d["sample.customMessage"]) } : {}),
+    ...(str(d["sample.quoteTitle"]) ? { quoteTitle: str(d["sample.quoteTitle"]) } : {}),
+    ...(str(d["sample.quoteText"]) ? { quoteText: str(d["sample.quoteText"]) } : {}),
+    ...(str(d["sample.quoteSource"]) ? { quoteSource: str(d["sample.quoteSource"]) } : {}),
     groom: {
       ...(str(d["sample.groom.name"]) ? { name: str(d["sample.groom.name"]) } : {}),
       ...(str(d["sample.groom.nickname"]) ? { nickname: str(d["sample.groom.nickname"]) } : {}),

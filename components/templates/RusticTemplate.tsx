@@ -470,15 +470,26 @@ function RusticShell({
               <Person person={bride} role="Mempelai Wanita" />
             </div>
 
-            {/* Qur'an Quote Card */}
+            {/* Kutipan — bisa diganti user/admin sesuai kepercayaan,
+                atau disembunyikan sepenuhnya. Prioritas: user → admin → bawaan. */}
+            {!data?.quoteHidden && (
             <div className="relative mx-auto mt-12 max-w-xl rounded-2xl border border-amber-200/70 bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all hover:shadow-md">
+              {data?.quoteTitle?.trim() ? (
+                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-emerald-800/90">
+                  {data.quoteTitle}
+                </p>
+              ) : null}
               <p className="font-serif text-base italic leading-relaxed text-stone-700">
-                “Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang.”
+                &ldquo;{
+                  data?.quoteText?.trim() ||
+                  "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang."
+                }&rdquo;
               </p>
               <span className="mt-3 block text-xs font-semibold uppercase tracking-widest text-emerald-800/90">
-                (QS. Ar-Rum: 21)
+                {data?.quoteSource?.trim() || "(QS. Ar-Rum: 21)"}
               </span>
             </div>
+            )}
           </section>
         ) : null}
 

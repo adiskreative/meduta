@@ -104,6 +104,10 @@ function ClassicShell({
           groom={groom}
           bride={bride}
           eventName={data.eventName ?? "Pernikahan"}
+          quoteTitle={data.quoteTitle}
+          quoteText={data.quoteText}
+          quoteSource={data.quoteSource}
+          quoteHidden={data.quoteHidden}
         />
       ) : null}
 
@@ -348,10 +352,21 @@ function Couple({
   groom,
   bride,
   eventName,
+  quoteTitle,
+  quoteText,
+  quoteSource,
+  quoteHidden,
 }: {
   groom?: TemplateProps["data"]["groom"];
   bride?: TemplateProps["data"]["bride"];
   eventName: string;
+  // Kutipan (judul/isi/sumber) — bisa diganti user/admin sesuai kepercayaan.
+  // Prioritas: user → admin → bawaan (Ar-Rum 21).
+  quoteTitle?: string;
+  quoteText?: string;
+  quoteSource?: string;
+  // Set true untuk menyembunyikan seluruh bagian kutipan.
+  quoteHidden?: boolean;
 }) {
   return (
     <section className="w-full max-w-3xl px-6 py-20 text-center">
@@ -368,16 +383,25 @@ function Couple({
         <PersonCard person={bride} role="Mempelai Wanita" />
       </div>
 
-      <div className="mx-auto mt-12 max-w-xl rounded-2xl border border-amber-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
-        <Quote className="mx-auto mb-3 h-5 w-5 text-amber-500" />
-        <p className="text-sm italic leading-relaxed text-zinc-600">
-          “Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu
-          pasangan hidup dari jenismu sendiri...”
-        </p>
-        <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-emerald-700">
-          (QS Ar-Rum: 21)
-        </p>
-      </div>
+      {!quoteHidden && (
+        <div className="mx-auto mt-12 max-w-xl rounded-2xl border border-amber-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
+          <Quote className="mx-auto mb-3 h-5 w-5 text-amber-500" />
+          {quoteTitle?.trim() ? (
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-emerald-700">
+              {quoteTitle}
+            </p>
+          ) : null}
+          <p className="text-sm italic leading-relaxed text-zinc-600">
+            &ldquo;{
+              quoteText?.trim() ||
+              "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri..."
+            }&rdquo;
+          </p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-emerald-700">
+            {quoteSource?.trim() || "(QS Ar-Rum: 21)"}
+          </p>
+        </div>
+      )}
     </section>
   );
 }

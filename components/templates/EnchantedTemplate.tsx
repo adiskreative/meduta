@@ -265,7 +265,15 @@ function EnchantedShell({
       <CountdownSection eventDate={agenda.main.date} eventName={data.eventName} />
 
       {groom?.name || bride?.name ? (
-        <Couple groom={groom} bride={bride} eventName={data.eventName ?? "Pernikahan"} />
+        <Couple
+          groom={groom}
+          bride={bride}
+          eventName={data.eventName ?? "Pernikahan"}
+          quoteTitle={data.quoteTitle}
+          quoteText={data.quoteText}
+          quoteSource={data.quoteSource}
+          quoteHidden={data.quoteHidden}
+        />
       ) : null}
 
       {story.length > 0 ? <StorySection story={story} /> : null}
@@ -548,10 +556,21 @@ function Couple({
   groom,
   bride,
   eventName,
+  quoteTitle,
+  quoteText,
+  quoteSource,
+  quoteHidden,
 }: {
   groom?: TemplateProps["data"]["groom"];
   bride?: TemplateProps["data"]["bride"];
   eventName: string;
+  // Kutipan (judul/isi/sumber) — bisa diganti user/admin sesuai kepercayaan.
+  // Prioritas: user → admin → bawaan (Ar-Rum 21).
+  quoteTitle?: string;
+  quoteText?: string;
+  quoteSource?: string;
+  // Set true untuk menyembunyikan seluruh bagian kutipan.
+  quoteHidden?: boolean;
 }) {
   return (
     <section className="relative z-10 px-4 py-20">
@@ -561,20 +580,27 @@ function Couple({
         <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
           <PersonCard person={groom} role="Mempelai Pria" roleColor="text-purple-700" ringColor="from-sky-400 via-emerald-300 to-purple-500" badge="text-purple-600" borderColor="border-sky-300/50" />
           <PersonCard person={bride} role="Mempelai Wanita" roleColor="text-rose-600" ringColor="from-rose-500 via-orange-300 to-amber-300" badge="text-rose-500" borderColor="border-orange-300/50" flower />
-        </div>
-
-        {/* Kutipan Ar-Rum (dari referensi) */}
-        <div className="fgr-glass mx-auto mt-14 max-w-xl rounded-3xl p-6 text-center">
-          <Heart className="mx-auto mb-3 h-5 w-5 fill-current text-rose-500" />
+        </div>          {/* Kutipan — bisa diganti user/admin sesuai kepercayaan,
+              atau disembunyikan sepenuhnya */}
+          {!quoteHidden && (
+          <div className="fgr-glass mx-auto mt-14 max-w-xl rounded-3xl p-6 text-center">
+            <Heart className="mx-auto mb-3 h-5 w-5 fill-current text-rose-500" />
+            {quoteTitle?.trim() ? (
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.25em] text-purple-700">
+                {quoteTitle}
+              </p>
+            ) : null}
           <p className="text-sm italic leading-relaxed text-gray-700">
-            &ldquo;Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan
-            untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan
-            merasa tenteram kepadanya...&rdquo;
+            &ldquo;{
+              quoteText?.trim() ||
+              "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya..."
+            }&rdquo;
           </p>
           <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.25em] text-purple-700">
-            (QS Ar-Rum: 21)
+            {quoteSource?.trim() || "(QS Ar-Rum: 21)"}
           </p>
-        </div>
+          </div>
+          )}
       </div>
     </section>
   );
