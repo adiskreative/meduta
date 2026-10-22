@@ -22,6 +22,22 @@ function onyxThumbUrl(): string {
   return "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=60";
 }
 
+/**
+ * Thumbnail wayang: manifest lib/thumbs-meta.json (wayang-<ts>.webp) karena
+ * generate-thumbs menamai file dengan timestamp. Fallback: foto wayang/kulit.
+ */
+function wayangThumbUrl(): string {
+  try {
+    const meta = JSON.parse(
+      fs.readFileSync(path.resolve("lib/thumbs-meta.json"), "utf8"),
+    ) as { wayang?: { file?: string } };
+    if (meta.wayang?.file) return `/thumbs/${meta.wayang.file}`;
+  } catch {
+    // manifest belum ada (belum pernah generate-thumbs) — pakai fallback
+  }
+  return "https://images.unsplash.com/photo-1610173826608-8e2dc30fd461?w=600&q=60";
+}
+
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
 });
@@ -152,6 +168,12 @@ async function main() {
       isPremium: true,
     },
     {
+      name: "Wayang Adat",
+      thumbnailUrl: wayangThumbUrl(),
+      componentKey: "wayang",
+      isPremium: true,
+    },
+    {
       name: "Purple Blossom",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1522748906645-95d8adfd52ae?w=600&q=60",
@@ -184,7 +206,7 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 16 template berhasil dibuat.");
+  console.log("Seed selesai: 17 template berhasil dibuat.");
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.

@@ -12,6 +12,7 @@ import ScrapbookTemplate from "./ScrapbookTemplate";
 import EnchantedTemplate from "./EnchantedTemplate";
 import FairytaleTemplate from "./FairytaleTemplate";
 import OnyxTemplate from "./OnyxTemplate";
+import WayangTemplate from "./WayangTemplate";
 import PurpleTemplate from "./PurpleTemplate";
 import WedflixTemplate from "./WedflixTemplate";
 import SpotifyTemplate from "./SpotifyTemplate";
@@ -33,6 +34,7 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   enchanted: EnchantedTemplate,
   fairytale: FairytaleTemplate,
   onyx: OnyxTemplate,
+  wayang: WayangTemplate,
   purple: PurpleTemplate,
   wedflix: WedflixTemplate,
   spotify: SpotifyTemplate,

@@ -19,7 +19,7 @@ type Props = {
   searchParams: Promise<{ embed?: string; shot?: string; frame?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale", "onyx", "purple", "wedflix", "spotify"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale", "onyx", "purple", "wedflix", "spotify", "wayang"]);
 
 export const metadata: Metadata = {
   title: "Pratinjau Template | Meduta",
@@ -118,9 +118,10 @@ export default async function PreviewPage({ params, searchParams }: Props) {
           [class*="min-h-[100svh]"], [class*="min-h-[100vh]"] { min-height: ${THUMB_FULL_H}px !important; }
           [class*="min-h-[95vh]"] { min-height: ${thumbVh(95)}px !important; }
           [class*="min-h-[92vh]"] { min-height: ${thumbVh(92)}px !important; }
-          [class*="min-h-[90svh]"] { min-height: ${thumbVh(90)}px !important; }
-          [class*="min-h-[88vh]"] { min-height: ${thumbVh(88)}px !important; }
+          [class*="min-h-[90vh]"], [class*="min-h-[90svh]"] { min-height: ${thumbVh(90)}px !important; }
+          [class*="min-h-[88vh]"], [class*="min-h-[88svh]"] { min-height: ${thumbVh(88)}px !important; }
           [class*="max-h-[80vh]"] { max-height: ${thumbVh(80)}px !important; }
+          [class*="max-h-[82vh]"], [class*="max-h-[82svh]"] { max-height: ${thumbVh(82)}px !important; }
           [class*="max-h-[85vh]"] { max-height: ${thumbVh(85)}px !important; }
           [class*="max-h-[90vh]"] { max-height: ${thumbVh(90)}px !important; }
           /* Thumbnail full-page dirender TANPA scroll — animasi

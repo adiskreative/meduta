@@ -155,6 +155,14 @@ const templates = [
     image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=60",
     premium: true,
   },
+  {
+    key: "wayang",
+    name: "Wayang Jawa",
+    desc: "Nuansa tradisi Jawa: gerbang gunungan & wayang emas, ornamen batik kawung, parang candra, name card emas & amplop digital.",
+    image:
+      "https://images.unsplash.com/photo-1610173826608-8e2dc30fd461?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {
