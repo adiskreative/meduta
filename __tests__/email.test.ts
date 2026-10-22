@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPasswordResetEmailHtml,
   buildVerificationEmailHtml,
   buildInvitationHtml,
   escapeHtml,
@@ -75,6 +76,22 @@ describe("buildVerificationEmailHtml", () => {
     );
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(html).not.toContain("<script>");
+  });
+});
+
+describe("buildPasswordResetEmailHtml", () => {
+  it("menyertakan tautan reset dan meng-escape data email", () => {
+    const html = buildPasswordResetEmailHtml({
+      to: "user@example.com",
+      name: "<script>alert(1)</script>",
+      resetUrl: "https://meduta.my.id/reset-password?token=abc&email=user",
+    });
+
+    expect(html).toContain(
+      'href="https://meduta.my.id/reset-password?token=abc&amp;email=user"',
+    );
+    expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+    expect(html).toContain("berlaku selama 1 jam");
   });
 });
 

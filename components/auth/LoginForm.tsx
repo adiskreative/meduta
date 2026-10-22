@@ -47,7 +47,7 @@ export default function LoginForm() {
 
     if (res?.error) {
       setServerError(
-        "Email atau password salah, atau email belum dikonfirmasi.",
+        "Email atau password salah, email belum dikonfirmasi, atau akun terkunci selama 24 jam setelah tiga kali gagal.",
       );
       return;
     }
@@ -96,6 +96,14 @@ export default function LoginForm() {
           lagi nanti.
         </div>
       )}
+      {status === "password-reset" && (
+        <div
+          role="status"
+          className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+        >
+          Password berhasil diatur ulang. Silakan masuk dengan password baru.
+        </div>
+      )}
       {serverError && (
         <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
           {serverError}
@@ -140,6 +148,15 @@ export default function LoginForm() {
         {errors.password && (
           <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>
         )}
+      </div>
+
+      <div className="-mt-2 text-right">
+        <Link
+          href="/lupa-password"
+          className="text-sm font-medium text-rose-600 hover:underline"
+        >
+          Lupa password?
+        </Link>
       </div>
 
       <button

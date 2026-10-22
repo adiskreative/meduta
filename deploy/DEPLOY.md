@@ -127,7 +127,7 @@ Cek: `systemctl status meduta` → `active (running)`, lalu buka
   lalu set `RESEND_API_KEY` dan `EMAIL_FROM="Meduta <admin@meduta.my.id>"`
   setelah alamat tersebut memenuhi persyaratan sender terverifikasi Resend.
   `RESEND_API_KEY` diperlukan untuk mengirim email konfirmasi akun saat
-  pendaftaran.
+  pendaftaran dan tautan reset password.
 - **NEXT_PUBLIC_APP_URL** = `https://domain-anda.com` (dipakai link undangan tamu —
   penting: link undangan yang sudah tersebar mengikuti nilai ini).
 

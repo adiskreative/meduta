@@ -30,6 +30,12 @@ export type VerificationEmailData = {
   confirmationUrl: string;
 };
 
+export type PasswordResetEmailData = {
+  to: string;
+  name: string;
+  resetUrl: string;
+};
+
 export function isEmailEnabled(): boolean {
   return Boolean(resend);
 }
@@ -61,6 +67,27 @@ export function buildVerificationEmailHtml(
       <p style="color: #71717a; font-size: 13px; line-height: 1.6;">
         Tautan ini berlaku selama 24 jam. Jika Anda tidak merasa mendaftar,
         abaikan email ini.
+      </p>
+    </div>
+  `;
+}
+
+export function buildPasswordResetEmailHtml(
+  data: PasswordResetEmailData,
+): string {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+      <h1 style="color: #9f1239; font-size: 24px;">Atur ulang password Meduta</h1>
+      <p style="color: #3f3f46; font-size: 15px; line-height: 1.6;">
+        Halo ${escapeHtml(data.name)}, kami menerima permintaan untuk mengatur ulang password akun Anda.
+      </p>
+      <div style="margin: 24px 0; text-align: center;">
+        <a href="${escapeHtml(data.resetUrl)}" style="display: inline-block; background: #be123c; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-size: 15px;">
+          Atur Ulang Password
+        </a>
+      </div>
+      <p style="color: #71717a; font-size: 13px; line-height: 1.6;">
+        Tautan ini berlaku selama 1 jam dan hanya dapat digunakan sekali. Jika Anda tidak meminta pengaturan ulang password, abaikan email ini.
       </p>
     </div>
   `;
@@ -145,6 +172,36 @@ export async function sendVerificationEmail(
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[email] Gagal kirim konfirmasi:", err);
+    return { ok: false, error: message };
+  }
+}
+
+export async function sendPasswordResetEmail(
+  data: PasswordResetEmailData,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!resend) {
+    return {
+      ok: false,
+      error: "RESEND_API_KEY belum dikonfigurasi.",
+    };
+  }
+
+  try {
+    const { error } = await resend.emails.send({
+      from,
+      to: data.to,
+      subject: "Atur ulang password akun Meduta",
+      html: buildPasswordResetEmailHtml(data),
+    });
+
+    if (error) {
+      console.error("[email] Gagal kirim tautan reset password:", error);
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[email] Gagal kirim tautan reset password:", err);
     return { ok: false, error: message };
   }
 }

@@ -44,6 +44,8 @@ model User {
   emailVerified            DateTime?
   emailConfirmationPending Boolean         @default(false)
   password                 String
+  failedLoginAttempts      Int             @default(0)
+  loginLockedUntil         DateTime?
   name                     String?
   image                    String?
   avatarUrl                String?
