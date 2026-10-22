@@ -11,7 +11,7 @@ export const DEFAULT_SAMPLE_DATA: InvitationView = {
   eventDate: "2026-12-12T14:00:00Z",
   eventTime: "14:00 WITA",
   venueName: "Auditorium Kantor Bupati",
-  location: "Jl. Sudirman No. 10, Jakarta",
+  location: "Jl. Jalur Dua No. 1, Kota Contoh, Provinsi Contoh",
   locationMap: "https://www.google.com/maps/place/Auditorium+Bupati/@-0.8055733,120.1587894,780m/data=!3m2!1e3!4b1!4m6!3m5!1s0x2d895f89ac402f3f:0x707fe824b0a15cc8!8m2!3d-0.8055733!4d120.1613643!16s%2Fg%2F11c1qn1dt2?entry=ttu&g_ep=EgoyMDI2MTAxNC4wIKXMDSoASAFQAw%3D%3D",
   customMessage:
     "Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.",
@@ -38,7 +38,7 @@ export const DEFAULT_SAMPLE_DATA: InvitationView = {
       title: "Akad Nikah",
       date: "2026-12-12T08:00:00Z",
       time: "08.00 - 10.00 WITA",
-      location: "Ballroom Hotel Grand",
+      location: "jl. Jalur Dua No. 1, Kota Contoh, Provinsi Contoh",
       locationMap: "https://www.google.com/maps/place/Auditorium+Bupati/@-0.8055733,120.1587894,780m/data=!3m2!1e3!4b1!4m6!3m5!1s0x2d895f89ac402f3f:0x707fe824b0a15cc8!8m2!3d-0.8055733!4d120.1613643!16s%2Fg%2F11c1qn1dt2?entry=ttu&g_ep=EgoyMDI2MTAxNC4wIKXMDSoASAFQAw%3D%3D",
     },
     {
@@ -46,7 +46,7 @@ export const DEFAULT_SAMPLE_DATA: InvitationView = {
       title: "Resepsi",
       date: "2026-12-12T14:00:00Z",
       time: "14.00 - 17.00 WITA",
-      location: "Auditorium Kantor Bupati",
+      location: "jl. Jalur Dua No. 1, Kota Contoh, Provinsi Contoh",
       locationMap: "https://www.google.com/maps/place/Auditorium+Bupati/@-0.8055733,120.1587894,780m/data=!3m2!1e3!4b1!4m6!3m5!1s0x2d895f89ac402f3f:0x707fe824b0a15cc8!8m2!3d-0.8055733!4d120.1613643!16s%2Fg%2F11c1qn1dt2?entry=ttu&g_ep=EgoyMDI2MTAxNC4wIKXMDSoASAFQAw%3D%3D",
     },
   ],
