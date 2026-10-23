@@ -416,6 +416,7 @@ function FairytaleShell({
           <MusicFab
             isPlaying={music.isPlaying}
             onToggle={music.toggle}
+            positionClassName="relative z-50"
             buttonClassName="border-2 border-white bg-gradient-to-r from-pink-500 via-purple-500 to-teal-400 text-white"
             playingIconClassName="h-5 w-5 text-pink-100"
             pausedIconClassName="h-5 w-5 opacity-70"

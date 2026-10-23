@@ -690,6 +690,7 @@ function WayangShell({
           <MusicFab
             isPlaying={music.isPlaying}
             onToggle={music.toggle}
+            positionClassName="relative z-50"
             buttonClassName="border border-[#b98f3e] bg-[#1f3a2b] text-[#e2c274] shadow-[0_0_18px_rgba(185,143,62,.35)]"
             playingIconClassName="h-5 w-5 text-[#e2c274]"
             pausedIconClassName="h-5 w-5 opacity-70"

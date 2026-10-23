@@ -793,6 +793,7 @@ function SpotifyShell({
           <MusicFab
             isPlaying={music.isPlaying}
             onToggle={music.toggle}
+            positionClassName="relative z-50"
             buttonClassName="border border-[#1DB954]/60 bg-[#181818] text-white shadow-[0_0_18px_rgba(29,185,84,0.35)]"
             playingIconClassName="h-5 w-5 text-[#1DB954]"
             pausedIconClassName="h-5 w-5 opacity-70"

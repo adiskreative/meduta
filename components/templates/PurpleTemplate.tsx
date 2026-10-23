@@ -391,6 +391,7 @@ function PurpleShell({
           <MusicFab
             isPlaying={music.isPlaying}
             onToggle={music.toggle}
+            positionClassName="relative z-50"
             buttonClassName="border border-[#DAC8C0]/50 bg-[#2b081b] text-white shadow-[0_0_18px_rgba(232,181,77,0.35)]"
             playingIconClassName="h-5 w-5 text-[#E8B54D]"
             pausedIconClassName="h-5 w-5 opacity-70"

@@ -63,12 +63,14 @@ export type MusicController = ReturnType<typeof useBackgroundMusic>;
 export function MusicFab({
   isPlaying,
   onToggle,
+  positionClassName = "fixed bottom-5 right-5 z-50",
   buttonClassName = "bg-zinc-900 text-white",
   playingIconClassName = "h-5 w-5 animate-pulse",
   pausedIconClassName = "h-5 w-5 opacity-70",
 }: {
   isPlaying: boolean;
   onToggle: () => void;
+  positionClassName?: string;
   buttonClassName?: string;
   playingIconClassName?: string;
   pausedIconClassName?: string;
@@ -79,7 +81,7 @@ export function MusicFab({
       onClick={onToggle}
       aria-label={isPlaying ? "Matikan musik latar" : "Putar musik latar"}
       title={isPlaying ? "Matikan Musik" : "Putar Musik"}
-      className={`fixed bottom-5 right-5 z-50 flex h-11 w-11 items-center justify-center rounded-full shadow-xl backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${buttonClassName}`}
+      className={`${positionClassName} flex h-11 w-11 items-center justify-center rounded-full shadow-xl backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${buttonClassName}`}
     >
       {isPlaying ? (
         <Volume2 className={playingIconClassName} />

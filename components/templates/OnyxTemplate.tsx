@@ -346,6 +346,7 @@ function OnyxShell({
           <MusicFab
             isPlaying={music.isPlaying}
             onToggle={music.toggle}
+            positionClassName="relative z-50"
             buttonClassName="border border-[#F50260]/60 bg-[#2a2a2a] text-white shadow-[0_0_18px_rgba(245,2,96,0.35)]"
             playingIconClassName="h-5 w-5 text-[#F50260]"
             pausedIconClassName="h-5 w-5 opacity-70"
