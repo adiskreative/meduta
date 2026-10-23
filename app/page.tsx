@@ -163,6 +163,14 @@ const templates = [
       "https://images.unsplash.com/photo-1610173826608-8e2dc30fd461?w=600&q=60",
     premium: true,
   },
+  {
+    key: "senja",
+    name: "Senja Editorial",
+    desc: "Editorial dua kolom: gerbang beige-rose dengan ornamen floral, hero mempelai lengkung, countdown bermask, timeline kisah alternating & galeri offset dengan lightbox.",
+    image:
+      "https://images.unsplash.com/photo-1606216794074-714e54141d3f?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata = {

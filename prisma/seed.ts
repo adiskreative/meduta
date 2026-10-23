@@ -174,6 +174,13 @@ async function main() {
       isPremium: true,
     },
     {
+      name: "Senja Editorial",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=60",
+      componentKey: "senja",
+      isPremium: true,
+    },
+    {
       name: "Purple Blossom",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1522748906645-95d8adfd52ae?w=600&q=60",
@@ -206,7 +213,8 @@ async function main() {
 
   await seedAssets();
 
-  console.log("Seed selesai: 17 template berhasil dibuat.");
+  const seeded = await prisma.template.count();
+  console.log(`Seed selesai: ${seeded} template tersedia.`);
 }
 
 // Seed aset desain contoh (detail dari unsplash) + dekorasi pada template floral.
