@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Heart,
@@ -173,10 +174,12 @@ const templates = [
   },
 ];
 
-export const metadata = {
-  title: "MEDUTA",
+export const metadata: Metadata = {
+  title: "Meduta – Undangan Pernikahan Digital Online",
   description:
     "Buat undangan pernikahan digital yang elegan. Pilih tema, bagikan link, pantau RSVP & ucapan tamu dalam satu tempat.",
+  alternates: { canonical: "https://meduta.my.id" },
+  robots: { index: true, follow: true },
 };
 
 const features = [
