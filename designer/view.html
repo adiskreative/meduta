@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Design Reference</title>
+<style>
+  body { background: #222; margin: 0; display: flex; gap: 16px; padding: 16px; }
+  .frame { width: 1080px; }
+  img { width: 1080px; display: block; }
+</style>
+</head>
+<body>
+  <div class="frame"><img id="s" src=""></div>
+  <script>
+    const p = new URLSearchParams(location.search);
+    document.getElementById("s").src = p.get("f");
+  </script>
+</body>
+</html>

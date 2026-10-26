@@ -181,6 +181,13 @@ async function main() {
       isPremium: true,
     },
     {
+      name: "Ruby Royale",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=60",
+      componentKey: "ruby",
+      isPremium: true,
+    },
+    {
       name: "Purple Blossom",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1522748906645-95d8adfd52ae?w=600&q=60",

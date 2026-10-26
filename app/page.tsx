@@ -172,6 +172,14 @@ const templates = [
       "https://images.unsplash.com/photo-1606216794074-714e54141d3f?w=600&q=60",
     premium: true,
   },
+  {
+    key: "ruby",
+    name: "Ruby Royale",
+    desc: "Maroon mewah: gerbang arch emas bercahaya, mawar putih bergoyang angin, heart cincin emas, pill pembuka krem & galeri foto slide otomatis.",
+    image:
+      "https://images.unsplash.com/photo-1522748906645-95d8adfd52ae?w=600&q=60",
+    premium: true,
+  },
 ];
 
 export const metadata: Metadata = {
@@ -564,7 +572,7 @@ function Tentang() {
             </p>
             <div className="mt-6 flex flex-wrap gap-6">
               <div>
-                <p className="text-3xl font-bold text-pink-600">10+</p>
+                <p className="text-3xl font-bold text-pink-600">20+</p>
                 <p className="text-sm text-zinc-500">Desain template elegan</p>
               </div>
               <div>

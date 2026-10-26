@@ -14,6 +14,7 @@ import FairytaleTemplate from "./FairytaleTemplate";
 import OnyxTemplate from "./OnyxTemplate";
 import WayangTemplate from "./WayangTemplate";
 import SenjaTemplate from "./SenjaTemplate";
+import RubyTemplate from "./RubyTemplate";
 import PurpleTemplate from "./PurpleTemplate";
 import WedflixTemplate from "./WedflixTemplate";
 import SpotifyTemplate from "./SpotifyTemplate";
@@ -37,6 +38,7 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   onyx: OnyxTemplate,
   wayang: WayangTemplate,
   senja: SenjaTemplate,
+  ruby: RubyTemplate,
   purple: PurpleTemplate,
   wedflix: WedflixTemplate,
   spotify: SpotifyTemplate,

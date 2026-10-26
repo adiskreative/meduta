@@ -7,6 +7,6 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["**/*.test.{ts,tsx}"],
-    exclude: ["node_modules", ".next", "generated"],
+    exclude: ["node_modules", ".next", ".open-next", "generated"],
   },
 });

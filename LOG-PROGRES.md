@@ -1,6 +1,6 @@
 # Meduta — Log Progres
 
-> Terakhir diperbarui: 08 Sep 2026
+> Terakhir diperbarui: 26 Okt 2026
 > Branch: `fix/keamanan-features`
 > Server: `http://localhost:3000` (dev server via `npm run dev`)
 
@@ -83,10 +83,11 @@
 - Form kirim ucapan publik
 - `generateMetadata` dinamis untuk SEO
 
-### Template (3 desain)
+### Template (20 desain)
 - **Classic** (`/preview/classic`) — Elegant serif, background foto cover, sections penuh
 - **Minimal** (`/preview/minimal`) — Clean modern, card-based sections
 - **Floral** (`/preview/floral`) — Floral premium, gradient rose tones
+- **Ruby Royale** (`/preview/ruby`) — Maroon, arch emas dan ornamen floral, gerbang pembuka, RSVP/ucapan, serta galeri otomatis; thumbnail statis sudah terdaftar
 
 ### Pratinjau Template (`/preview/[key]`)
 - Render template asli dengan data contoh (bukan thumbnail)

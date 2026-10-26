@@ -48,6 +48,7 @@ const KEYS = [
   "spotify",
   "wayang",
   "senja",
+  "ruby",
 ];
 
 function parseArgs() {
