@@ -21,9 +21,62 @@ type Props = {
 
 const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale", "onyx", "purple", "wedflix", "spotify", "wayang", "senja", "ruby"]);
 
-export const metadata: Metadata = {
-  title: "Pratinjau Template | Meduta",
+// Judul & deskripsi unik per template untuk SEO (tiap halaman pratinjau
+// sebelumnya memakai judul yang sama sehingga sulit dibedakan di Google).
+// Deskripsi disusun dari nama template; sesuaikan bila gayanya berbeda.
+const TEMPLATE_SEO: Record<string, { name: string; style: string }> = {
+  classic: { name: "Elegant Classic", style: "gaya klasik yang elegan dengan sentuhan serif" },
+  minimal: { name: "Modern Minimal", style: "gaya modern yang bersih dan minimalis" },
+  floral: { name: "Floral Premium", style: "nuansa bunga yang manis dan mewah" },
+  rustic: { name: "Rustic Wedding", style: "nuansa rustic yang hangat dan natural" },
+  berkreative: { name: "Berkreative Royale", style: "tampilan kreatif dengan nuansa royal" },
+  garden: { name: "Garden Royale", style: "nuansa taman yang asri dan mewah" },
+  botanical: { name: "Botanical Garden", style: "nuansa botani dengan dedaunan yang segar" },
+  zen: { name: "Zen Minimalist", style: "gaya minimalis yang tenang dan lapang" },
+  vogue: { name: "Vogue Editorial", style: "tata letak ala majalah yang editorial" },
+  celestial: { name: "Celestial Night", style: "nuansa malam berbintang yang romantis" },
+  scrapbook: { name: "Scrapbook Album", style: "gaya album scrapbook yang penuh kenangan" },
+  enchanted: { name: "Enchanted Garden", style: "nuansa taman ajaib yang memesona" },
+  fairytale: { name: "Fairytale Dream", style: "nuansa dongeng yang penuh impian" },
+  onyx: { name: "Onyx Elegance", style: "tampilan gelap yang elegan dan berkelas" },
+  purple: { name: "Purple Blossom", style: "nuansa bunga dengan warna ungu yang lembut" },
+  wedflix: { name: "Wedflix Original", style: "gaya sinematik ala layanan streaming film" },
+  spotify: { name: "Medify Album", style: "gaya album dengan pemutar musik" },
+  wayang: { name: "Wayang Adat", style: "nuansa adat dan wayang yang kental budaya" },
+  senja: { name: "Senja Editorial", style: "nuansa senja dengan tata letak editorial" },
+  ruby: { name: "Ruby Royale", style: "nuansa merah ruby yang royal dan mewah" },
 };
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
+  const { key } = await params;
+  const { embed, shot, frame } = await searchParams;
+  const seo = TEMPLATE_SEO[key];
+
+  if (!seo) {
+    return {
+      title: "Pratinjau Template | Meduta",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const title = `Template Undangan Pernikahan ${seo.name} – Meduta`;
+  const description = `Lihat pratinjau template undangan pernikahan digital ${seo.name} dengan ${seo.style}. Pilih tema ini di Meduta, bagikan link, dan pantau RSVP tamu.`;
+
+  return {
+    title,
+    description,
+    // Versi iframe/thumbnail (?embed, ?shot, ?frame) bukan untuk pencarian.
+    robots:
+      embed === "1" || shot === "1" || frame === "1"
+        ? { index: false, follow: false }
+        : undefined,
+    alternates: { canonical: `/preview/${key}` },
+    openGraph: { title, description },
+  };
+}
 
 // Data contoh: bawaan sistem (lib/sample-data) yang dapat dioverride per
 // template lewat Admin Panel → Kelola Template → Data Contoh.
