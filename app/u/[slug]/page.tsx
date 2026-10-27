@@ -21,12 +21,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     include: { template: { select: { name: true } } },
   });
 
-  if (!invitation) return { title: "Undangan Tidak Ditemukan" };
+  if (!invitation) {
+    return {
+      title: "Undangan Tidak Ditemukan",
+      robots: { index: false, follow: false },
+    };
+  }
 
   const eventName = getEventName(invitation.data) ?? invitation.template.name;
 
   return {
     title: eventName,
+    // Undangan bersifat pribadi: jangan tampil di hasil pencarian Google.
+    robots: { index: false, follow: false },
     description: `Kami mengundang Anda untuk menghadiri ${eventName}.`,
     openGraph: {
       title: eventName,
