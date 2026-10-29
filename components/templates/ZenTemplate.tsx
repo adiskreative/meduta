@@ -89,7 +89,7 @@ type GateProps = { gateOpen?: boolean; onGateOpen?: () => void };
 export default function ZenTemplate(props: TemplateProps) {
   const isEmbed = !!props.embedded;
   const [gateOpen, setGateOpen] = useState(isEmbed);
-  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl, props.data.musicStart, props.data.musicEnd);
   return (
     <ZenShell
       {...props}

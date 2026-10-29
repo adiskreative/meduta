@@ -61,7 +61,7 @@ export default function SenjaTemplate(props: TemplateProps) {
   const isEmbed = !!props.embedded;
   const [gateOpen, setGateOpen] = useState(isEmbed);
   const [closing, setClosing] = useState(false);
-  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl, props.data.musicStart, props.data.musicEnd);
   return (
     <SenjaShell
       {...props}

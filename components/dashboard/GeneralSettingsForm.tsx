@@ -150,7 +150,7 @@ export default function GeneralSettingsForm({
         </h2>
         <p className="mb-4 flex items-center gap-1.5 text-sm text-zinc-500">
           <Link2 className="h-4 w-4" />
-          meduta.com/{defaultSlug}
+          meduta.my.id/{defaultSlug}
         </p>
 
         {slugRemaining > 0 ? (
@@ -162,7 +162,7 @@ export default function GeneralSettingsForm({
               Slug undangan
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-zinc-400">meduta.com/</span>
+              <span className="text-sm text-zinc-400">meduta.my.id/</span>
               <input
                 id="slug"
                 name="slug"
@@ -180,7 +180,7 @@ export default function GeneralSettingsForm({
           </>
         ) : (
           <div className="rounded-lg bg-zinc-50 px-4 py-3 text-sm text-zinc-500">
-            Link undangan: <span className="font-medium">meduta.com/{defaultSlug}</span>.
+            Link undangan: <span className="font-medium">meduta.my.id/{defaultSlug}</span>.
             Batas ganti link (3x) sudah habis.
           </div>
         )}

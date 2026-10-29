@@ -67,7 +67,7 @@ export default function RubyTemplate(props: TemplateProps) {
   const isEmbed = !!props.embedded;
   const [gateOpen, setGateOpen] = useState(isEmbed);
   const [closing, setClosing] = useState(false);
-  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl, props.data.musicStart, props.data.musicEnd);
   return (
     <RubyShell
       {...props}

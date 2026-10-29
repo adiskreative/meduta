@@ -65,7 +65,7 @@ export default function GatePhotoForm({
           <h2 className="text-lg font-semibold text-zinc-900">Foto Gerbang</h2>
           <p className="mt-1 text-sm text-zinc-500">
             Foto yang tampil di halaman &quot;Buka Undangan&quot;. Rasio terbaik{" "}
-            <strong>4:5 portrait</strong> (contoh 1080×1350px), JPG/PNG/WebP — foto
+            <strong>4:5 portrait</strong> (contoh 1080×1350px), JPG/PNG/WebP - foto
             di atas 3MB dikompres otomatis.
           </p>
         </div>
@@ -91,7 +91,7 @@ export default function GatePhotoForm({
             <p className="text-sm font-medium text-zinc-800">{source}</p>
             {!photoUrl && effective && (
               <p className="mt-1 text-xs text-zinc-400">
-                Otomatis — unggah foto sendiri untuk mengganti.
+                Otomatis - unggah foto sendiri untuk mengganti.
               </p>
             )}
           </div>

@@ -111,7 +111,7 @@ const ROTATIONS = ["-rotate-2", "rotate-3", "-rotate-3", "rotate-2", "-rotate-1"
 export default function ScrapbookTemplate(props: TemplateProps) {
   const isEmbed = !!props.embedded;
   const [gateOpen, setGateOpen] = useState(isEmbed);
-  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl, props.data.musicStart, props.data.musicEnd);
 
   return (
     <ScrapbookShell

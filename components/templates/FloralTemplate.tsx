@@ -22,7 +22,7 @@ export default function FloralTemplate(props: TemplateProps) {
   // Mode embed (thumbnail live iframe): gerbang terbuka, musik dimatikan
   const isEmbed = !!props.embedded;
   const [gateOpen, setGateOpen] = useState(isEmbed);
-  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl, props.data.musicStart, props.data.musicEnd);
   return (
     <FloralShell
       {...props}

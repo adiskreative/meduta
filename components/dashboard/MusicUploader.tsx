@@ -12,9 +12,12 @@ import { uploadMusic } from "@/lib/actions/upload";
 export default function MusicUploader({
   targetId,
   initialUrl,
+  onUploaded,
 }: {
   targetId: string; // id input musicUrl yang akan diisi
   initialUrl?: string;
+  /** Opsional: dipanggil dengan URL hasil upload (untuk form yang state-nya terkontrol). */
+  onUploaded?: (url: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
@@ -40,6 +43,7 @@ export default function MusicUploader({
 
       const input = document.getElementById(targetId) as HTMLInputElement | null;
       if (input) input.value = result.url;
+      onUploaded?.(result.url);
 
       setPreviewUrl(result.url);
       setStatus({ ok: true, text: "Musik berhasil diunggah — jangan lupa simpan." });

@@ -94,7 +94,7 @@ export default function GalleryForm({
               href="/dashboard/upgrade"
               className="shrink-0 text-sm font-semibold text-amber-800 underline decoration-amber-400 hover:text-amber-900"
             >
-              Upgrade Premium — upload tanpa batas
+              Upgrade Premium - upload tanpa batas
             </Link>
           </div>
         )}

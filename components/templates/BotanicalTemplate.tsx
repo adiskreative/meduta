@@ -73,7 +73,7 @@ type GateProps = { gateOpen?: boolean; onGateOpen?: () => void };
 export default function BotanicalTemplate(props: TemplateProps) {
   const isEmbed = !!props.embedded;
   const [gateOpen, setGateOpen] = useState(isEmbed);
-  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl, props.data.musicStart, props.data.musicEnd);
   return (
     <BotanicalShell
       {...props}

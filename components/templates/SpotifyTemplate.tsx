@@ -332,7 +332,7 @@ export default function SpotifyTemplate(props: TemplateProps) {
   // Mode embed/shot (thumbnail live & screenshot): gerbang terbuka, musik mati
   const isEmbed = !!props.embedded;
   const [gateOpen, setGateOpen] = useState(isEmbed);
-  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl);
+  const music = useBackgroundMusic(isEmbed ? undefined : props.data.musicUrl, props.data.musicStart, props.data.musicEnd);
   return (
     <SpotifyShell
       {...props}

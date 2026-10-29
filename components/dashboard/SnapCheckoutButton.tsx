@@ -6,9 +6,12 @@ import { Crown, Loader2 } from "lucide-react";
 export default function SnapCheckoutButton({
   clientKey,
   isProduction,
+  invitationId,
 }: {
   clientKey: string;
   isProduction: boolean;
+  /** Jika diisi: bayar aktivasi premium khusus undangan ini. */
+  invitationId?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +22,8 @@ export default function SnapCheckoutButton({
     try {
       const response = await fetch("/api/midtrans/checkout", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invitationId: invitationId ?? null }),
       });
       const data = (await response.json()) as {
         token?: string;

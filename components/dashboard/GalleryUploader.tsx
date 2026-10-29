@@ -115,7 +115,7 @@ export default function GalleryUploader({
         )}
 
         <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
-          JPG/PNG/WebP, maks {MAX_SIZE_MB}MB. Disarankan rasio potret <span className="font-medium text-zinc-500">4:5</span> (contoh: 960×1200px) — foto terpotong otomatis di tengah sesuai frame.
+          JPG/PNG/WebP, maks {MAX_SIZE_MB}MB. Disarankan rasio potret <span className="font-medium text-zinc-500">4:5</span> (contoh: 960×1200px) - foto terpotong otomatis di tengah sesuai frame.
         </p>
       </div>
     </div>
