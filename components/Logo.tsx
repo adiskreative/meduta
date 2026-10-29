@@ -33,7 +33,7 @@ export default function Logo({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src="/design/logo-full.webp"
-      alt="Meduta — Undangan Digital Pernikahan"
+      alt="Meduta - Undangan Digital Pernikahan"
       className={`${className} object-contain`}
     />
   );

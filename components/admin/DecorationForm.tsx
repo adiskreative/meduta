@@ -28,7 +28,7 @@ export default function DecorationForm({
 
       <p className="mb-4 rounded-lg bg-zinc-50 px-4 py-3 text-xs leading-relaxed text-zinc-500">
         Layer <strong>Background</strong> mengganti foto latar template (cover &amp;
-        gerbang &quot;Buka Undangan&quot;) — posisi/ukuran tidak diperlukan. Layer{" "}
+        gerbang &quot;Buka Undangan&quot;) - posisi/ukuran tidak diperlukan. Layer{" "}
         <strong>Bingkai</strong> otomatis membungkus area sesuai Penempatan
         (Cover = hero atas, Section = kolom konten). Layer <strong>Dekorasi</strong>{" "}
         mengambang dan perlu posisi/ukuran manual.

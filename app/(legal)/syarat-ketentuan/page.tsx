@@ -5,7 +5,7 @@ import type { Metadata } from "next";
  */
 
 export const metadata: Metadata = {
-  title: "Syarat & Ketentuan — Meduta",
+  title: "Syarat & Ketentuan Meduta",
   description:
     "Syarat dan ketentuan penggunaan layanan undangan digital Meduta.",
 };

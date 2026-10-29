@@ -126,7 +126,7 @@ export default function AssetForm() {
             <p className="mt-1 text-xs text-red-600">{state.errors.type[0]}</p>
           )}
           <p className="mt-1.5 text-xs text-zinc-400">
-            Nama aset dibuat otomatis dari nama file/URL — tidak perlu menulis judul.
+            Nama aset dibuat otomatis dari nama file/URL - tidak perlu menulis judul.
           </p>
         </div>
 

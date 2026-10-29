@@ -56,7 +56,7 @@ const FAQS: { group: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "Bagaimana cara memberi nama tamu di undangan?",
-        a: "Di menu Kirim Undangan, ketik daftar nama tamu lalu klik Generate. Sistem membuat link personal per tamu — nama tamu otomatis muncul di halaman pembuka undangan (\"Kepada Yth. ...\"). Daftar link tersimpan dan bisa disalin ulang kapan saja.",
+        a: "Di menu Kirim Undangan, ketik daftar nama tamu lalu klik Generate. Sistem membuat link personal per tamu - nama tamu otomatis muncul di halaman pembuka undangan (\"Kepada Yth. ...\"). Daftar link tersimpan dan bisa disalin ulang kapan saja.",
       },
       {
         q: "Apa itu RSVP dan bagaimana bekerjanya?",

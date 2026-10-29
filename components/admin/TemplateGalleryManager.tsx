@@ -81,7 +81,7 @@ export default function TemplateGalleryManager({
           </button>
         </div>
         <p className="mb-4 text-xs leading-relaxed text-zinc-500">
-          Foto contoh yang tampil di section galeri pratinjau template ini — juga
+          Foto contoh yang tampil di section galeri pratinjau template ini - juga
           jadi cadangan foto gerbang bila foto gerbang dikosongkan. Upload langsung
           atau tempel URL (rasio terbaik 4:5 portrait, JPG/WebP, maks 3MB).
         </p>

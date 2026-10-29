@@ -148,7 +148,7 @@ export default function SamplePhotoUploader({
         <span className="font-medium text-zinc-600">Ketentuan foto:</span>{" "}
         JPG/PNG/WebP/GIF, maksimal 3MB (di atas itu dikompres otomatis).
         Disarankan <span className="font-medium text-zinc-600">persegi 1:1</span>{" "}
-        (contoh: 800×800px), wajah di tengah — foto tampil bulat.
+        (contoh: 800×800px), wajah di tengah - foto tampil bulat.
       </p>
 
       {status && (

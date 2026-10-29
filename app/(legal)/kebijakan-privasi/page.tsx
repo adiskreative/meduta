@@ -5,7 +5,7 @@ import type { Metadata } from "next";
  */
 
 export const metadata: Metadata = {
-  title: "Kebijakan Privasi — Meduta",
+  title: "Kebijakan Privasi - Meduta",
   description:
     "Bagaimana Meduta mengumpulkan, menggunakan, dan melindungi data Anda.",
 };

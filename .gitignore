@@ -59,6 +59,9 @@ next-env.d.ts
 .tmp-edge-profile/
 .dev-server.log
 
+# dev server scratch logs
+.tmp-dev-*.log
+
 # Freebuff agent artifacts
 .freebuff/*.log
 .freebuff/*.log.err
