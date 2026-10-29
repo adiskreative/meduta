@@ -153,9 +153,12 @@ model Invitation {
   template        Template @relation(fields: [templateId], references: [id])
   slug            String   @unique
   slugChangeCount Int      @default(0) // max 3x ganti
+  shareToken      String?  @unique // token rahasia halaman "Sebarkan Undangan" tanpa login
   status          String   @default("draft") // draft | published
   data            Json // semua field dinamis: mempelai, cerita cinta, acara, dll
   expiresAt       DateTime? // masa aktif undangan (gratis = 1 bulan); null = aktif selamanya
+  isPremium       Boolean  @default(false) // premium khusus undangan ini (dibayar terpisah)
+  transactions    Transaction[]
   guests          Guest[]
   wishes          Wish[]
   createdAt       DateTime @default(now())
@@ -201,6 +204,8 @@ model Transaction {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
+  invitationId String?
+  invitation  Invitation? @relation(fields: [invitationId], references: [id])
   gatewayReference String? @map("midtransId")
   packageName String
   amount      Int
@@ -208,6 +213,7 @@ model Transaction {
   createdAt   DateTime @default(now())
 
   @@index([userId])
+  @@index([invitationId])
 }
 
 model Notification {
