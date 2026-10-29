@@ -3,7 +3,7 @@ import "server-only";
 import { createHash, timingSafeEqual } from "crypto";
 import midtransClient from "midtrans-client";
 import { prisma } from "@/lib/prisma";
-import { PREMIUM_PACKAGE, PREMIUM_PRICE } from "@/lib/premium";
+import { PREMIUM_PACKAGE, PREMIUM_PRICE, PREMIUM_INVITATION_PACKAGE } from "@/lib/premium";
 
 export const SNAP_IS_PRODUCTION =
   process.env.MIDTRANS_IS_PRODUCTION === "true" ||
@@ -42,10 +42,12 @@ export async function createPremiumSnapCheckout(
   userId: string,
   customerName?: string | null,
   customerEmail?: string | null,
+  invitationId?: string | null,
 ): Promise<SnapCheckoutResult> {
   const orderId = buildOrderId(userId);
   const snap = getMidtransSnapClient();
   const nameParts = customerName?.trim().split(/\s+/) ?? [];
+  const isInvitationPayment = Boolean(invitationId);
 
   const parameter = {
     transaction_details: {
@@ -54,8 +56,10 @@ export async function createPremiumSnapCheckout(
     },
     item_details: [
       {
-        id: "premium-1-year",
-        name: "Meduta Premium 1 Tahun",
+        id: isInvitationPayment ? "premium-undangan" : "premium-1-year",
+        name: isInvitationPayment
+          ? "Aktivasi Premium Undangan"
+          : "Meduta Premium 1 Tahun",
         price: PREMIUM_PRICE,
         quantity: 1,
       },
@@ -85,8 +89,11 @@ export async function createPremiumSnapCheckout(
     await prisma.transaction.create({
       data: {
         userId,
+        invitationId: invitationId ?? null,
         gatewayReference: orderId,
-        packageName: PREMIUM_PACKAGE,
+        packageName: isInvitationPayment
+          ? PREMIUM_INVITATION_PACKAGE
+          : PREMIUM_PACKAGE,
         amount: PREMIUM_PRICE,
         status: "pending",
       },
@@ -124,16 +131,23 @@ export function verifyMidtransSignature(
 }
 
 /**
- * Mengembalikan userId HANYA jika transaksi baru saja berubah menjadi success.
+ * Mengembalikan userId & invitationId HANYA jika transaksi baru saja berubah
+ * menjadi success. invitationId null = pembayaran premium akun (bukan per-undangan).
  * Notifikasi duplikat / sudah success / nominal tidak cocok → null.
  */
 export async function markTransactionSuccessAndGetUserId(
   orderId: string,
   paidAmount?: number,
-): Promise<string | null> {
+): Promise<{ userId: string; invitationId: string | null } | null> {
   const transaction = await prisma.transaction.findFirst({
     where: { gatewayReference: orderId },
-    select: { id: true, userId: true, amount: true, status: true },
+    select: {
+      id: true,
+      userId: true,
+      invitationId: true,
+      amount: true,
+      status: true,
+    },
   });
   if (!transaction || transaction.status === "success") return null;
 
@@ -154,7 +168,9 @@ export async function markTransactionSuccessAndGetUserId(
     data: { status: "success" },
   });
 
-  return count > 0 ? transaction.userId : null;
+  return count > 0
+    ? { userId: transaction.userId, invitationId: transaction.invitationId }
+    : null;
 }
 
 export async function markTransactionFailed(orderId: string): Promise<void> {

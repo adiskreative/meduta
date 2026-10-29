@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ACTIVE_INVITATION_COOKIE } from "@/lib/invitations";
 
 const generalSchema = z.object({
   eventName: z.string().min(3, "Nama acara minimal 3 karakter").max(120).trim(),
@@ -171,7 +173,13 @@ export async function deleteInvitation(
     prisma.invitation.delete({ where: { id: invitationId } }),
   ]);
 
-  revalidatePath("/dashboard");
+  // Bila undangan aktif dihapus, bersihkan cookie switcher agar fallback ke undangan terbaru
+  const cookieStore = await cookies();
+  if (cookieStore.get(ACTIVE_INVITATION_COOKIE)?.value === invitationId) {
+    cookieStore.delete(ACTIVE_INVITATION_COOKIE);
+  }
+
+  revalidatePath("/dashboard", "layout");
   revalidatePath("/dashboard/pengaturan-umum");
   revalidatePath(`/u/${invitation.slug}`);
   return { success: true, message: "Undangan dihapus." };

@@ -2,6 +2,8 @@
 import { prisma } from "@/lib/prisma";
 
 export const PREMIUM_PACKAGE = "Premium";
+/** Label transaksi untuk aktivasi premium khusus satu undangan. */
+export const PREMIUM_INVITATION_PACKAGE = "Premium Undangan";
 export const PREMIUM_PRICE = 50000; // harga promo saat ini
 export const PREMIUM_ORIGINAL_PRICE = 150000; // harga normal (ditampilkan coret)
 
@@ -38,4 +40,15 @@ export async function isPremiumUser(userId: string): Promise<boolean> {
     select: { id: true },
   });
   return t !== null;
+}
+
+/**
+ * Boleh memakai template premium untuk undangan tertentu:
+ * premium level akun (paket lama) ATAU undangan ini sudah diaktivasi sendiri.
+ */
+export function canUsePremiumTemplate(
+  invitation: { isPremium: boolean } | null | undefined,
+  userIsPremium: boolean,
+): boolean {
+  return userIsPremium || Boolean(invitation?.isPremium);
 }

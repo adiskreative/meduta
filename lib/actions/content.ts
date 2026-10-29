@@ -197,13 +197,30 @@ export async function saveMusic(
     return { errors: { musicUrl: ["Link musik tidak valid."] } };
   }
 
+  // Mode potong: mulai & akhir potongan lagu (detik). 0 = penuh.
+  const toSeconds = (value: FormDataEntryValue | null) => {
+    if (typeof value !== "string" || value.trim() === "") return 0;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 0;
+  };
+  const musicStart = toSeconds(formData.get("musicStart"));
+  const musicEndRaw = toSeconds(formData.get("musicEnd"));
+  const musicEnd = musicEndRaw > musicStart ? musicEndRaw : 0;
+
   const invitation = await getOwnedInvitation(invitationId, session.user.id);
   if (!invitation) return { message: "Undangan tidak ditemukan.", success: false };
 
   const currentData = (invitation.data ?? {}) as Record<string, unknown>;
   await prisma.invitation.update({
     where: { id: invitationId },
-    data: { data: { ...currentData, musicUrl: musicUrl.data } as object },
+    data: {
+      data: {
+        ...currentData,
+        musicUrl: musicUrl.data,
+        musicStart,
+        musicEnd,
+      } as object,
+    },
   });
 
   revalidatePath("/dashboard/background-music");

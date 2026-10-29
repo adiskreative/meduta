@@ -251,7 +251,7 @@ export async function sendInvitationEmail(data: InvitationEmailData): Promise<{
   if (!resend) {
     // Dev mode tanpa RESEND_API_KEY: hanya log supaya mudah ditelusuri.
     console.info(
-      `[email] RESEND_API_KEY kosong — email undangan tidak dikirim. to=${data.to} url=${data.invitationUrl}`,
+      `[email] RESEND_API_KEY kosong - email undangan tidak dikirim. to=${data.to} url=${data.invitationUrl}`,
     );
     return { ok: true };
   }

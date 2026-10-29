@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getActiveInvitation } from "@/lib/invitations";
 import GiftForm from "@/components/dashboard/GiftForm";
 
 export const metadata = { title: "Kado Nikah | Meduta" };
@@ -17,10 +17,7 @@ export default async function KadoNikahPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const invitation = await prisma.invitation.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const invitation = await getActiveInvitation(session.user.id);
 
   if (!invitation) {
     return (

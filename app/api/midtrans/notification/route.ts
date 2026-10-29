@@ -5,6 +5,7 @@ import {
   markTransactionSuccessAndGetUserId,
   verifyMidtransSignature,
 } from "@/lib/midtrans";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   let payload: unknown;
@@ -52,15 +53,30 @@ export async function POST(request: NextRequest) {
         (fraudStatus === "accept" || fraudStatus === ""));
 
     if (isPaid) {
-      const userId = await markTransactionSuccessAndGetUserId(orderId, paidAmount);
-      if (userId) {
-        await createNotification({
-          userId,
-          type: "TRANSACTION",
-          title: "Pembayaran Telah diterima 🎉",
-          body: "Paket Premium Anda aktif — semua template & fitur lengkap sudah terbuka. Terima kasih!",
-          link: "/dashboard/pilih-tema",
-        });
+      const paid = await markTransactionSuccessAndGetUserId(orderId, paidAmount);
+      if (paid) {
+        if (paid.invitationId) {
+          // Pembayaran per-undangan: aktifkan premium undangan & hapus masa aktif gratis
+          await prisma.invitation.update({
+            where: { id: paid.invitationId },
+            data: { isPremium: true, expiresAt: null },
+          });
+          await createNotification({
+            userId: paid.userId,
+            type: "TRANSACTION",
+            title: "Undangan Premium Aktif 🎉",
+            body: "Template premium untuk undangan Anda sudah aktif tanpa batas masa aktif. Terima kasih!",
+            link: "/dashboard",
+          });
+        } else {
+          await createNotification({
+            userId: paid.userId,
+            type: "TRANSACTION",
+            title: "Pembayaran Telah diterima 🎉",
+            body: "Paket Premium Anda aktif — semua template & fitur lengkap sudah terbuka. Terima kasih!",
+            link: "/dashboard/pilih-tema",
+          });
+        }
       }
       return NextResponse.json({ ok: true, handled: "settlement" });
     }

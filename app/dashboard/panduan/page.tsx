@@ -43,7 +43,7 @@ const photoRules = [
     label: "Foto mempelai",
     ratio: "Persegi 1:1",
     example: "800×800 px",
-    why: "Tampil bulat di undangan — wajah di tengah agar tidak terpotong.",
+    why: "Tampil bulat di undangan - wajah di tengah agar tidak terpotong.",
   },
   {
     label: "Foto galeri",
@@ -55,24 +55,24 @@ const photoRules = [
     label: "Batas ukuran",
     ratio: "Maks 3MB",
     example: "JPG / PNG / WebP",
-    why: "Lebih dari 3MB? Tetap bisa — foto dikompres otomatis saat diunggah.",
+    why: "Lebih dari 3MB? Tetap bisa - foto dikompres otomatis saat diunggah.",
   },
 ];
 
 const musicRules = [
   "Format MP3, WAV, OGG, M4A, atau AAC dengan ukuran maksimal 10MB.",
-  "MP3 adalah pilihan terbaik — ukurannya kecil dan didukung semua browser tamu.",
+  "MP3 adalah pilihan terbaik - ukurannya kecil dan didukung semua browser tamu.",
   "Musik otomatis diputar saat tamu menekan tombol Buka Undangan, dan bisa dimatikan lewat tombol speaker di undangan.",
-  "Musik berputar terus (loop) selama undangan dibuka — pilih lagu yang tenang agar tidak melelahkan.",
+  "Musik berputar terus (loop) selama undangan dibuka - pilih lagu yang tenang agar tidak melelahkan.",
   "Belum punya file? Template tertentu sudah punya musik bawaan yang langsung aktif.",
 ];
 
 const fillingTips = [
   "Gunakan Preview di setiap halaman form untuk memastikan tampilan sebelum dibagikan.",
-  "Nama tamu otomatis muncul di cover lewat link pribadi — tidak perlu tulis satu per satu di undangan.",
+  "Nama tamu otomatis muncul di cover lewat link pribadi - tidak perlu tulis satu per satu di undangan.",
   "Aktifkan RSVP agar tamu bisa konfirmasi kehadiran dan jumlah orang yang datang.",
   "Pantau Doa & Ucapan secara berkala; moderation tersedia bila ada ucapan yang perlu dihapus.",
-  "Tanggal acara memakai kalender picker — undangan otomatis menampilkannya dalam format panjang yang rapi.",
+  "Tanggal acara memakai kalender picker - undangan otomatis menampilkannya dalam format panjang yang rapi.",
 ];
 
 export default async function PanduanPage() {
@@ -140,7 +140,7 @@ export default async function PanduanPage() {
         </div>
 
         <p className="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-xs leading-relaxed text-emerald-700">
-          Foto kamera HP biasanya 4–8MB — tidak perlu diresize manual. Sistem
+          Foto kamera HP biasanya 4-8MB - tidak perlu diresize manual. Sistem
           otomatis mengecilkan fotonya saat diunggah, lalu memberi tahu Anda
           hasil kompresinya.
         </p>
@@ -186,7 +186,7 @@ export default async function PanduanPage() {
 
       <p className="flex items-start gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-xs leading-relaxed text-zinc-500">
         <ClipboardList className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
-        Semua perubahan tersimpan per bagian — Anda bisa mengisi sedikit demi
+        Semua perubahan tersimpan per bagian - Anda bisa mengisi sedikit demi
         sedikit dan kembali kapan saja. Undangan baru terlihat tamu setelah
         dipublikasikan dari halaman Kirim Undangan.
       </p>

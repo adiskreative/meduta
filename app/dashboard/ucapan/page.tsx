@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { getActiveInvitation } from "@/lib/invitations";
 import { prisma } from "@/lib/prisma";
 import WishList from "@/components/dashboard/WishList";
 
@@ -15,10 +16,7 @@ export default async function UcapanPage({
 
   const { filter } = await searchParams;
 
-  const invitation = await prisma.invitation.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const invitation = await getActiveInvitation(session.user.id);
 
   if (!invitation) {
     return (

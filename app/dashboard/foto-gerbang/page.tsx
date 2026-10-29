@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveInvitationId } from "@/lib/invitations";
 import GatePhotoForm from "@/components/dashboard/GatePhotoForm";
 import { getGatePhotoUrl, mapDecorations } from "@/lib/decoration";
 
@@ -12,11 +13,13 @@ export default async function FotoGerbangPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const invitation = await prisma.invitation.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    include: { template: { include: { decorations: { include: { asset: true } } } } },
-  });
+  const activeId = await getActiveInvitationId(session.user.id);
+  const invitation = activeId
+    ? await prisma.invitation.findFirst({
+        where: { id: activeId },
+        include: { template: { include: { decorations: { include: { asset: true } } } } },
+      })
+    : null;
 
   if (!invitation) {
     return (
@@ -71,25 +74,25 @@ export default async function FotoGerbangPage() {
               1
             </span>
             Foto gerbang pilihan admin/dekorasi template
-            {getGatePhotoUrl(decorations) ? " — sudah ditetapkan" : " — belum ada"}
+            {getGatePhotoUrl(decorations) ? " — sudah ditetapkan" : " - belum ada"}
           </li>
           <li>
             <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700">
               2
             </span>
-            Foto mempelai pria {groom.photoUrl ? " — sudah diunggah" : " — belum ada"}
+            Foto mempelai pria {groom.photoUrl ? " - sudah diunggah" : " - belum ada"}
           </li>
           <li>
             <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700">
               3
             </span>
-            Foto mempelai wanita {bride.photoUrl ? " — sudah diunggah" : " — belum ada"}
+            Foto mempelai wanita {bride.photoUrl ? " - sudah diunggah" : " - belum ada"}
           </li>
           <li>
             <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700">
               4
             </span>
-            Galeri foto pertama {gallery[0]?.url ? " — sudah diunggah" : " — belum ada"}
+            Galeri foto pertama {gallery[0]?.url ? " - sudah diunggah" : " - belum ada"}
           </li>
           <li>
             <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700">

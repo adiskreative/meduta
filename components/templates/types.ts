@@ -51,6 +51,9 @@ export type InvitationView = {
   /** Sembunyikan seluruh bagian kutipan (pasangan tak ingin menampilkan ayat/quote). */
   quoteHidden?: boolean;
   musicUrl?: string;
+  /** Potongan lagu (mode potong): mulai & akhir dalam detik; 0 = penuh. */
+  musicStart?: number;
+  musicEnd?: number;
   /** Background kustom pilihan user — meng-override background template. */
   backgroundUrl?: string;
   /** Foto khusus halaman "Buka Undangan" — pilihan user/admin, meng-override
