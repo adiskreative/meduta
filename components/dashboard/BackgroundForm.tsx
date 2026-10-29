@@ -96,7 +96,7 @@ export default function BackgroundForm({
       const input = document.getElementById("backgroundUrl") as HTMLInputElement | null;
       if (input) input.value = "";
       setPreview(null);
-      setUploadStatus({ ok: true, text: "Background dihapus-kembali ke bawaan template." });
+      setUploadStatus({ ok: true, text: "Background dihapus - kembali ke bawaan template." });
       router.refresh();
     } catch {
       setUploadStatus({ ok: false, text: "Gagal menghapus background." });
@@ -116,7 +116,7 @@ export default function BackgroundForm({
         <div>
           <h2 className="text-lg font-semibold text-zinc-900">Background Undangan</h2>
           <p className="mt-1 text-sm text-zinc-500">
-            Foto latar untuk cover &amp; gerbang undangan Anda. Bersifat per-undangan-
+            Foto latar untuk cover &amp; gerbang undangan Anda. Bersifat per-undangan -
             tidak mengganggu undangan user lain.
           </p>
         </div>
@@ -208,7 +208,7 @@ export default function BackgroundForm({
               className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-4 py-2.5 text-sm font-medium text-zinc-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Trash2 className="h-4 w-4" />
-              {removing ? "Menghapus..." : "Hapus-pakai bawaan template"}
+              {removing ? "Menghapus..." : "Hapus - pakai bawaan template"}
             </button>
           )}
         </div>
@@ -225,7 +225,7 @@ export default function BackgroundForm({
             <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-zinc-400">
               <ImageIcon className="h-8 w-8" />
               <p className="text-xs leading-relaxed">
-                Belum ada background kustom-undangan memakai latar bawaan template.
+                Belum ada background kustom - undangan memakai latar bawaan template.
               </p>
             </div>
           )}
