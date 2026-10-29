@@ -144,13 +144,14 @@ export default function SampleDataForm({
 
   return (
     <form action={formAction} className="space-y-6">
-      {state?.message && (
+      {(state?.message || state?.ok === false) && (
         <div
           className={`rounded-lg px-4 py-3 text-sm ${
             state.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
           }`}
         >
-          {state.message}
+          {state.message ||
+            "Gagal menyimpan — periksa kolom yang ditandai merah."}
         </div>
       )}
 
@@ -159,7 +160,7 @@ export default function SampleDataForm({
           Mempelai Contoh
         </h2>
         <p className="mb-4 text-xs text-zinc-400">
-          Foto bisa diunggah langsung dari perangkat — URL terisi otomatis.
+          Foto bisa diunggah langsung dari perangkat - URL terisi otomatis.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {field({ label: "Nama pria (lengkap)", name: "sample.groom.name", path: "groom.name", placeholder: defaults.groom?.name ?? "" })}

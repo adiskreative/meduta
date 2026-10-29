@@ -98,7 +98,12 @@ export async function saveTemplateGatePhoto(
   if (session.user.role !== "ADMIN") redirect("/dashboard");
 
   const gatePhotoUrl = z
-    .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
+    .string()
+    .max(600)
+    .refine(
+      (v) => v === "" || v.startsWith("/") || /^https?:\/\//.test(v),
+      { message: "URL foto tidak valid" },
+    )
     .safeParse((formData.get("gatePhotoUrl") ?? "").toString().trim());
   if (!gatePhotoUrl.success) {
     return { errors: { gatePhotoUrl: ["URL foto gerbang tidak valid."] } };

@@ -10,6 +10,14 @@ import { DEFAULT_SAMPLE_DATA } from "@/lib/sample-data";
 
 const REVALIDATE_SAMPLE_PATHS = ["/", "/preview/[key]", "/dashboard/pilih-tema"] as const;
 
+/** URL absolut (http/https) atau path internal relatif (mis. /design/rimba-zamrud/venue.webp). */
+const urlOrPath = z
+  .string()
+  .max(600)
+  .refine((v) => v === "" || v.startsWith("/") || /^https?:\/\//.test(v), {
+    message: "URL tidak valid",
+  });
+
 function revalidateAfterSampleDataChange(templateId: string) {
   revalidatePath(`/admin/templates/${templateId}/sample-data`);
   revalidatePath("/admin/templates");
@@ -186,7 +194,7 @@ export async function updateSampleData(
 
   const template = await prisma.template.findUnique({
     where: { id: templateId },
-    select: { id: true, componentKey: true },
+    select: { id: true, componentKey: true, sampleData: true },
   });
   if (!template) {
     return { ok: false, message: "Template tidak ditemukan." };
@@ -209,19 +217,13 @@ export async function updateSampleData(
     "sample.groom.nickname": z.string().max(60).trim().optional(),
     "sample.groom.parentName": z.string().max(160).trim().optional(),
     "sample.groom.bio": z.string().max(500).trim().optional(),
-    "sample.groom.photoUrl": z
-      .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
-      .optional(),
+    "sample.groom.photoUrl": z.union([urlOrPath, z.literal("")]).optional(),
     "sample.bride.name": z.string().max(120).trim().optional(),
     "sample.bride.nickname": z.string().max(60).trim().optional(),
     "sample.bride.parentName": z.string().max(160).trim().optional(),
     "sample.bride.bio": z.string().max(500).trim().optional(),
-    "sample.bride.photoUrl": z
-      .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
-      .optional(),
-    "sample.gatePhotoUrl": z
-      .union([z.string().url("URL foto tidak valid").max(600), z.literal("")])
-      .optional(),
+    "sample.bride.photoUrl": z.union([urlOrPath, z.literal("")]).optional(),
+    "sample.gatePhotoUrl": z.union([urlOrPath, z.literal("")]).optional(),
     "sample.guestName": z.string().max(120).trim().optional(),
     "sample.giftProvider": z.string().max(60).trim().optional(),
     "sample.giftAccountNumber": z.string().max(40).trim().optional(),
@@ -370,11 +372,31 @@ export async function updateSampleData(
     Object.keys(override.groom).length > 0 ||
     Object.keys(override.bride).length > 0;
 
+  // Kunci sampleData yang tidak dikelola form ini (mis. backgroundUrl dari
+  // modul dekorasi) dipertahankan agar tidak ikut terhapus saat menyimpan.
+  const MANAGED_KEYS = new Set([
+    "eventName", "eventDate", "eventTime", "venueName", "location",
+    "locationMap", "customMessage", "quoteTitle", "quoteText", "quoteSource",
+    "groom", "bride", "gifts", "gatePhotoUrl", "guestName", "events",
+  ]);
+  const previous =
+    template.sampleData && typeof template.sampleData === "object" && !Array.isArray(template.sampleData)
+      ? (template.sampleData as Record<string, unknown>)
+      : {};
+  const preserved: Record<string, unknown> = {};
+  for (const [k, value] of Object.entries(previous)) {
+    if (!MANAGED_KEYS.has(k)) preserved[k] = value;
+  }
+
+  const nextSampleData = hasOverride
+    ? { ...preserved, ...overrideRecord }
+    : (Object.keys(preserved).length > 0 ? preserved : null);
+
   await prisma.template.update({
     where: { id: templateId },
     data: {
-      sampleData: hasOverride
-        ? (overrideRecord as unknown as Prisma.InputJsonValue)
+      sampleData: nextSampleData
+        ? (nextSampleData as unknown as Prisma.InputJsonValue)
         : Prisma.JsonNull,
     },
   });
