@@ -18,6 +18,7 @@ import RubyTemplate from "./RubyTemplate";
 import PurpleTemplate from "./PurpleTemplate";
 import WedflixTemplate from "./WedflixTemplate";
 import SpotifyTemplate from "./SpotifyTemplate";
+import RimbaZamrudTemplate from "./RimbaZamrudTemplate";
 import DecorationLayer from "./DecorationLayer";
 import type { TemplateProps } from "./types";
 
@@ -42,6 +43,7 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   purple: PurpleTemplate,
   wedflix: WedflixTemplate,
   spotify: SpotifyTemplate,
+  "rimba-zamrud": RimbaZamrudTemplate,
 };
 
 export default function TemplateRenderer({

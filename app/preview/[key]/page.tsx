@@ -19,7 +19,7 @@ type Props = {
   searchParams: Promise<{ embed?: string; shot?: string; frame?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale", "onyx", "purple", "wedflix", "spotify", "wayang", "senja", "ruby"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale", "onyx", "purple", "wedflix", "spotify", "wayang", "senja", "ruby", "rimba-zamrud"]);
 
 // Judul & deskripsi unik per template untuk SEO (tiap halaman pratinjau
 // sebelumnya memakai judul yang sama sehingga sulit dibedakan di Google).
@@ -45,6 +45,7 @@ const TEMPLATE_SEO: Record<string, { name: string; style: string }> = {
   wayang: { name: "Wayang Adat", style: "nuansa adat dan wayang yang kental budaya" },
   senja: { name: "Senja Editorial", style: "nuansa senja dengan tata letak editorial" },
   ruby: { name: "Ruby Royale", style: "nuansa merah ruby yang royal dan mewah" },
+  "rimba-zamrud": { name: "Rimba Zamrud", style: "nuansa hijau zamrud, bunga watercolor, dan aksen emas yang anggun" },
 };
 
 export async function generateMetadata({
@@ -83,7 +84,7 @@ export async function generateMetadata({
 const sampleWishes = [
   {
     id: "w1",
-    guestName: "Bapak Ahmad & Ibu Siti",
+    guestName: "Nama Tamu",
     message: "Selamat menempuh hidup baru, semoga menjadi keluarga sakinah, mawaddah, warahmah.",
     createdAt: new Date().toISOString(),
   },
@@ -122,7 +123,7 @@ export default async function PreviewPage({ params, searchParams }: Props) {
       componentKey={key}
       invitationId="preview-id"
       slug="preview"
-      guestName={sampleGuest ?? "Bapak Ahmad & Ibu Siti"}
+      guestName={sampleGuest ?? "Nama Tamu"}
       data={{ ...sampleData, musicUrl: sampleData.musicUrl || template?.defaultMusicUrl || undefined }}
       isPublished
       embedded={embed === "1" || shot === "1"}

@@ -49,6 +49,7 @@ const KEYS = [
   "wayang",
   "senja",
   "ruby",
+  "rimba-zamrud",
 ];
 
 function parseArgs() {

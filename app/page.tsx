@@ -180,6 +180,13 @@ const templates = [
       "https://images.unsplash.com/photo-1522748906645-95d8adfd52ae?w=600&q=60",
     premium: true,
   },
+  {
+    key: "rimba-zamrud",
+    name: "Rimba Zamrud",
+    desc: "Nuansa hijau zamrud dan emas dengan bunga watercolor, gerbang elegan, galeri interaktif, RSVP, kisah, peta, kalender, musik, ucapan, dan kado digital.",
+    image: "/design/rimba-zamrud/venue.webp",
+    premium: true,
+  },
 ];
 
 export const metadata: Metadata = {

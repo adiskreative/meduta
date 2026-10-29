@@ -188,6 +188,16 @@ async function main() {
       isPremium: true,
     },
     {
+      name: "Rimba Zamrud",
+      thumbnailUrl: "/design/rimba-zamrud/decor-2/forest-bg.jpg",
+      componentKey: "rimba-zamrud",
+      isPremium: true,
+      sampleData: {
+        backgroundUrl: "/design/rimba-zamrud/decor-2/forest-bg.jpg",
+        gatePhotoUrl: "/design/rimba-zamrud/venue.webp",
+      },
+    },
+    {
       name: "Purple Blossom",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1522748906645-95d8adfd52ae?w=600&q=60",
