@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useActionState, useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import {
   Save,
   Copy,
@@ -65,14 +65,14 @@ export default function SendInvitationForm({
 
   // Setelah generate sukses: kosongkan area ketik (riwayat tetap tampil
   // di panel bawah, tersimpan di DB) + hapus baris import yang sudah dipakai.
+  // Reset dilakukan saat render (bukan di effect) untuk menghindari cascading render.
   const lastSuccess = state?.success ?? importState?.success;
-  useEffect(() => {
-    if (lastSuccess) {
-      setNamesText("");
-      setImportRows([]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastSuccess, state?.message, importState?.message]);
+  const [clearedSuccess, setClearedSuccess] = useState<typeof lastSuccess>(undefined);
+  if (lastSuccess && clearedSuccess !== lastSuccess) {
+    setClearedSuccess(lastSuccess);
+    setNamesText("");
+    setImportRows([]);
+  }
 
   async function copyLink(link: string) {
     try {
@@ -318,7 +318,7 @@ export default function SendInvitationForm({
               Daftar Tamu &amp; Link Undangan ({allGuests.length})
             </h2>
             <p className="text-xs text-zinc-400">
-              Tersimpan permanen — aman di-refresh
+              Tersimpan permanen - aman di-refresh
             </p>
           </div>
           <div className="space-y-2">

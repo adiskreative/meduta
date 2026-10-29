@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { getActiveInvitation } from "@/lib/invitations";
 import { prisma } from "@/lib/prisma";
 import SendInvitationForm from "@/components/dashboard/SendInvitationForm";
+import ShareLinkBox from "@/components/dashboard/ShareLinkBox";
 import WhatsAppShareForm from "@/components/dashboard/WhatsAppShareForm";
 
 export const metadata = { title: "Kirim Undangan | Meduta" };
@@ -11,10 +13,7 @@ export default async function KirimUndanganPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const invitation = await prisma.invitation.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const invitation = await getActiveInvitation(session.user.id);
 
   if (!invitation) {
     return (
@@ -54,8 +53,14 @@ export default async function KirimUndanganPage() {
       </div>
 
       <div className="space-y-6">
-        <WhatsAppShareForm
+        <ShareLinkBox
           invitationId={invitation.id}
+          shareToken={invitation.shareToken}
+          appUrl={appUrl}
+        />
+
+        <WhatsAppShareForm
+          shareToken={invitation.shareToken ?? ""}
           invitationSlug={invitation.slug}
           appUrl={appUrl}
         />

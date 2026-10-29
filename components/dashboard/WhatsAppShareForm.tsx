@@ -3,14 +3,16 @@
 import { useState, useTransition } from "react";
 import { User, Send, MessageCircle, Check, Copy, Loader2 } from "lucide-react";
 import { slugifyName } from "@/lib/guest-link";
-import { addGuestFromShare } from "@/lib/actions/guest";
+import { addGuestFromShareToken } from "@/lib/actions/share";
 
 export default function WhatsAppShareForm({
-  invitationId,
+  shareToken,
   invitationSlug,
   appUrl,
 }: {
-  invitationId: string;
+  /** Token rahasia panel share — antar actions melalui token, bukan session,
+   * sehingga panel bisa dipakai tanpa login. */
+  shareToken: string;
   invitationSlug: string;
   appUrl: string;
 }) {
@@ -64,7 +66,7 @@ export default function WhatsAppShareForm({
     startTransition(async () => {
       const form = new FormData();
       form.set("name", trimmedName);
-      const state = await addGuestFromShare(invitationId, form);
+      const state = await addGuestFromShareToken(shareToken, form);
       setStatus(state.message ?? null);
       setStatusIsError(!state.success);
     });

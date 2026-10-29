@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { getActiveInvitation } from "@/lib/invitations";
 import { prisma } from "@/lib/prisma";
 import GuestList from "@/components/dashboard/GuestList";
 import { headers } from "next/headers";
@@ -29,10 +30,7 @@ export default async function RsvpPage({
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "localhost:3000";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`;
 
-  const invitation = await prisma.invitation.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const invitation = await getActiveInvitation(session.user.id);
 
   if (!invitation) {
     return (
