@@ -19,6 +19,7 @@ import PurpleTemplate from "./PurpleTemplate";
 import WedflixTemplate from "./WedflixTemplate";
 import SpotifyTemplate from "./SpotifyTemplate";
 import RimbaZamrudTemplate from "./RimbaZamrudTemplate";
+import RomanTemplate from "./RomanTemplate";
 import DecorationLayer from "./DecorationLayer";
 import type { TemplateProps } from "./types";
 
@@ -44,6 +45,7 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   wedflix: WedflixTemplate,
   spotify: SpotifyTemplate,
   "rimba-zamrud": RimbaZamrudTemplate,
+  roman: RomanTemplate,
 };
 
 export default function TemplateRenderer({

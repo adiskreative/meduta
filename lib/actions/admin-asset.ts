@@ -3,50 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { randomUUID } from "crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSupabaseAdmin, SUPABASE_ASSET_BUCKET } from "@/lib/supabase";
-import { AssetType } from "@/generated/prisma/client";
-
-const ASSET_TYPES: AssetType[] = [
-  "IMAGE",
-  "FRAME",
-  "DECOR",
-  "BACKGROUND",
-  "MUSIC",
-  "GALLERY",
-];
-
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_IMAGE = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-const ALLOWED_MUSIC = new Set(["audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg"]);
+import {
+  deriveAssetName,
+  ensureAssetBucket,
+  isValidAssetType,
+  uploadAssetFile,
+  validateAssetFiles,
+} from "@/lib/asset-storage";
 
 async function requireAdmin() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "ADMIN") redirect("/dashboard");
   return session.user.id;
-}
-
-function isValidAssetType(value: string): value is AssetType {
-  return (ASSET_TYPES as string[]).includes(value);
-}
-
-/**
- * Nama aset dibuat otomatis — admin tidak perlu menulis judul.
- * Diambil dari nama file (tanpa ekstensi), tanda hubung/garis bawah
- * jadi spasi, dibatasi 120 karakter. Fallback: "<Tipe> <tanggal>".
- */
-function deriveAssetName(raw: string | null | undefined, type: AssetType): string {
-  const cleaned = (raw ?? "")
-    .replace(/\.[^.]+$/, "") // buang ekstensi
-    .replace(/[-_]+/g, " ") // hubung/garis bawah jadi spasi
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 120);
-  if (cleaned.length >= 2) return cleaned;
-  return `${type.charAt(0)}${type.slice(1).toLowerCase()} ${new Date().toISOString().slice(0, 10)}`;
 }
 
 export type AdminAssetState = {
@@ -59,6 +30,8 @@ export type AdminAssetState = {
   };
   message?: string;
   success?: boolean;
+  /** Nama file yang berhasil diunggah — dipakai form untuk membersihkan pilihan. */
+  uploadedNames?: string[];
 };
 
 // Buat aset dari URL eksternal (tidak upload file)
@@ -104,10 +77,14 @@ export async function createAssetFromUrl(
   });
 
   revalidatePath("/admin/assets");
+  revalidatePath("/admin/music");
+  revalidatePath("/dashboard/background-music");
   return { success: true, message: "Aset berhasil ditambahkan." };
 }
 
-// Buat aset dengan upload file ke Supabase
+// Buat aset dengan upload file ke Supabase. Musik bisa beberapa file sekaligus.
+// Unggah musik dari form memakai route handler /api/admin/music/upload agar
+// body tidak terpotong batas buffer proxy (lihat proxyClientMaxBodySize).
 export async function createAssetFromUpload(
   _state: AdminAssetState | undefined,
   formData: FormData,
@@ -119,77 +96,72 @@ export async function createAssetFromUpload(
     return { errors: { type: ["Tipe aset tidak valid."] } };
   }
 
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) {
+  const files = formData
+    .getAll("file")
+    .filter((value): value is File => value instanceof File && value.size > 0);
+
+  if (files.length === 0) {
     return { errors: { file: ["Pilih file terlebih dahulu."] } };
   }
 
   const isMusic = type === "MUSIC";
-  const allowed = isMusic ? ALLOWED_MUSIC : ALLOWED_IMAGE;
-  if (!allowed.has(file.type)) {
-    return {
-      errors: {
-        file: [
-          isMusic
-            ? "Format musik tidak didukung (Gunakan MP3, WAV, atau OGG)."
-            : "Format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.",
-        ],
-      },
-    };
-  }
-  if (file.size > MAX_SIZE) {
-    return { errors: { file: ["Ukuran file maksimal 10MB."] } };
+  // Aset desain tetap satu file per unggah; musik boleh sekaligus banyak.
+  const selectedFiles = isMusic ? files : files.slice(0, 1);
+
+  const validationErrors = validateAssetFiles(selectedFiles, type);
+  if (validationErrors.length > 0) {
+    return { errors: { file: validationErrors } };
   }
 
-  // Nama otomatis dari nama file yang diunggah
-  const name = deriveAssetName(file.name, type as AssetType);
+  const bucketError = await ensureAssetBucket();
+  if (bucketError) {
+    return { errors: { file: [bucketError] } };
+  }
 
-  const ext = file.type.split("/")[1] === "jpeg" ? "jpg" : file.type.split("/")[1];
-  const path = `${type.toLowerCase()}/${randomUUID()}.${ext}`;
+  const folder = type.toLowerCase();
+  const uploaded: string[] = [];
+  const failures: string[] = [];
 
-  const supabase = getSupabaseAdmin();
-
-  const { error: listError } = await supabase.storage.getBucket(SUPABASE_ASSET_BUCKET);
-  if (listError) {
-    const { error: createError } = await supabase.storage.createBucket(
-      SUPABASE_ASSET_BUCKET,
-      { public: true },
-    );
-    if (createError) {
-      return {
-        errors: {
-          file: [
-            `Bucket storage belum siap (${createError.message}). Buat bucket "${SUPABASE_ASSET_BUCKET}" secara manual di Supabase.`,
-          ],
-        },
-      };
+  for (const file of selectedFiles) {
+    const result = await uploadAssetFile(file, folder);
+    if ("error" in result) {
+      failures.push(result.error);
+      continue;
     }
+
+    await prisma.templateAsset.create({
+      data: {
+        adminId,
+        name: deriveAssetName(file.name, type),
+        type,
+        url: result.url,
+        // Musik tidak butuh thumbnail — halaman /admin/music memakai audio player.
+        thumbnail: isMusic ? null : result.url,
+        meta: {},
+      },
+    });
+    uploaded.push(file.name);
   }
-
-  const arrayBuffer = await file.arrayBuffer();
-  const { error: uploadError } = await supabase.storage
-    .from(SUPABASE_ASSET_BUCKET)
-    .upload(path, arrayBuffer, { contentType: file.type, upsert: false });
-
-  if (uploadError) {
-    return { errors: { file: [`Gagal upload: ${uploadError.message}`] } };
-  }
-
-  const { data: urlData } = supabase.storage.from(SUPABASE_ASSET_BUCKET).getPublicUrl(path);
-
-  await prisma.templateAsset.create({
-    data: {
-      adminId,
-      name,
-      type: type as AssetType,
-      url: urlData.publicUrl,
-      thumbnail: urlData.publicUrl,
-      meta: {},
-    },
-  });
 
   revalidatePath("/admin/assets");
-  return { success: true, message: "Aset berhasil diunggah." };
+  revalidatePath("/admin/music");
+  revalidatePath("/dashboard/background-music");
+
+  if (uploaded.length === 0) {
+    return { errors: { file: failures }, success: false, uploadedNames: [] };
+  }
+
+  const message = isMusic
+    ? `${uploaded.length} musik berhasil diunggah.`
+    : "Aset berhasil diunggah.";
+  const failureNote =
+    failures.length > 0 ? ` ${failures.length} file gagal: ${failures.join(" ")}` : "";
+
+  return {
+    success: failures.length === 0,
+    message: `${message}${failureNote}`,
+    uploadedNames: uploaded,
+  };
 }
 
 export async function deleteAsset(assetId: string) {
@@ -206,5 +178,7 @@ export async function deleteAsset(assetId: string) {
 
   await prisma.templateAsset.delete({ where: { id: assetId } });
   revalidatePath("/admin/assets");
+  revalidatePath("/admin/music");
   revalidatePath("/admin/templates");
+  revalidatePath("/dashboard/background-music");
 }

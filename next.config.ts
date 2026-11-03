@@ -35,8 +35,14 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
+      // Satu file aset desain (maks 10MB) + overhead form.
       bodySizeLimit: "12mb",
     },
+    // Server action untuk halaman /admin melewati proxy, dan Next.js membuffer
+    // body request yang melewati proxy. Default 10MB terlalu kecil untuk file
+    // 10MB + overhead, jadi naikkan. Unggah musik tidak lewat proxy karena
+    // memakai route handler /api/admin/music/upload.
+    proxyClientMaxBodySize: "20mb",
   },
   async headers() {
     return [

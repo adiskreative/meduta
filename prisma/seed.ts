@@ -218,6 +218,15 @@ async function main() {
       componentKey: "spotify",
       isPremium: true,
     },
+    {
+      name: "Roman Romance",
+      thumbnailUrl: "/design/roman/palace.webp",
+      componentKey: "roman",
+      isPremium: true,
+      sampleData: {
+        gatePhotoUrl: "/design/roman/palace.webp",
+      },
+    },
   ];
 
   for (const template of templates) {

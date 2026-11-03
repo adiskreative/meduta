@@ -75,6 +75,10 @@ export async function addDecoration(
 
   const asset = await prisma.templateAsset.findUnique({ where: { id: assetId } });
   if (!asset) return { message: "Aset tidak ditemukan.", success: false };
+  // Musik punya halaman sendiri (/admin/music) — jangan dicampur ke dekorasi desain.
+  if (asset.type === "MUSIC") {
+    return { message: "Aset musik tidak bisa dipakai sebagai dekorasi.", success: false };
+  }
 
   await prisma.templateDecoration.create({
     data: {

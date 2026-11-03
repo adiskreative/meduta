@@ -187,6 +187,13 @@ const templates = [
     image: "/design/rimba-zamrud/venue.webp",
     premium: true,
   },
+  {
+    key: "roman",
+    name: "Roman Romance",
+    desc: "Keanggunan klasik Romawi: istana megah, pilar marmer bermahkota bunga, lorong pelaminan mawar, kereta kencana & amplop segel lilin daun dafnah.",
+    image: "/design/roman/palace.webp",
+    premium: true,
+  },
 ];
 
 export const metadata: Metadata = {
