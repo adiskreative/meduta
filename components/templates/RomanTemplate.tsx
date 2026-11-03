@@ -8,10 +8,8 @@ import {
   Heart,
   ExternalLink,
   AtSign,
-  Gift,
   ChevronDown,
   ArrowUp,
-  PartyPopper,
   X,
   Sparkles,
   Quote,
@@ -24,24 +22,27 @@ import RsvpForm from "./RsvpForm";
 import CopyButton from "./CopyButton";
 import { useCountdown, googleCalendarUrl } from "./SharedWidgets";
 import { formatDate, formatTime, splitAgenda, type TemplateProps } from "./types";
-import { getBackgroundUrl, resolveGatePhoto } from "@/lib/decoration";
+import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
 
 /**
- * Roman Romance (Villa Romana) — Template Pernikahan Klasik Romawi Mediterania:
- * - Palet: Travertine Warm Cream (#FAF6F0), Roman Crimson Wine (#7A2021), Antique Gold (#C59B27),
- *   Sage/Olive Green (#3D5A45), dan Deep Espresso (#2A1B18).
- * - Aset Utama: Istana Romawi (Palace), Pilar Romawi (Fluted Columns), Lorong Akad (Aisle bunga putih),
- *   Tenda Resepsi Pohon Zaitun (Marquee), Kereta Kencana Kuda Putih (Royal Carriage), Mobil Pengantin
- *   Vintage Bunga (Getaway Car), dan Amplop Segel Lilin Daun Dafnah (Laurel Wax Seal).
- * - Fitur Meduta lengkap: Buka Undangan interaktif, Musik FAB, Countdown, Google Calendar,
- *   Pemberkatan/Akad, Resepsi, Kisah Cinta, Galeri Lightbox, Kado Digital salin rekening,
- *   RSVP, Ucapan Tamu, dan Responsif Ponsel/Desktop.
+ * Roman Romance (Villa Romana) — Tata Letak Bunga Klasik Romawi yang Presisi:
+ * - Cover: Garland Peony horizontal membingkai mahkota atas; Aset Gerbang Romawi (gerbang) menjadi
+ *   centerpiece, dengan potret mempelai tampil melalui lubang lengkungan gerbang.
+ * - Mempelai: Diapit Pilar Romawi (column) berkepala vas bunga; foto dibingkai lengkungan Sage Arch (arch-green)
+ *   dengan bunga mawar di sudut atas & bawah.
+ * - Countdown: Dihiasi buket pampas & anggrek putih (pampas) yang anggun.
+ * - Kutipan: Bermahkotakan plakat marmer Romawi berukir (cartouche).
+ * - Acara: Lorong pelaminan karpet mawar (aisle) & Tenda resepsi pohon zaitun (reception).
+ * - Kisah Cinta: Dipimpin kereta kencana kuda putih kerajaan (carriage).
+ * - Kado: Amplop vintage mekar bunga dengan segel hati emas (envelope-heart).
+ * - Penutup: Mobil pengantin vintage berbunga (getaway-car) & border bunga (floral-border) di dasar footer.
  */
 
 const TRAVERTINE = "#FAF6F0";
+/** Aset gerbang utama di halaman Cover (hasil konversi dari gerbang.png). */
+const ROMAN_GATE_ART = "/design/roman/gerbang.webp";
 const GOLD = "#C59B27";
 const WINE = "#7A2021";
-const ESPRESSO = "#2A1B18";
 
 /* ------------------------------------------------------------------ */
 /* CSS Khusus Template Roman                                          */
@@ -50,29 +51,7 @@ const ROMAN_STYLES = `
   .rm-card {
     background: linear-gradient(165deg, #FFFFFF 0%, #FAF6F0 100%);
     border: 1px solid rgba(197, 155, 39, 0.28);
-    box-shadow: 0 12px 36px rgba(74, 30, 20, 0.07), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
-  }
-  .rm-card-wine {
-    background: linear-gradient(165deg, #8B263E 0%, #7A2021 60%, #591617 100%);
-    border: 1px solid rgba(197, 155, 39, 0.4);
-    box-shadow: 0 16px 40px rgba(122, 32, 33, 0.25);
-  }
-  .rm-card-olive {
-    background: linear-gradient(165deg, #4A6953 0%, #3D5A45 100%);
-    border: 1px solid rgba(197, 155, 39, 0.35);
-  }
-  @keyframes rmShimmer {
-    0% { background-position: 200% center; }
-    100% { background-position: -200% center; }
-  }
-  .rm-shimmer-gold {
-    background-image: linear-gradient(110deg, #9B781E 20%, #E5C365 45%, #FFFFFF 55%, #9B781E 80%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    animation: rmShimmer 6s linear infinite;
+    box-shadow: 0 10px 32px rgba(74, 30, 20, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.85);
   }
   @keyframes rmFadeUp {
     from { opacity: 0; transform: translateY(18px); }
@@ -84,7 +63,7 @@ const ROMAN_STYLES = `
   }
   .rm-reveal {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(22px);
     transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .rm-reveal.rm-visible {
@@ -93,38 +72,26 @@ const ROMAN_STYLES = `
   }
   @keyframes rmSwayLeft {
     0%, 100% { transform: rotate(0deg) translate(0, 0); }
-    35% { transform: rotate(-3.5deg) translate(-2px, -1px); }
+    35% { transform: rotate(-3deg) translate(-2px, -1px); }
     70% { transform: rotate(-1deg) translate(-1px, 0); }
   }
   .rm-sway-left {
-    transform-origin: 15% 15%;
+    transform-origin: 50% 10%;
     animation: rmSwayLeft 5.8s ease-in-out infinite;
-  }
-  @keyframes rmSwayRight {
-    0%, 100% { transform: rotate(0deg) translate(0, 0); }
-    35% { transform: rotate(3.5deg) translate(2px, -1px); }
-    70% { transform: rotate(1deg) translate(1px, 0); }
-  }
-  .rm-sway-right {
-    transform-origin: 85% 15%;
-    animation: rmSwayRight 6.2s ease-in-out infinite;
   }
   @keyframes rmBounceY {
     0%, 100% { transform: translateY(0); opacity: 1; }
-    50% { transform: translateY(8px); opacity: 0.6; }
+    50% { transform: translateY(6px); opacity: 0.6; }
   }
   .rm-bounce-y {
     animation: rmBounceY 1.8s ease-in-out infinite;
   }
   @media (prefers-reduced-motion: reduce) {
     .rm-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-    .rm-fade-up, .rm-shimmer-gold, .rm-sway-left, .rm-sway-right, .rm-bounce-y { animation: none !important; }
+    .rm-fade-up, .rm-sway-left, .rm-bounce-y { animation: none !important; }
   }
 `;
 
-/* ------------------------------------------------------------------ */
-/* Reveal-on-scroll Hook                                              */
-/* ------------------------------------------------------------------ */
 function useReveal() {
   useEffect(() => {
     const els = document.querySelectorAll(".rm-reveal");
@@ -196,32 +163,47 @@ function RomanShell({
   const gifts = data.gifts ?? [];
 
   const bgUrl = data.backgroundUrl || getBackgroundUrl(decorations);
-  const gatePhoto = resolveGatePhoto({
+  const resolvedGatePhoto = resolveGatePhoto({
     gatePhotoUrl: data?.gatePhotoUrl,
+    adminGatePhotoUrl: getGatePhotoUrl(decorations),
     groomPhotoUrl: data?.groom?.photoUrl,
     bridePhotoUrl: data?.bride?.photoUrl,
     firstGalleryUrl: data?.gallery?.[0]?.url,
   });
+  // `palace.webp` adalah aset latar bawaan lama, dan `gerbang.webp` adalah aset
+  // gerbang itu sendiri — keduanya bukan foto mempelai. Hanya foto asli yang
+  // ditampilkan melalui lubang gerbang.
+  const gatePhoto =
+    resolvedGatePhoto === "/design/roman/palace.webp" ||
+    resolvedGatePhoto === ROMAN_GATE_ART
+      ? undefined
+      : resolvedGatePhoto;
+  // Background halaman penuh: utamakan background kustom, lalu foto mempelai,
+  // lalu aset istana agar gerbang tetap punya latar yang menyatu.
+  const pageBg = bgUrl || gatePhoto || "/design/roman/palace.webp";
 
   return (
     <div
       className="relative min-h-screen overflow-x-hidden font-sans text-[#2A1B18]"
-      style={bgUrl ? undefined : { background: TRAVERTINE }}
+      style={pageBg ? undefined : { background: TRAVERTINE }}
     >
       <style>{ROMAN_STYLES}</style>
 
-      {/* Latar Kustom / Latar Travertine Marmer Romawi */}
-      {bgUrl ? (
+      {/* Latar Kustom / Foto Gerbang sebagai background penuh satu halaman */}
+      {pageBg ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={bgUrl}
+            src={pageBg}
             alt=""
             className="pointer-events-none fixed inset-0 z-0 h-full w-full object-cover"
           />
           <div
             className="pointer-events-none fixed inset-0 z-0"
-            style={{ background: "rgba(250, 246, 240, 0.88)" }}
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(250,246,240,0.70) 0%, rgba(250,246,240,0.50) 35%, rgba(250,246,240,0.68) 100%)",
+            }}
           />
         </>
       ) : (
@@ -248,13 +230,13 @@ function RomanShell({
         onOpen={onGateOpen}
       />
 
-      {/* Pasangan Mempelai dengan Pilar Romawi */}
+      {/* Pasangan Mempelai dengan Pilar Romawi & Bingkai Arch Bunga */}
       {groom?.name || bride?.name ? <CoupleSection groom={groom} bride={bride} /> : null}
 
       {/* Hitung Mundur & Kalender */}
       <CountdownSection eventDate={agenda.main.date} eventName={data.eventName} />
 
-      {/* Kutipan Suci / Peribahasa Cinta */}
+      {/* Kutipan Suci / Peribahasa Cinta dengan Plakat Cartouche */}
       {!data.quoteHidden ? (
         <QuoteSection
           title={data.quoteTitle}
@@ -272,19 +254,19 @@ function RomanShell({
       {/* Galeri Foto Romawi */}
       {gallery.length > 0 ? <GallerySection gallery={gallery} /> : null}
 
-      {/* Tanda Kasih / Amplop Digital */}
+      {/* Tanda Kasih / Amplop Digital Mekar Bunga */}
       {gifts.length > 0 ? <GiftsSection gifts={gifts} /> : null}
 
       {/* RSVP Konfirmasi Kehadiran */}
       <RsvpSection invitationId={invitationId} guestName={guestName} />
 
-      {/* Papan Doa & Harapan */}
+      {/* Papan Doa & Harapan Tamu */}
       <WishesSection invitationId={invitationId} wishes={wishes} />
 
       {/* Pesan Penutup & Sunset Getaway Car */}
       <ClosingSection text={data.customMessage} />
 
-      {/* Footer */}
+      {/* Footer dengan Border Bunga */}
       <Footer groomName={groom?.name} brideName={bride?.name} />
 
       {/* Tombol Musik Melayang & Scroll Up */}
@@ -294,7 +276,7 @@ function RomanShell({
             isPlaying={music.isPlaying}
             onToggle={music.toggle}
             positionClassName="relative z-50"
-            buttonClassName="border-2 border-[#C59B27] bg-[#7A2021] text-white shadow-[0_0_20px_rgba(197,155,39,0.4)]"
+            buttonClassName="border-2 border-[#C59B27] bg-[#7A2021] text-white shadow-[0_0_18px_rgba(197,155,39,0.35)]"
             playingIconClassName="h-5 w-5 text-[#E5C365]"
             pausedIconClassName="h-5 w-5 opacity-70"
           />
@@ -330,7 +312,7 @@ function DraftNotice() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Heading Section Romawi: Laurel, Serifs & Aksen Emas                */
+/* Heading Section Romawi                                             */
 /* ------------------------------------------------------------------ */
 function SectionHeading({
   script,
@@ -342,20 +324,20 @@ function SectionHeading({
   desc?: string;
 }) {
   return (
-    <div className="rm-reveal mb-14 text-center">
+    <div className="rm-reveal mb-12 text-center">
       <span className="font-[family-name:var(--font-script)] text-3xl text-[#7A2021] sm:text-4xl">
         {script}
       </span>
       <h2 className="mt-1 font-[family-name:var(--font-serif-elegant)] text-2xl font-bold uppercase tracking-widest text-[#2A1B18] sm:text-3xl md:text-4xl">
         {title}
       </h2>
-      <div className="mx-auto mt-4 flex items-center justify-center gap-2">
+      <div className="mx-auto mt-3 flex items-center justify-center gap-2">
         <span className="h-px w-12 bg-gradient-to-r from-transparent to-[#C59B27]" />
         <span className="text-xs text-[#C59B27]">&#10022;</span>
         <span className="h-px w-12 bg-gradient-to-l from-transparent to-[#C59B27]" />
       </div>
       {desc ? (
-        <p className="mx-auto mt-3 max-w-lg font-[family-name:var(--font-serif-elegant)] text-sm italic text-[#6B554D]">
+        <p className="mx-auto mt-2 max-w-lg font-[family-name:var(--font-serif-elegant)] text-sm italic text-[#6B554D]">
           {desc}
         </p>
       ) : null}
@@ -364,7 +346,7 @@ function SectionHeading({
 }
 
 /* ------------------------------------------------------------------ */
-/* 1. COVER / HERO: Istana Romawi + Bingkai Arch Foto Mempelai        */
+/* 1. COVER / HERO: Garland Peony + Arch Bunga + Istana Romawi        */
 /* ------------------------------------------------------------------ */
 function Cover({
   eventName,
@@ -390,24 +372,63 @@ function Cover({
   const names = `${groomNick ?? "Groom"} & ${brideNick ?? "Bride"}`;
 
   const cover = (
-    <header className="relative z-10 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden px-4 pb-20 pt-16 text-center">
-      {/* Garland Peony Bunga di Bagian Atas */}
+    <header className="relative z-10 flex min-h-[100svh] w-full flex-col items-center justify-between overflow-hidden px-4 pb-16 pt-6 text-center">
+      {/* Cahaya lembut di tengah agar teks tetap terbaca di atas foto background */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-12 z-20 flex justify-center overflow-hidden opacity-95"
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 75% 55% at 50% 45%, rgba(250,246,240,0.55) 0%, rgba(250,246,240,0.25) 55%, rgba(250,246,240,0) 78%)",
+        }}
+      />
+
+      {/* Mahkota Bunga Garland Peony di Puncak Atas */}
+      <div
+        aria-hidden
+        className="pointer-events-none relative z-20 flex w-full justify-center"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/design/roman/garland-peony.webp"
           alt=""
-          className="rm-sway-left max-h-40 w-auto object-cover"
+          className="rm-sway-left w-100 max-w-[75vw] object-contain drop-shadow-sm sm:w-70"
         />
       </div>
 
-      <div className="relative z-10 flex w-full max-w-3xl flex-col items-center px-2">
-        {/* Badge Lambang Romawi */}
+      {/* Bunga Sudut Kiri Atas */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -left-8 -top-4 z-10 block w-70 opacity-95 sm:-left-4 sm:-top-2 sm:w-72"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/design/roman/corner-flower.webp"
+          alt=""
+          className="rm-sway-left block w-full drop-shadow-sm"
+          style={{ transformOrigin: "0% 0%" }}
+        />
+      </span>
+
+      {/* Bunga Sudut Kanan Atas (mirror) */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-8 -top-4 z-10 block w-70 opacity-95 sm:-right-4 sm:-top-2 sm:w-72"
+        style={{ transform: "scaleX(-1)" }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/design/roman/corner-flower.webp"
+          alt=""
+          className="rm-sway-left block w-full drop-shadow-sm"
+          style={{ animationDelay: "0.8s", transformOrigin: "0% 0%" }}
+        />
+      </span>
+
+      <div className="relative z-10 my-auto flex w-full max-w-2xl flex-col items-center px-2 py-4">
+        {/* Badge Villa Romana */}
         <div
-          className="rm-fade-up mt-8 inline-flex items-center gap-2 rounded-full border border-[#C59B27]/40 bg-white/80 px-5 py-1.5 shadow-sm backdrop-blur-sm"
+          className="rm-fade-up inline-flex items-center gap-2 rounded-full border border-[#C59B27]/40 bg-white/85 px-4 py-1 shadow-sm backdrop-blur-sm"
           style={{ animationDelay: "0.2s" }}
         >
           <Sparkles className="h-3.5 w-3.5 text-[#C59B27]" />
@@ -419,78 +440,95 @@ function Cover({
 
         {/* Nama Pasangan Mempelai */}
         <h1
-          className="rm-fade-up mt-5 font-[family-name:var(--font-serif-elegant)] text-4xl font-bold uppercase tracking-wider text-[#2A1B18] sm:text-5xl md:text-6xl"
-          style={{ animationDelay: "0.4s" }}
+          className="rm-fade-up mt-3 font-[family-name:var(--font-serif-elegant)] text-3xl font-bold uppercase tracking-wider text-[#2A1B18] sm:text-5xl"
+          style={{ animationDelay: "0.35s" }}
         >
           {groomNick ?? "Pria"} <span className="font-normal text-[#C59B27]">&amp;</span> {brideNick ?? "Wanita"}
         </h1>
 
         <p
-          className="rm-fade-up mt-2 font-[family-name:var(--font-script)] text-3xl text-[#7A2021] sm:text-4xl"
-          style={{ animationDelay: "0.55s" }}
+          className="rm-fade-up mt-1 font-[family-name:var(--font-script)] text-2xl text-[#7A2021] sm:text-3xl"
+          style={{ animationDelay: "0.45s" }}
         >
           A Lifetime of Love Begins Here
         </p>
 
-        {/* Ilustrasi Istana Romawi Megah & Foto Mempelai dalam Arch */}
-        <div className="rm-fade-up relative mt-6 w-full max-w-md" style={{ animationDelay: "0.7s" }}>
-          {/* Latar Istana Romawi */}
-          <div className="relative mx-auto flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/design/roman/palace.webp"
-              alt="Villa Romana"
-              className="w-full object-contain drop-shadow-md"
-            />
-          </div>
-
-          {/* Foto Mempelai di Dalam Bingkai Arch Klasik (Bila Tersedia) */}
+        {/* Centerpiece: Bingkai Gerbang Romawi */}
+        <div className="rm-fade-up relative my-6 w-full max-w-sm" style={{ animationDelay: "0.6s" }}>
           {gatePhoto ? (
-            <div className="absolute inset-x-0 -bottom-10 z-20 flex justify-center">
+            /* Bila ada foto mempelai: Tampilkan foto di dalam lubang gerbang */
+            <div
+              className="relative mx-auto w-72 sm:w-80"
+              style={{ aspectRatio: "1 / 1" }}
+            >
+              {/* Foto dipotong mengikuti bentuk lubang gerbang (lengkung di atas) */}
               <div
-                className="relative overflow-hidden rounded-t-full border-4 border-[#C59B27] bg-[#FAF6F0] p-1 shadow-2xl"
-                style={{ width: "170px", height: "230px" }}
+                className="absolute overflow-hidden"
+                style={{
+                  left: "28.2%",
+                  right: "26.85%",
+                  top: "32.5%",
+                  bottom: "0%",
+                  borderTopLeftRadius: "50% 33.33%",
+                  borderTopRightRadius: "50% 33.33%",
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={gatePhoto}
                   alt={names}
-                  className="h-full w-full rounded-t-full object-cover object-top"
+                  className="h-full w-full object-cover object-top"
                 />
               </div>
+              {/* Bingkai Gerbang di depan foto */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={ROMAN_GATE_ART}
+                alt=""
+                aria-hidden
+                className="relative h-full w-full object-contain drop-shadow-lg"
+              />
             </div>
-          ) : null}
+          ) : (
+            /* Bila belum ada foto: Tampilkan aset gerbang Romawi */
+            <div className="relative mx-auto flex items-center justify-center w-72 sm:w-80">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={ROMAN_GATE_ART}
+                alt="Gerbang Romawi"
+                className="w-full object-contain drop-shadow-lg"
+              />
+            </div>
+          )}
         </div>
 
         {/* Tanggal & Tempat Acara */}
         <div
-          className={`rm-fade-up flex flex-wrap items-center justify-center gap-3 ${
-            gatePhoto ? "mt-16" : "mt-8"
-          }`}
-          style={{ animationDelay: "0.9s" }}
+          className="rm-fade-up flex flex-wrap items-center justify-center gap-2.5"
+          style={{ animationDelay: "0.75s" }}
         >
           {eventDate ? (
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#C59B27]/40 bg-white/90 px-5 py-2 text-sm font-semibold text-[#2A1B18] shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#C59B27]/40 bg-white/90 px-4 py-1.5 text-xs font-semibold text-[#2A1B18] shadow-sm">
               <CalendarDays className="h-4 w-4 text-[#7A2021]" />
               <span>{formatDate(eventDate)}</span>
             </div>
           ) : null}
 
           {venue ? (
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#C59B27]/40 bg-white/90 px-5 py-2 text-sm font-semibold text-[#2A1B18] shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#C59B27]/40 bg-white/90 px-4 py-1.5 text-xs font-semibold text-[#2A1B18] shadow-sm">
               <MapPin className="h-4 w-4 text-[#7A2021]" />
-              <span className="max-w-[220px] truncate sm:max-w-none">{venue}</span>
+              <span className="max-w-[200px] truncate sm:max-w-none">{venue}</span>
             </div>
           ) : null}
         </div>
 
-        {/* Indikator Gulir ke Bawah */}
-        <div className="rm-fade-up mt-10 flex flex-col items-center" style={{ animationDelay: "1.1s" }}>
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#6B554D]">
+        {/* Indikator Gulir */}
+        <div className="rm-fade-up mt-8 flex flex-col items-center" style={{ animationDelay: "0.9s" }}>
+          <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#6B554D]">
             Gulir Ke Bawah
           </span>
-          <span className="rm-bounce-y mt-2 flex h-9 w-9 items-center justify-center rounded-full border border-[#C59B27] bg-white text-[#7A2021] shadow-sm">
-            <ChevronDown className="h-5 w-5" />
+          <span className="rm-bounce-y mt-1.5 flex h-8 w-8 items-center justify-center rounded-full border border-[#C59B27] bg-white text-[#7A2021] shadow-sm">
+            <ChevronDown className="h-4 w-4" />
           </span>
         </div>
       </div>
@@ -512,7 +550,7 @@ function Cover({
 }
 
 /* ------------------------------------------------------------------ */
-/* 2. PASANGAN MEMPELAI: Diapit Pilar Romawi Megah                    */
+/* 2. PASANGAN MEMPELAI: Bingkai Arch Bunga (arch-green) + Pilar     */
 /* ------------------------------------------------------------------ */
 function CoupleSection({
   groom,
@@ -530,9 +568,9 @@ function CoupleSection({
           desc="Dengan memohon rahmat dan ridho Tuhan Yang Maha Esa, kami mempersembahkan kedua mempelai yang mengikat janji suci"
         />
 
-        <div className="relative mx-auto flex max-w-4xl flex-col items-center justify-center gap-10 md:flex-row md:items-start md:gap-14">
+        <div className="relative mx-auto flex max-w-4xl flex-col items-center justify-center gap-8 md:flex-row md:items-start md:gap-10">
           {/* Pilar Romawi Kiri (Desktop) */}
-          <div aria-hidden="true" className="pointer-events-none absolute -left-12 top-6 hidden w-28 lg:block">
+          <div aria-hidden="true" className="pointer-events-none absolute -left-10 top-10 hidden w-24 lg:block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/design/roman/column.webp" alt="" className="w-full drop-shadow-md" />
           </div>
@@ -540,12 +578,9 @@ function CoupleSection({
           {/* Kartu Mempelai Wanita */}
           <PersonCard person={bride} role="Mempelai Wanita" />
 
-          {/* Lambang Hati / Monogram Pengikat di Tengah */}
-          <div className="rm-reveal flex flex-col items-center justify-center pt-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#C59B27] bg-[#7A2021] text-[#E5C365] shadow-lg">
-              <Heart className="h-6 w-6 fill-current" />
-            </div>
-            <span className="mt-2 font-[family-name:var(--font-script)] text-2xl text-[#C59B27]">
+          {/* Monogram Tengah */}
+          <div className="rm-reveal flex flex-col items-center gap-1">
+            <span className="mt-1 font-[family-name:var(--font-script)] text-2xl text-[#C59B27]">
               &amp;
             </span>
           </div>
@@ -554,7 +589,7 @@ function CoupleSection({
           <PersonCard person={groom} role="Mempelai Pria" />
 
           {/* Pilar Romawi Kanan (Desktop) */}
-          <div aria-hidden="true" className="pointer-events-none absolute -right-12 top-6 hidden w-28 lg:block">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-10 top-10 hidden w-24 lg:block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/design/roman/column.webp" alt="" className="w-full drop-shadow-md" />
           </div>
@@ -572,57 +607,67 @@ function PersonCard({
   role: string;
 }) {
   return (
-    <div className="rm-reveal rm-card relative flex flex-1 flex-col items-center rounded-3xl p-8 text-center transition-transform duration-300 hover:-translate-y-1">
-      {/* Bingkai Foto Arch Romawi */}
-      <div className="relative mb-6 h-60 w-44 overflow-hidden rounded-t-full border-4 border-[#C59B27] bg-[#EFE9DF] shadow-md">
-        {person?.photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={person.photoUrl}
-            alt={person.name ?? role}
-            className="h-full w-full object-cover object-top transition-transform duration-700 hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-[#7A2021]">
-            <Heart className="h-12 w-12" />
-          </div>
-        )}
+    <div className="rm-reveal rm-card relative flex flex-1 flex-col items-center rounded-3xl p-6 text-center transition-transform duration-300 hover:-translate-y-1 sm:p-8">
+      {/* Bingkai Foto Arch Bunga (arch-green) dengan mawar di sudut */}
+      <div className="relative mx-auto mb-5 w-44 sm:w-48" style={{ aspectRatio: "702 / 1000" }}>
+        <div className="absolute inset-x-2 bottom-2 top-2 overflow-hidden rounded-t-[5rem] bg-[#EFE9DF]">
+          {person?.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={person.photoUrl}
+              alt={person.name ?? role}
+              className="h-full w-full object-cover object-top transition-transform duration-700 hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-[#7A2021]">
+              <Heart className="h-10 w-10" />
+            </div>
+          )}
+        </div>
+        {/* Frame Bunga Arch di depan foto (tengahnya transparan agar foto jernih) */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/design/roman/arch-green-clear.webp"
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full object-contain drop-shadow-md"
+        />
       </div>
 
-      <span className="rounded-full bg-[#7A2021]/10 px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#7A2021]">
+      <span className="rounded-full bg-[#7A2021]/10 px-3.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#7A2021]">
         {role}
       </span>
 
-      <h3 className="mt-3 font-[family-name:var(--font-serif-elegant)] text-2xl font-bold uppercase tracking-wider text-[#2A1B18] sm:text-3xl">
+      <h3 className="mt-2.5 font-[family-name:var(--font-serif-elegant)] text-2xl font-bold uppercase tracking-wider text-[#2A1B18] sm:text-3xl">
         {person?.name ?? "-"}
       </h3>
 
       {person?.nickname && (
-        <p className="mt-0.5 font-[family-name:var(--font-script)] text-2xl text-[#C59B27]">
+        <p className="font-[family-name:var(--font-script)] text-2xl text-[#C59B27]">
           &ldquo;{person.nickname}&rdquo;
         </p>
       )}
 
       {person?.parentName && (
-        <p className="mt-4 text-xs leading-relaxed text-[#6B554D]">
+        <p className="mt-3 text-xs leading-relaxed text-[#6B554D]">
           {person.childOf ?? "Putra / Putri dari"} <br />
           <span className="font-bold text-[#2A1B18]">{person.parentName}</span>
         </p>
       )}
 
       {person?.bio && (
-        <p className="mt-3 max-w-xs text-xs italic leading-relaxed text-[#6B554D]">
+        <p className="mt-2.5 max-w-xs text-xs italic leading-relaxed text-[#6B554D]">
           &ldquo;{person.bio}&rdquo;
         </p>
       )}
 
       {person?.instagram && (
-        <div className="mt-6">
+        <div className="mt-5">
           <a
             href={`https://instagram.com/${person.instagram.replace(/^@/, "")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#C59B27]/40 bg-white px-4 py-1.5 text-xs font-semibold text-[#7A2021] shadow-sm transition hover:scale-105 hover:bg-[#7A2021] hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#C59B27]/40 bg-white px-3.5 py-1 text-xs font-semibold text-[#7A2021] shadow-sm transition hover:scale-105 hover:bg-[#7A2021] hover:text-white"
           >
             <AtSign className="h-3.5 w-3.5" />
             <span>{person.instagram}</span>
@@ -634,7 +679,7 @@ function PersonCard({
 }
 
 /* ------------------------------------------------------------------ */
-/* 3. HITUNG MUNDUR (Save The Date Temple)                            */
+/* 3. HITUNG MUNDUR (Save The Date) Diberkahi Buket Pampas            */
 /* ------------------------------------------------------------------ */
 function CountdownSection({
   eventDate,
@@ -655,6 +700,17 @@ function CountdownSection({
   return (
     <section className="relative px-4 py-20 text-center">
       <div className="mx-auto max-w-4xl">
+        {/* Buket Pampas & Anggrek di Atas Countdown */}
+        <div className="rm-reveal mx-auto mb-4 w-28 sm:w-36">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/design/roman/pampas.webp"
+            alt=""
+            aria-hidden
+            className="w-full object-contain drop-shadow-sm"
+          />
+        </div>
+
         <SectionHeading
           script="Save The Date"
           title="Menghitung Hari Bahagia"
@@ -697,7 +753,7 @@ function CountdownSection({
 }
 
 /* ------------------------------------------------------------------ */
-/* 4. KUTIPAN SUCI / PERIBAHASA CINTA                                 */
+/* 4. KUTIPAN SUCI DENGAN PLAKAT CARTOUCHE ROMAWI                     */
 /* ------------------------------------------------------------------ */
 function QuoteSection({
   title,
@@ -715,13 +771,13 @@ function QuoteSection({
 
   return (
     <section className="relative px-4 py-16 text-center">
-      <div className="rm-reveal rm-card relative mx-auto max-w-3xl overflow-hidden rounded-[36px] p-8 md:p-12">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#7A2021]/10 text-[#7A2021]">
-          <Quote className="h-6 w-6" />
+      <div className="rm-reveal rm-card relative mx-auto max-w-2xl overflow-hidden rounded-[36px] p-8 md:p-12">
+        {/* Plakat Cartouche Romawi sebagai Lambang Indah */}
+        <div className="mx-auto mb-4 w-16 sm:w-20">
         </div>
 
         {title && (
-          <h3 className="mb-3 font-[family-name:var(--font-serif-elegant)] text-lg font-bold uppercase tracking-widest text-[#7A2021]">
+          <h3 className="mb-2 font-[family-name:var(--font-serif-elegant)] text-base font-bold uppercase tracking-widest text-[#7A2021]">
             {title}
           </h3>
         )}
@@ -730,7 +786,7 @@ function QuoteSection({
           &ldquo;{quoteText}&rdquo;
         </p>
 
-        <p className="mt-5 font-[family-name:var(--font-serif-elegant)] text-sm font-bold uppercase tracking-widest text-[#C59B27]">
+        <p className="mt-4 font-[family-name:var(--font-serif-elegant)] text-xs font-bold uppercase tracking-widest text-[#C59B27]">
           {quoteSource}
         </p>
       </div>
@@ -758,7 +814,7 @@ function EventsSection({
         />
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-          {/* Card 1: Akad Nikah / Pemberkatan (Ilustrasi Aisle Bunga Putih) */}
+          {/* Card 1: Akad Nikah (Lorong Pelaminan Karpet Mawar) */}
           <EventCard
             artworkUrl="/design/roman/aisle.webp"
             title="Akad Nikah"
@@ -769,7 +825,7 @@ function EventsSection({
             badgeColor="#7A2021"
           />
 
-          {/* Card 2: Resepsi Pernikahan (Ilustrasi Tenda Zaitun) */}
+          {/* Card 2: Resepsi Pernikahan (Tenda Zaitun) */}
           <EventCard
             artworkUrl="/design/roman/reception.webp"
             title={events[0]?.title ?? "Resepsi Pernikahan"}
@@ -781,9 +837,9 @@ function EventsSection({
           />
         </div>
 
-        {/* Acara Tambahan (Jika Lebih dari 1 Acara Resepsi) */}
+        {/* Acara Tambahan */}
         {events.length > 1 ? (
-          <div className="mx-auto mt-8 max-w-2xl space-y-5">
+          <div className="mx-auto mt-8 max-w-2xl space-y-4">
             {events.slice(1).map((e) => (
               <div
                 key={e.id}
@@ -796,7 +852,7 @@ function EventsSection({
                   {e.title ?? "Acara"}
                 </h3>
                 {e.time && (
-                  <p className="mt-2 flex items-center gap-2 text-xs text-[#6B554D]">
+                  <p className="mt-1.5 flex items-center gap-2 text-xs text-[#6B554D]">
                     <Clock className="h-4 w-4 text-[#C59B27]" /> {formatTime(e.time)}
                   </p>
                 )}
@@ -844,13 +900,13 @@ function EventCard({
   return (
     <div className="rm-reveal rm-card relative flex flex-col justify-between overflow-hidden rounded-[36px] p-6 text-center sm:p-8">
       <div>
-        {/* Ilustrasi Watercolor Tempat Acara */}
-        <div className="relative mx-auto mb-4 h-48 w-full max-w-xs overflow-hidden rounded-2xl bg-white/50 p-2">
+        {/* Ilustrasi Tempat Acara Presisi */}
+        <div className="relative mx-auto mb-4 flex h-48 w-full items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={artworkUrl}
             alt={title}
-            className="h-full w-full object-contain drop-shadow-sm transition-transform duration-700 hover:scale-105"
+            className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-700 hover:scale-105"
           />
         </div>
 
@@ -867,7 +923,7 @@ function EventCard({
           </h3>
         )}
 
-        <div className="my-5 space-y-2.5 text-xs text-[#6B554D]">
+        <div className="my-5 space-y-2 text-xs text-[#6B554D]">
           {time && (
             <div className="flex items-center justify-center gap-2">
               <Clock className="h-4 w-4 text-[#C59B27]" />
@@ -916,7 +972,7 @@ function StorySection({
         />
 
         {/* Ilustrasi Kereta Kencana Kuda Putih */}
-        <div className="rm-reveal mx-auto mb-10 w-full max-w-sm">
+        <div className="rm-reveal mx-auto mb-10 w-full max-w-xs">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/design/roman/carriage.webp"
@@ -980,7 +1036,7 @@ function toRoman(num: number): string {
 }
 
 /* ------------------------------------------------------------------ */
-/* 7. GALERI FOTO ROMAWI (Grid + Lightbox)                            */
+/* 7. GALERI FOTO ROMAWI                                              */
 /* ------------------------------------------------------------------ */
 function GallerySection({
   gallery,
@@ -1043,7 +1099,7 @@ function GallerySection({
               type="button"
               onClick={() => setSelected(null)}
               aria-label="Tutup foto"
-              className="absolute -top-12 right-0 rounded-full border border-[#C59B27] bg-[#7A2021] p-2.5 text-white transition hover:scale-110"
+              className="absolute -top-12 right-0 rounded-full border border-[#C59B27] bg-[#7A2021] p-2 text-white transition hover:scale-110"
             >
               <X className="h-5 w-5 text-[#E5C365]" />
             </button>
@@ -1055,7 +1111,7 @@ function GallerySection({
 }
 
 /* ------------------------------------------------------------------ */
-/* 8. KADO DIGITAL / AMPLOP ROMAWI                                    */
+/* 8. KADO DIGITAL: Amplop Bunga Segel Hati Emas                      */
 /* ------------------------------------------------------------------ */
 function GiftsSection({
   gifts,
@@ -1065,8 +1121,8 @@ function GiftsSection({
   return (
     <section className="relative px-4 py-20 text-center">
       <div className="rm-reveal rm-card mx-auto max-w-3xl rounded-[36px] p-8 md:p-12">
-        {/* Ilustrasi Amplop Bunga Segel Hati */}
-        <div className="mx-auto mb-4 w-44">
+        {/* Amplop Mekar Bunga dengan Segel Hati Emas */}
+        <div className="mx-auto mb-4 w-36 sm:w-44">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/design/roman/envelope-heart.webp"
@@ -1082,7 +1138,7 @@ function GiftsSection({
           Doa restu Anda merupakan karunia terindah bagi kami. Namun jika Anda berkenan memberikan tanda kasih, dapat melalui:
         </p>
 
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {gifts.map((g) => (
             <div
               key={g.id}
@@ -1095,7 +1151,9 @@ function GiftsSection({
                 {g.accountNumber}
               </h4>
               {g.holderName && (
-                <p className="text-xs text-[#6B554D]">a.n. <span className="font-semibold text-[#2A1B18]">{g.holderName}</span></p>
+                <p className="text-xs text-[#6B554D]">
+                  a.n. <span className="font-semibold text-[#2A1B18]">{g.holderName}</span>
+                </p>
               )}
               <div className="mt-4">
                 <CopyButton text={g.accountNumber} />
@@ -1121,7 +1179,7 @@ function RsvpSection({
   return (
     <section className="relative px-4 py-20">
       <div className="rm-reveal rm-card mx-auto max-w-xl rounded-[36px] p-8 md:p-12">
-        <div className="mb-8 text-center">
+        <div className="mb-6 text-center">
           <span className="font-[family-name:var(--font-script)] text-3xl text-[#7A2021]">
             Konfirmasi Kehadiran
           </span>
@@ -1157,7 +1215,7 @@ function WishesSection({
   return (
     <section className="relative px-4 py-16">
       <div className="mx-auto max-w-4xl">
-        <div className="rm-reveal mb-12 text-center">
+        <div className="rm-reveal mb-10 text-center">
           <span className="font-[family-name:var(--font-script)] text-3xl text-[#7A2021]">
             Papan Doa
           </span>
@@ -1189,7 +1247,7 @@ function WishesSection({
 }
 
 /* ------------------------------------------------------------------ */
-/* 11. PESAN PENUTUP & GETAWAY CAR                                    */
+/* 11. PESAN PENUTUP & SUNSET GETAWAY CAR                             */
 /* ------------------------------------------------------------------ */
 function ClosingSection({ text }: { text?: string }) {
   const closingMsg =
@@ -1213,11 +1271,11 @@ function ClosingSection({ text }: { text?: string }) {
           Terima Kasih
         </h3>
 
-        <p className="mt-3 whitespace-pre-line font-[family-name:var(--font-serif-elegant)] text-base italic leading-relaxed text-[#6B554D]">
+        <p className="mt-3 whitespace-pre-line font-[family-name:var(--font-serif-elegant)] text-sm italic leading-relaxed text-[#6B554D]">
           {closingMsg}
         </p>
 
-        <p className="mt-6 font-[family-name:var(--font-script)] text-3xl text-[#7A2021]">
+        <p className="mt-5 font-[family-name:var(--font-script)] text-3xl text-[#7A2021]">
           With Love, Newlyweds
         </p>
       </div>
@@ -1226,7 +1284,7 @@ function ClosingSection({ text }: { text?: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 12. FOOTER                                                         */
+/* 12. FOOTER DENGAN FLORAL BORDER                                    */
 /* ------------------------------------------------------------------ */
 function Footer({
   groomName,
@@ -1236,17 +1294,29 @@ function Footer({
   brideName?: string;
 }) {
   return (
-    <footer className="relative overflow-hidden border-t border-[#C59B27]/30 bg-[#F4EDE2] px-4 pb-28 pt-10 text-center">
+    <footer className="relative overflow-hidden border-t border-[#C59B27]/30 bg-[#F4EDE2]/85 px-4 pb-20 pt-10 text-center backdrop-blur-[2px]">
       <h3 className="font-[family-name:var(--font-serif-elegant)] text-2xl font-bold uppercase tracking-widest text-[#7A2021]">
         {groomName ?? "Groom"} &amp; {brideName ?? "Bride"}
       </h3>
       <p className="mt-1 font-[family-name:var(--font-serif-elegant)] text-xs italic text-[#6B554D]">
         Sampai jumpa di hari bahagia pernikahan kami!
       </p>
-      <p className="mt-6 text-[10px] uppercase tracking-widest text-[#8A756C]">
+      <p className="mt-5 text-[10px] uppercase tracking-widest text-[#8A756C]">
         &copy; {new Date().getFullYear()} MEDUTA &bull; ROMAN ROMANCE
       </p>
+
+      {/* Untaian Bunga di Dasar Halaman Footer */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex justify-center overflow-hidden opacity-90"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/design/roman/floral-border.webp"
+          alt=""
+          className="h-10 w-full object-cover"
+        />
+      </div>
     </footer>
   );
 }
-
