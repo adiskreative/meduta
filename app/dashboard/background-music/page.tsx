@@ -34,7 +34,7 @@ export default async function BackgroundMusicPage() {
   const musicEnd =
     typeof data.musicEnd === "number" && data.musicEnd > 0 ? data.musicEnd : 0;
 
-  // Koleksi musik stok (dikelola admin di /admin/assets, tipe MUSIC)
+  // Koleksi musik stok (dikelola admin di /admin/music, tipe MUSIC)
   const stockMusic = await prisma.templateAsset.findMany({
     where: { type: AssetType.MUSIC },
     orderBy: { createdAt: "desc" },

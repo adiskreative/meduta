@@ -40,7 +40,11 @@ export default async function AdminTemplateDecorationsPage({
   if (!template) notFound();
 
   const [assets, decorations] = await Promise.all([
-    prisma.templateAsset.findMany({ orderBy: { name: "asc" } }),
+    // Hanya aset desain — musik dikelola terpisah di /admin/music.
+    prisma.templateAsset.findMany({
+      where: { type: { not: "MUSIC" } },
+      orderBy: { name: "asc" },
+    }),
     prisma.templateDecoration.findMany({
       where: { templateId: id },
       orderBy: { zIndex: "asc" },

@@ -1,4 +1,4 @@
-import { Images, Image as ImageIcon, Frame, Flower2, Wallpaper, Music, Library } from "lucide-react";
+import { Images, Image as ImageIcon, Frame, Flower2, Wallpaper, Library } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { deleteAsset } from "@/lib/actions/admin-asset";
 import AssetForm from "@/components/admin/AssetForm";
@@ -12,12 +12,12 @@ const TYPE_META: Record<string, { label: string; icon: React.ElementType; color:
   FRAME: { label: "Bingkai", icon: Frame, color: "text-violet-600" },
   DECOR: { label: "Dekorasi", icon: Flower2, color: "text-rose-600" },
   BACKGROUND: { label: "Background", icon: Wallpaper, color: "text-emerald-600" },
-  MUSIC: { label: "Musik", icon: Music, color: "text-amber-600" },
   GALLERY: { label: "Galeri", icon: Library, color: "text-indigo-600" },
 };
 
 export default async function AdminAssetsPage() {
   const assets = await prisma.templateAsset.findMany({
+    where: { type: { not: "MUSIC" } },
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { decorations: true } } },
   });
@@ -32,11 +32,11 @@ export default async function AdminAssetsPage() {
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">Kelola Aset Desain</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          {assets.length} aset — unggah bingkai, bunga, background, musik, dan galeri.
+          {assets.length} aset — unggah gambar, bingkai, bunga, background, dan galeri.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {Object.entries(TYPE_META).map(([type, meta]) => {
           const Icon = meta.icon;
           return (
@@ -79,15 +79,11 @@ export default async function AdminAssetsPage() {
                   className="flex flex-col overflow-hidden rounded-xl border border-zinc-200"
                 >
                   <div className="flex h-36 items-center justify-center bg-zinc-50">
-                    {asset.type === "MUSIC" ? (
-                      <Music className="h-10 w-10 text-zinc-400" />
-                    ) : (
-                      <img
-                        src={asset.thumbnail ?? asset.url}
-                        alt={asset.name}
-                        className="h-full w-full object-contain"
-                      />
-                    )}
+                    <img
+                      src={asset.thumbnail ?? asset.url}
+                      alt={asset.name}
+                      className="h-full w-full object-contain"
+                    />
                   </div>
                   <div className="flex flex-1 flex-col p-4">
                     <div className="flex items-start justify-between gap-2">

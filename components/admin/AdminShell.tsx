@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Palette, Images, Mountain, ArrowLeft, X } from "lucide-react";
+import { LayoutDashboard, Palette, Images, Mountain, Music, ArrowLeft, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { LogoMark } from "@/components/Logo";
@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { label: "Template", href: "/admin/templates", icon: Palette },
   { label: "Background", href: "/admin/backgrounds", icon: Mountain },
   { label: "Aset Desain", href: "/admin/assets", icon: Images },
+  { label: "Aset Musik", href: "/admin/music", icon: Music },
 ];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {

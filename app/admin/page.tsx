@@ -1,35 +1,38 @@
 import Link from "next/link";
-import { Palette, Images, Users, FileText, ArrowRight } from "lucide-react";
+import { Palette, Images, Music, Users, FileText, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Admin Panel | Meduta" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
-  const [templateCount, userCount, invitationCount, assetCount] = await Promise.all([
-    prisma.template.count(),
-    prisma.user.count(),
-    prisma.invitation.count(),
-    prisma.templateAsset.count(),
-  ]);
+  const [templateCount, userCount, invitationCount, designAssetCount, musicAssetCount] =
+    await Promise.all([
+      prisma.template.count(),
+      prisma.user.count(),
+      prisma.invitation.count(),
+      prisma.templateAsset.count({ where: { type: { not: "MUSIC" } } }),
+      prisma.templateAsset.count({ where: { type: "MUSIC" } }),
+    ]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">Ringkasan Admin</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Kelola template dan aset desain untuk semua undangan.
+          Kelola template, aset desain, dan aset musik untuk semua undangan.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard icon={Palette} label="Template" value={templateCount} />
         <StatCard icon={FileText} label="Undangan" value={invitationCount} />
         <StatCard icon={Users} label="Pengguna" value={userCount} />
-        <StatCard icon={Images} label="Aset Desain" value={assetCount} />
+        <StatCard icon={Images} label="Aset Desain" value={designAssetCount} />
+        <StatCard icon={Music} label="Aset Musik" value={musicAssetCount} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Link
           href="/admin/templates"
           className="group rounded-2xl border border-zinc-200 bg-white p-6 transition hover:border-rose-200 hover:shadow-md"
@@ -60,6 +63,24 @@ export default async function AdminOverviewPage() {
               <div>
                 <p className="font-semibold text-zinc-900">Kelola Aset Desain</p>
                 <p className="text-sm text-zinc-500">Unggah foto, bingkai, bunga, background</p>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-zinc-300 transition group-hover:text-rose-500" />
+          </div>
+        </Link>
+
+        <Link
+          href="/admin/music"
+          className="group rounded-2xl border border-zinc-200 bg-white p-6 transition hover:border-rose-200 hover:shadow-md"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                <Music className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-semibold text-zinc-900">Kelola Aset Musik</p>
+                <p className="text-sm text-zinc-500">Koleksi musik stok untuk undangan</p>
               </div>
             </div>
             <ArrowRight className="h-5 w-5 text-zinc-300 transition group-hover:text-rose-500" />
