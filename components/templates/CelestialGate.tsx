@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Moon, Sparkles } from "lucide-react";
+import { Moon } from "lucide-react";
+import RingIcon from "../icons/RingIcon";
 
 /**
  * CelestialGate — gerbang undangan khusus template Celestial Night,
@@ -193,11 +194,6 @@ export default function CelestialGate({
             style={{ width: 32, height: 32 }}
             strokeWidth={1.5}
           />
-          <Sparkles
-            className="absolute text-amber-200"
-            style={{ width: 20, height: 20, right: -6, top: -6 }}
-            strokeWidth={1.5}
-          />
         </div>
 
         {/* Eyebrow */}
@@ -245,7 +241,7 @@ export default function CelestialGate({
           style={{ padding: "14px 36px", fontSize: 12, letterSpacing: "0.22em" }}
         >
           Buka Undangan
-          <Sparkles style={{ width: 16, height: 16 }} strokeWidth={2} />
+          <RingIcon style={{ width: 16, height: 16 }} strokeWidth={2} />
         </button>
       </div>
     </div>

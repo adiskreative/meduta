@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Moon,
-  Sparkles,
   Star,
   CalendarDays,
   Clock,
@@ -24,6 +23,7 @@ import CopyButton from "./CopyButton";
 import { Countdown, SaveToCalendarButton } from "./SharedWidgets";
 import { formatDate, formatTime, splitAgenda, type TemplateProps } from "./types";
 import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
+import RingIcon from "../icons/RingIcon";
 
 /**
  * Celestial Night — "Two Stars, One Constellation"
@@ -391,9 +391,7 @@ function HeroSection({
       <div className="mx-auto max-w-3xl space-y-8 text-center">
         {/* Badge konstelasi */}
         <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-950/40 px-4 py-1.5 text-xs uppercase tracking-widest text-purple-200">
-          <Sparkles className="h-3.5 w-3.5 text-amber-300" />
           <span>{eventName ?? "Save The Cosmic Date"}</span>
-          <Sparkles className="h-3.5 w-3.5 text-amber-300" />
         </div>
 
         {/* Nama pasangan */}
@@ -692,7 +690,7 @@ function EventsSection({
 
       <div className="grid gap-8 md:grid-cols-2">
         <EventCard
-          icon={<Sparkles className="h-4 w-4" />}
+          icon={<RingIcon className="h-4 w-4" />}
           title="Akad Nikah"
           date={eventDate}
           time={eventTime}
@@ -702,7 +700,7 @@ function EventsSection({
         {events.map((e, i) => (
           <EventCard
             key={e.id}
-            icon={i % 2 === 0 ? <Moon className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+            icon={i % 2 === 0 ? <Moon className="h-4 w-4" /> : <RingIcon className="h-4 w-4" />}
             title={e.title ?? "Acara"}
             date={e.date}
             time={e.time}
@@ -1023,7 +1021,6 @@ function WishesSection({
 
         <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-amber-300">
-            <Sparkles className="h-4 w-4" />
             Kirim Ucapan
           </div>
           <WishForm

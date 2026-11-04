@@ -11,7 +11,6 @@ import {
   ChevronDown,
   ArrowUp,
   X,
-  Sparkles,
   Quote,
 } from "lucide-react";
 import RomanGate from "./RomanGate";
@@ -431,11 +430,9 @@ function Cover({
           className="rm-fade-up inline-flex items-center gap-2 rounded-full border border-[#C59B27]/40 bg-white/85 px-4 py-1 shadow-sm backdrop-blur-sm"
           style={{ animationDelay: "0.2s" }}
         >
-          <Sparkles className="h-3.5 w-3.5 text-[#C59B27]" />
           <span className="font-[family-name:var(--font-serif-elegant)] text-xs font-semibold uppercase tracking-[0.25em] text-[#7A2021]">
             The Wedding Celebration
           </span>
-          <Sparkles className="h-3.5 w-3.5 text-[#C59B27]" />
         </div>
 
         {/* Nama Pasangan Mempelai */}
