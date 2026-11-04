@@ -281,13 +281,7 @@ function Cover({
       <img
         src={ASSET_FLOWER_PINK}
         alt=""
-        className="animate-float-slow pointer-events-none absolute -left-8 top-[10%] z-0 w-20 opacity-80 drop-shadow-[0_8px_24px_rgba(236,72,153,0.45)]"
-      />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={ASSET_FLOWER_BLUE}
-        alt=""
-        className="animate-float-slower pointer-events-none absolute -right-6 top-[20%] z-0 w-16 opacity-80 drop-shadow-[0_8px_24px_rgba(59,130,246,0.45)]"
+        className="animate-float-slow pointer-events-none absolute -left-15 top-[0%] z-0 w-100 opacity-100 drop-shadow-[0_8px_24px_rgba(236,72,153,0.45)]"
       />
 
       {/* Logo wedding dari aset admin */}
@@ -295,11 +289,11 @@ function Cover({
       <img
         src={ASSET_WEDDING_LOGO}
         alt=""
-        className="relative z-10 mx-auto mb-4 w-24 drop-shadow-[0_4px_20px_rgba(217,70,239,0.5)]"
+        className="animate-float-slow pointer-events-none absolute z-10 mx-auto mb-50 w-70 drop-shadow-[0_5px_30px_rgba(217,70,239,0.5)]"
       />
 
-      <div className="relative z-10">
-        <p className="animate-fade-up-delay-1 mb-3 text-xs font-semibold uppercase tracking-[0.45em] text-fuchsia-200">
+      <div className="relative z-70">
+        <p className="animate-fade-up-delay-1 mb-70 text-xs font-semibold uppercase tracking-[0.45em] text-fuchsia-200">
           {eventName}
         </p>
 
@@ -330,14 +324,6 @@ function Cover({
           </div>
         )}
       </div>
-
-      {/* Ilustrasi pasangan (aset brand) menancap di dasar cover — di bawah konten teks */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={BRAND_COUPLE}
-        alt=""
-        className="pointer-events-none absolute bottom-0 left-1/2 z-[5] w-56 -translate-x-1/2 drop-shadow-[0_-8px_40px_rgba(217,70,239,0.35)] sm:w-64"
-      />
     </header>
   );
 
