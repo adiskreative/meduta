@@ -1,7 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarDays, MapPin, Clock, Heart, Quote, Landmark, ExternalLink } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  CalendarDays,
+  MapPin,
+  Clock,
+  Heart,
+  Landmark,
+  ExternalLink,
+  ChevronDown,
+  AtSign,
+} from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
 import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
@@ -14,11 +23,20 @@ import {
   formatTime,
   splitAgenda,
   type TemplateProps,
+  type CouplePerson,
+  type EventItem,
+  type StoryItem,
+  type GalleryItem,
+  type GiftItem,
+  type WishItem,
 } from "./types";
 import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
 
 const ACCENT = "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-600/25";
 const BORDER = "border-emerald-200 bg-emerald-50/40 focus:border-emerald-500 focus:ring-emerald-100";
+
+/* Kicker kecil ber-tracking lebar — dipakai semua section biar konsisten */
+const KICKER = "text-[11px] font-semibold uppercase tracking-[0.4em] text-emerald-700/90";
 
 type GateProps = { gateOpen?: boolean; onGateOpen?: () => void };
 
@@ -83,9 +101,11 @@ function ClassicShell({
   const gifts = data.gifts ?? [];
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center bg-[#f4f1e8] font-[family-name:var(--font-serif-elegant)] text-zinc-900">
-      {/* Nuansa emas lembut di latar */}
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(180,140,60,0.10),transparent_55%)]" />
+    <div className="relative flex min-h-screen flex-col items-center bg-[#f7f4ea] font-[family-name:var(--font-serif-elegant)] text-zinc-900">
+      {/* Nuansa emas & zamrud lembut di latar */}
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(176,141,63,0.14),transparent_55%)]" />
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(16,61,46,0.08),transparent_50%)]" />
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(176,141,63,0.07),transparent_45%)]" />
 
       <Cover
         eventName={data.eventName ?? "Undangan Pernikahan"}
@@ -111,17 +131,29 @@ function ClassicShell({
         />
       ) : null}
 
-      <MainEvent
-        eventDate={agenda.main.date}
-        eventTime={agenda.main.time}
-        venueName={data.venueName}
-        location={data.location}
-        locationMap={agenda.main.mapUrl}
-      />
+      <Reveal>
+        <section className="mx-auto w-full max-w-3xl px-6 py-20">
+          <MainEvent
+            eventDate={agenda.main.date}
+            eventTime={agenda.main.time}
+            venueName={data.venueName}
+            location={data.location}
+            locationMap={agenda.main.mapUrl}
+          />
+        </section>
+      </Reveal>
 
-      {story.length > 0 ? <StorySection story={story} /> : null}
+      {story.length > 0 ? (
+        <Reveal>
+          <StorySection story={story} />
+        </Reveal>
+      ) : null}
 
-      {gallery.length > 0 ? <GallerySection gallery={gallery} /> : null}
+      {gallery.length > 0 ? (
+        <Reveal>
+          <GallerySection gallery={gallery} />
+        </Reveal>
+      ) : null}
 
       {events.length > 0 ? <AdditionalEvents events={events} /> : null}
 
@@ -152,7 +184,7 @@ function ClassicShell({
         invitationId={invitationId}
         accentClass={ACCENT}
         borderClass={BORDER}
-        wishes={wishes}
+        wishes={wishes ?? []}
       />
 
       <Footer
@@ -174,13 +206,138 @@ function DraftNotice() {
   );
 }
 
+/**
+ * Reveal: konten muncul halus saat pertama masuk viewport (scroll-driven).
+ * prefers-reduced-motion ditangani via CSS (motion-reduce:…), bukan effect,
+ * supaya effect body tidak memanggil setState sinkron (aturan react-hooks).
+ */
+function Reveal({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    // Fallback browser lama tanpa IntersectionObserver: tampilkan langsung
+    // (dijadwalkan agar effect body tidak memanggil setState sinkron).
+    if (!el || typeof IntersectionObserver === "undefined") {
+      const raf = requestAnimationFrame(() => setShown(true));
+      return () => cancelAnimationFrame(raf);
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.12 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      /* kelas meduta-reveal: penanda untuk mode ?shot=1 (thumbnail) agar
+         konten dipaksa terlihat tanpa bergantung IntersectionObserver */
+      className={`meduta-reveal w-full ${className ?? ""} transition-all duration-700 ease-out ${
+        shown ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      } motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none`}
+    >
+      {children}
+    </div>
+  );
+}
+
 function OrnamentDivider({ light = false }: { light?: boolean }) {
   return (
     <div className={`flex items-center justify-center gap-3 ${light ? "text-amber-200/90" : "text-amber-500/80"}`}>
-      <span className={`h-px w-14 ${light ? "bg-gradient-to-r from-transparent to-amber-200/70" : "bg-gradient-to-r from-transparent to-amber-500/60"}`} />
+      <span className={`h-px w-16 ${light ? "bg-gradient-to-r from-transparent to-amber-200/70" : "bg-gradient-to-r from-transparent to-amber-500/60"}`} />
       <RingIcon className="h-4 w-4" />
-      <span className={`h-px w-14 ${light ? "bg-gradient-to-l from-transparent to-amber-200/70" : "bg-gradient-to-l from-transparent to-amber-500/60"}`} />
+      <span className={`h-px w-16 ${light ? "bg-gradient-to-l from-transparent to-amber-200/70" : "bg-gradient-to-l from-transparent to-amber-500/60"}`} />
     </div>
+  );
+}
+
+/** Kop section seragam: kicker bergaris, judul display, ornamen emas */
+function SectionHeader({ kicker, title }: { kicker: string; title: string }) {
+  return (
+    <div className="text-center">
+      <p className={`flex items-center justify-center gap-3 ${KICKER}`}>
+        <span className="h-px w-9 bg-gradient-to-r from-transparent to-amber-400/70" aria-hidden />
+        {kicker}
+        <span className="h-px w-9 bg-gradient-to-l from-transparent to-amber-400/70" aria-hidden />
+      </p>
+      <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-zinc-900 sm:text-4xl">
+        {title}
+      </h2>
+      <div className="mt-4">
+        <OrnamentDivider />
+      </div>
+    </div>
+  );
+}
+
+/* Empat sudut emas untuk frame cover — gaya kartu undangan klasik */
+function GoldCorners() {
+  const base = "pointer-events-none absolute h-10 w-10 border-amber-300/80";
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10">
+      <span className={`${base} left-5 top-5 rounded-tl-xl border-l-2 border-t-2`} aria-hidden />
+      <span className={`${base} right-5 top-5 rounded-tr-xl border-r-2 border-t-2`} aria-hidden />
+      <span className={`${base} bottom-5 left-5 rounded-bl-xl border-b-2 border-l-2`} aria-hidden />
+      <span className={`${base} bottom-5 right-5 rounded-br-xl border-b-2 border-r-2`} aria-hidden />
+    </div>
+  );
+}
+
+/* Elemen bunga watercolor khusus template Classic (aset transparan).
+   Crest peonies untuk hiasan tengah, spray palm emas untuk pojok,
+   buket sage untuk backdrop lembut di belakang kop section. */
+function FlowerCrest({
+  className,
+  flipX = false,
+  flipY = false,
+}: {
+  className?: string;
+  flipX?: boolean;
+  flipY?: boolean;
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/design/classic/classic-peonies.webp"
+      alt=""
+      aria-hidden
+      className={`pointer-events-none ${flipX ? "-scale-x-100 " : ""}${flipY ? "-scale-y-100 " : ""}${className ?? ""}`}
+    />
+  );
+}
+
+function FlowerBouquet({
+  className,
+  flipX = false,
+  flipY = false,
+}: {
+  className?: string;
+  flipX?: boolean;
+  flipY?: boolean;
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/design/classic/classic-sage-bouquet.webp"
+      alt=""
+      aria-hidden
+      className={`pointer-events-none ${flipX ? "-scale-x-100 " : ""}${flipY ? "-scale-y-100 " : ""}${className ?? ""}`}
+    />
   );
 }
 
@@ -207,49 +364,73 @@ function Cover({
 }) {
   const cover = (
     <header
-      className="animate-fade-up relative mx-auto flex min-h-[92vh] w-full max-w-3xl flex-col items-center justify-center bg-cover bg-center px-6 text-center text-white"
+      className="relative mx-auto flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden bg-cover bg-center px-6 py-24 text-center text-white"
       style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(8,52,38,0.55), rgba(6,38,28,0.72)), url(${bgUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=70"})`,
+        backgroundImage: `linear-gradient(to bottom, rgba(4,30,23,0.45), rgba(6,42,32,0.66) 55%, rgba(3,22,17,0.88)), url(${bgUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=70"})`,
       }}
     >
-      {/* Bingkai emas ganda */}
-      <div className="pointer-events-none absolute inset-4 rounded-[2rem] border border-amber-200/40" />
-      <div className="pointer-events-none absolute inset-6 rounded-[1.6rem] border border-amber-100/20" />
+      {/* Vignette emas lembut di tengah */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(240,214,150,0.08),transparent_65%)]" />
 
-      <p className="animate-fade-up-delay-1 mb-4 text-xs uppercase tracking-[0.4em] text-amber-200">
+      {/* Bingkai ganda + sudut emas + bunga mengikuti kolom konten (max-w-3xl)
+          agar tetap proporsional dan tidak melebar ke tepi layar saat
+          pratinjau desktop. Di mobile kolom ini = lebar layar penuh. */}
+      <div className="pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-3xl -translate-x-1/2">
+        <div className="absolute inset-3 rounded-[2rem] border border-amber-200/40" aria-hidden />
+        <div className="absolute inset-5 rounded-[1.7rem] border border-amber-100/20" aria-hidden />
+        <GoldCorners />
+
+        {/* Crest peonies di sudut kiri atas cover — ukuran mobile & desktop disetel terpisah */}
+        <FlowerCrest className="absolute -left-25 -top-15 z-20 w-70 drop-shadow-[0_10px_24px_rgba(0,0,0,0.35)] sm:-left-14 sm:-top-8 sm:w-48" />
+      </div>
+
+      {/* Nama mempelai — vertikal, serif tegas, ampersand script di tengah */}
+      <p className="animate-fade-up-delay-1 mb-8 text-[11px] uppercase tracking-[0.5em] text-amber-200/90">
         The Wedding Of
       </p>
 
-      <h1 className="animate-fade-up-delay-2 font-[family-name:var(--font-display)] text-4xl font-semibold leading-tight sm:text-5xl">
-        {groomNick ?? "Pria"} <span className="text-gold-shimmer mx-2 inline-block font-[family-name:var(--font-script)] text-4xl align-middle font-normal sm:text-5xl">&amp;</span>{" "}
-        {brideNick ?? "Wanita"}
+      <h1 className="animate-fade-up-delay-2">
+        <span className="block font-[family-name:var(--font-display)] text-4xl font-semibold uppercase tracking-[0.08em] leading-tight sm:text-5xl">
+          {groomNick ?? "Pria"}
+        </span>
+        <span className="text-gold-shimmer mx-2 my-1 block font-[family-name:var(--font-script)] text-4xl leading-none font-normal sm:text-5xl">
+          &amp;
+        </span>
+        <span className="block font-[family-name:var(--font-display)] text-4xl font-semibold uppercase tracking-[0.08em] leading-tight sm:text-5xl">
+          {brideNick ?? "Wanita"}
+        </span>
       </h1>
 
-      <div className="animate-fade-up-delay-3 mt-6">
-        <OrnamentDivider light />
-      </div>
-
       {eventDate && (
-        <p className="animate-fade-up-delay-3 mt-5 max-w-[260px] text-sm leading-relaxed tracking-[0.2em] text-emerald-50/90">
-          {formatDate(eventDate)}
-        </p>
+        <>
+          <div className="animate-fade-up-delay-3 mt-8">
+            <OrnamentDivider light />
+          </div>
+          <p className="animate-fade-up-delay-3 mt-5 font-[family-name:var(--font-serif-elegant)] text-base leading-relaxed tracking-[0.25em] text-amber-50/90">
+            {formatDate(eventDate)}
+          </p>
+        </>
       )}
 
       {guestName && (
-        <div className="animate-fade-up-delay-4 mt-10 rounded-2xl border border-white/20 bg-white/10 px-6 py-4 backdrop-blur-md">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-emerald-100/80">
+        <div className="animate-fade-up-delay-4 mt-10 rounded-2xl border border-amber-200/35 bg-white/10 px-8 py-4 shadow-lg backdrop-blur-md">
+          <p className="text-[10px] uppercase tracking-[0.35em] text-amber-100/85">
             Kepada Yth.
           </p>
-          <p className="mt-1 font-[family-name:var(--font-script)] text-3xl text-white">
+          <p className="mt-1.5 font-[family-name:var(--font-script)] text-3xl leading-snug text-white">
             {guestName}
           </p>
         </div>
       )}
 
-      <p className="animate-fade-up-delay-4 mt-6 text-sm text-emerald-100/70">{eventName}</p>
+      <p className="animate-fade-up-delay-4 mt-6 font-[family-name:var(--font-serif-elegant)] text-sm italic tracking-widest text-emerald-50/75">
+        {eventName}
+      </p>
 
-      <div className="animate-fade-up-delay-4 mt-8 flex h-11 w-11 items-center justify-center rounded-full border border-amber-200/50 text-amber-200 animate-float-slow">
-        <Heart className="h-4 w-4" />
+      {/* Penunjuk gulir */}
+      <div className="animate-fade-up-delay-4 mt-12 flex flex-col items-center gap-1.5 text-amber-100/80">
+        <ChevronDown className="h-5 w-5 animate-bounce" />
+        <span className="text-[10px] uppercase tracking-[0.3em]">Gulir untuk mulai</span>
       </div>
     </header>
   );
@@ -274,6 +455,23 @@ function Cover({
   return cover;
 }
 
+/* Tanggal terurai jadi bagian (hari/tgl/bulan/tahun) untuk layout kartu acara */
+function dateParts(date?: string) {
+  if (!date) return null;
+  const value = new Date(date);
+  if (Number.isNaN(value.getTime())) return null;
+  const acc: Record<string, string> = {};
+  for (const part of new Intl.DateTimeFormat("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).formatToParts(value)) {
+    acc[part.type] = part.value;
+  }
+  return acc;
+}
+
 function MainEvent({
   eventDate,
   eventTime,
@@ -287,63 +485,90 @@ function MainEvent({
   location?: string;
   locationMap?: string;
 }) {
+  const parts = dateParts(eventDate);
+  const hasDate = !!eventDate;
+  const hasTime = !!eventTime;
+  const hasVenue = !!(venueName || location);
+  const colCount = [hasDate, hasTime, hasVenue].filter(Boolean).length;
+
   return (
-    <section className="w-full max-w-3xl px-6 py-20 text-center">
-      <p className="mb-2 text-xs uppercase tracking-[0.35em] text-emerald-700">Akad &amp; Resepsi</p>
-      <h2 className="font-[family-name:var(--font-display)] text-3xl text-zinc-900 sm:text-4xl">
-        Merupakan Suatu <span className="text-gold-shimmer italic">Kehormatan</span>
-      </h2>
-      <div className="mt-4">
-        <OrnamentDivider />
-      </div>
-      <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-zinc-500">
+    <div className="text-center">
+      <SectionHeader kicker="Akad & Resepsi" title="Merupakan Suatu Kehormatan" />
+      <p className="mx-auto mt-5 max-w-md font-[family-name:var(--font-serif-elegant)] text-base leading-relaxed text-zinc-600 italic">
         Bagi kami, kehadiran dan doa restu Anda adalah kebahagiaan yang tak ternilai.
       </p>
 
-      <div className="mx-auto mt-12 grid max-w-xl grid-cols-1 gap-5 sm:grid-cols-3">
-        {eventDate && (
-          <InfoCard
-            icon={<CalendarDays className="h-5 w-5" />}
-            label={formatDate(eventDate)}
-          />
-        )}
-        {eventTime && (
-          <InfoCard
-            icon={<Clock className="h-5 w-5" />}
-            label={formatTime(eventTime)}
-          />
-        )}
-        {(venueName || location) && (
-          <InfoCard
-            icon={<MapPin className="h-5 w-5" />}
-            label={[venueName, location].filter(Boolean).join(", ")}
-          />
-        )}
-      </div>
+      {(hasDate || hasTime || hasVenue) && (
+        <div className="relative mx-auto mt-10 max-w-2xl rounded-[1.75rem] border border-amber-200/70 bg-white/80 shadow-xl shadow-emerald-900/5 backdrop-blur-sm sm:shadow-2xl sm:shadow-emerald-900/10">
+          {/* Garis emas tipis di dalam kartu */}
+          <div className="pointer-events-none absolute inset-2 rounded-[1.35rem] border border-amber-100" aria-hidden />
+
+          <div
+            className={`relative grid divide-y divide-amber-100 ${
+              colCount === 3 ? "sm:grid-cols-3" : colCount === 2 ? "sm:grid-cols-2" : "sm:grid-cols-1"
+            } sm:divide-y-0 sm:divide-x`}
+          >
+            {hasDate && parts ? (
+              <div className="flex flex-col items-center gap-2.5 px-6 py-7">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/70 text-amber-700">
+                  <CalendarDays className="h-4.5 w-4.5" />
+                </span>
+                <span className={`${KICKER} tracking-[0.3em]`}>{parts.weekday ?? ""}</span>
+                <span className="font-[family-name:var(--font-display)] text-2xl leading-none text-zinc-900">
+                  {parts.day} <span className="mx-1 text-amber-500">•</span> {parts.year}
+                </span>
+                <span className="font-[family-name:var(--font-serif-elegant)] text-sm tracking-[0.2em] text-zinc-500 uppercase">
+                  {parts.month}
+                </span>
+              </div>
+            ) : hasDate ? (
+              <div className="flex flex-col items-center gap-2.5 px-6 py-7">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/70 text-amber-700">
+                  <CalendarDays className="h-4.5 w-4.5" />
+                </span>
+                <span className={KICKER}>{formatDate(eventDate)}</span>
+              </div>
+            ) : null}
+
+            {hasTime && (
+              <div className="flex flex-col items-center gap-2.5 px-6 py-7">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/70 text-amber-700">
+                  <Clock className="h-4.5 w-4.5" />
+                </span>
+                <span className={KICKER}>Waktu</span>
+                <span className="font-[family-name:var(--font-display)] text-2xl text-zinc-900">
+                  {formatTime(eventTime)}
+                </span>
+              </div>
+            )}
+
+            {hasVenue && (
+              <div className="flex flex-col items-center gap-2.5 px-6 py-7">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/70 text-amber-700">
+                  <MapPin className="h-4.5 w-4.5" />
+                </span>
+                <span className={KICKER}>Lokasi</span>
+                <span className="font-[family-name:var(--font-serif-elegant)] text-base font-medium leading-snug text-zinc-700">
+                  {[venueName, location].filter(Boolean).join(", ")}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {locationMap && (
         <a
           href={locationMap}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-10 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-700 hover:to-emerald-600"
+          className="mt-9 inline-flex items-center gap-2.5 rounded-full border border-amber-300 bg-white px-8 py-3 font-[family-name:var(--font-serif-elegant)] text-sm font-semibold tracking-wide text-emerald-900 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-900 hover:text-amber-100 hover:shadow-xl hover:shadow-emerald-900/20"
         >
           <MapPin className="h-4 w-4" />
           Lihat Lokasi di Peta
           <ExternalLink className="h-3.5 w-3.5 opacity-70" />
         </a>
       )}
-    </section>
-  );
-}
-
-function InfoCard({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <div className="group flex flex-col items-center gap-3 rounded-2xl border border-amber-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-600/10">
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/60 text-amber-700 transition-colors group-hover:from-emerald-600 group-hover:to-emerald-500 group-hover:text-white">
-        {icon}
-      </span>
-      <span className="text-sm font-medium leading-snug text-zinc-700">{label}</span>
     </div>
   );
 }
@@ -357,52 +582,67 @@ function Couple({
   quoteSource,
   quoteHidden,
 }: {
-  groom?: TemplateProps["data"]["groom"];
-  bride?: TemplateProps["data"]["bride"];
+  groom?: CouplePerson;
+  bride?: CouplePerson;
   eventName: string;
-  // Kutipan (judul/isi/sumber) — bisa diganti user/admin sesuai kepercayaan.
-  // Prioritas: user → admin → bawaan (Ar-Rum 21).
   quoteTitle?: string;
   quoteText?: string;
   quoteSource?: string;
-  // Set true untuk menyembunyikan seluruh bagian kutipan.
   quoteHidden?: boolean;
 }) {
   return (
-    <section className="w-full max-w-3xl px-6 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.35em] text-emerald-700">
-        {eventName}
-      </p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-zinc-900 sm:text-4xl">Mempelai</h2>
-      <div className="mt-4">
-        <OrnamentDivider />
-      </div>
-
-      <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
-        <PersonCard person={groom} role="Mempelai Pria" />
-        <PersonCard person={bride} role="Mempelai Wanita" />
-      </div>
-
-      {!quoteHidden && (
-        <div className="mx-auto mt-12 max-w-xl rounded-2xl border border-amber-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
-          <Quote className="mx-auto mb-3 h-5 w-5 text-amber-500" />
-          {quoteTitle?.trim() ? (
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-emerald-700">
-              {quoteTitle}
-            </p>
-          ) : null}
-          <p className="text-sm italic leading-relaxed text-zinc-600">
-            &ldquo;{
-              quoteText?.trim() ||
-              "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri..."
-            }&rdquo;
-          </p>
-          <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-emerald-700">
-            {quoteSource?.trim() || "(QS Ar-Rum: 21)"}
-          </p>
+    <section className="mx-auto w-full max-w-3xl px-6 py-20">
+      <Reveal>
+        {/* Buket peonies sage sebagai hiasan lembut di belakang kop "Mempelai" */}
+        <div className="relative">
+          <FlowerBouquet
+            className="pointer-events-none absolute left-1/2 top-0 z-0 w-40 -translate-x-1/2 opacity-50 sm:w-52"
+            flipY
+          />
+          <div className="relative z-10">
+            <SectionHeader kicker={eventName} title="Mempelai" />
+          </div>
         </div>
-      )}
+
+        <div className="mt-14 grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-6">
+          <PersonCard person={groom} role="Mempelai Pria" />
+          <PersonCard person={bride} role="Mempelai Wanita" />
+        </div>
+
+        {!quoteHidden && (
+          <blockquote className="relative mx-auto mt-14 max-w-xl rounded-[1.75rem] border border-amber-200/70 bg-white/85 p-8 shadow-xl shadow-emerald-900/5 backdrop-blur-sm">
+            <div className="pointer-events-none absolute inset-2 rounded-[1.35rem] border border-amber-100" aria-hidden />
+            <div className="relative text-center">
+              <span className="font-[family-name:var(--font-display)] text-5xl leading-none text-amber-300/80 select-none" aria-hidden>
+                &ldquo;
+              </span>
+              {quoteTitle?.trim() ? (
+                <p className={`mt-1 ${KICKER}`}>{quoteTitle}</p>
+              ) : null}
+              <p className="mt-3 font-[family-name:var(--font-serif-elegant)] text-lg italic leading-relaxed text-zinc-700">
+                &ldquo;
+                {quoteText?.trim() ||
+                  "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri..."}
+                &rdquo;
+              </p>
+              <p className={`mt-4 ${KICKER} tracking-[0.25em]`}>
+                {quoteSource?.trim() || "(QS Ar-Rum: 21)"}
+              </p>
+            </div>
+          </blockquote>
+        )}
+      </Reveal>
     </section>
+  );
+}
+
+/* Sudut kartu ornamen emas kecil */
+function CardAccent() {
+  return (
+    <span
+      className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-gradient-to-br from-amber-100/90 to-transparent transition-transform duration-500 group-hover:scale-150"
+      aria-hidden
+    />
   );
 }
 
@@ -410,41 +650,53 @@ function PersonCard({
   person,
   role,
 }: {
-  person?: TemplateProps["data"]["groom"];
+  person?: CouplePerson;
   role: string;
 }) {
+  const ig = person?.instagram?.trim();
+  const igUrl = ig && !/^https?:/i.test(ig) ? `https://instagram.com/${ig.replace(/^@/, "")}` : ig;
+
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-amber-200/60 bg-white/90 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-600/10">
-      {/* Sudut dekoratif emas */}
-      <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-gradient-to-br from-amber-100/80 to-transparent transition-transform duration-500 group-hover:scale-150" />
+    <div className="group relative overflow-hidden rounded-[1.75rem] border border-amber-200/70 bg-white/90 p-8 pb-9 text-center shadow-xl shadow-emerald-900/5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-2xl hover:shadow-emerald-900/10">
+      <CardAccent />
 
       {person?.photoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={person.photoUrl}
           alt={person.name ?? role}
-          className="relative mx-auto mb-5 h-40 w-40 rounded-full object-cover ring-4 ring-amber-200/70 transition-transform duration-300 group-hover:scale-105"
+          className="relative mx-auto mb-6 aspect-[3/4] w-full max-w-[220px] rounded-t-[7rem] rounded-b-2xl object-cover ring-1 ring-amber-200 transition-all duration-500 group-hover:-translate-y-1 group-hover:ring-amber-300 sm:w-56"
         />
       ) : (
-        <div className="relative mx-auto mb-5 flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-br from-emerald-50 to-amber-50 text-emerald-300 ring-4 ring-amber-200/50">
+        <div className="relative mx-auto mb-6 flex aspect-[3/4] w-full max-w-[220px] items-center justify-center rounded-t-[7rem] rounded-b-2xl bg-gradient-to-br from-emerald-50 via-white to-amber-50 text-emerald-300 ring-1 ring-amber-200 sm:w-56">
           <Heart className="h-12 w-12" />
         </div>
       )}
-
-      <p className="relative text-[11px] font-semibold uppercase tracking-[0.3em] text-amber-600">{role}</p>
-      <h3 className="relative mt-2 font-[family-name:var(--font-display)] text-2xl text-zinc-900">
+      <p className="relative text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600">{role}</p>
+      <h3 className="relative mt-2 font-[family-name:var(--font-display)] text-2xl leading-snug text-zinc-900">
         {person?.name ?? "-"}
       </h3>
       {person?.parentName && (
-        <p className="relative mt-2 text-sm text-zinc-500">
+        <p className="relative mt-2 font-[family-name:var(--font-serif-elegant)] text-sm text-zinc-500">
           Putra/Putri dari {person.parentName}
         </p>
       )}
       {person?.bio && (
-        <p className="relative mt-3 border-t border-amber-100 pt-3 text-sm italic text-zinc-600">
+        <p className="relative mt-3 border-t border-amber-100 pt-3 font-[family-name:var(--font-serif-elegant)] text-sm italic leading-relaxed text-zinc-600">
           &ldquo;{person.bio}&rdquo;
         </p>
       )}
+      {ig && igUrl ? (
+        <a
+          href={igUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative mt-4 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-emerald-800 transition hover:bg-amber-100"
+        >
+          <AtSign className="h-3.5 w-3.5" />
+          {ig}
+        </a>
+      ) : null}
     </div>
   );
 }
@@ -452,195 +704,214 @@ function PersonCard({
 function AdditionalEvents({
   events,
 }: {
-  events: NonNullable<TemplateProps["data"]["events"]>;
+  events: EventItem[];
 }) {
   return (
-    <section className="w-full max-w-3xl px-6 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.35em] text-emerald-700">Agenda</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-zinc-900 sm:text-4xl">Rangkaian Acara</h2>
-      <div className="mt-4">
-        <OrnamentDivider />
-      </div>
+    <Reveal className="block">
+      <section className="mx-auto w-full max-w-3xl px-6 pb-8 pt-4">
+        <SectionHeader kicker="Agenda" title="Rangkaian Acara" />
 
-      <div className="mx-auto mt-10 max-w-xl space-y-5">
+      <div className="mx-auto mt-12 max-w-xl space-y-5">
         {events.map((e) => (
           <div
             key={e.id}
-            className="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-white/90 p-6 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-600/10"
+            className="group relative overflow-hidden rounded-[1.5rem] border border-amber-200/70 bg-white/90 p-7 shadow-xl shadow-emerald-900/5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-2xl hover:shadow-emerald-900/10"
           >
-            <div className="absolute top-0 right-0 h-16 w-16 -translate-y-6 translate-x-6 rounded-full bg-gradient-to-br from-amber-100 to-amber-200/50 transition-transform duration-500 group-hover:scale-150" />
-            <div className="relative">
-              <span className="inline-block rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
-                {formatDate(e.date)}
-              </span>
-              <h3 className="mt-3 font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-900">
-                {e.title ?? "Acara"}
-              </h3>
-              {e.time && (
-                <p className="mt-2 flex items-center gap-1.5 text-sm text-zinc-600">
-                  <Clock className="h-4 w-4 text-amber-600" /> {formatTime(e.time)}
+            <div className="pointer-events-none absolute inset-2 rounded-[1.1rem] border border-amber-100/80" aria-hidden />
+            <div className="relative sm:flex sm:items-start sm:gap-5">
+              {/* Tanggal di kolom kiri */}
+              <div className="mb-4 sm:mb-0 sm:shrink-0 sm:border-r sm:border-amber-100 sm:pr-5 sm:text-center">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-amber-600">
+                  {formatDate(e.date) || "—"}
                 </p>
-              )}
-              {e.location && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-zinc-600">
-                  <MapPin className="h-4 w-4 text-amber-600" /> {e.location}
-                </p>
-              )}
-              {e.locationMap && (
-                <a
-                  href={e.locationMap}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
-                >
-                  Lihat Lokasi <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
+                {e.time && (
+                  <p className="mt-1.5 inline-flex items-center gap-1.5 font-[family-name:var(--font-display)] text-sm text-zinc-700">
+                    <Clock className="h-4 w-4 text-amber-600" /> {formatTime(e.time)}
+                  </p>
+                )}
+              </div>
+
+              <div className="text-left">
+                <h3 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-900">
+                  {e.title ?? "Acara"}
+                </h3>
+                {e.location && (
+                  <p className="mt-2 flex items-start gap-1.5 font-[family-name:var(--font-serif-elegant)] text-sm leading-snug text-zinc-600">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" /> {e.location}
+                  </p>
+                )}
+                {e.locationMap && (
+                  <a
+                    href={e.locationMap}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1 font-[family-name:var(--font-serif-elegant)] text-sm font-semibold text-emerald-700 transition hover:text-emerald-900 hover:underline underline-offset-4"
+                  >
+                    Lihat Lokasi <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         ))}
       </div>
     </section>
+    </Reveal>
   );
 }
 
 function MessageSection({ text }: { text: string }) {
   return (
-    <section id="pesan" className="w-full max-w-3xl px-6 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.35em] text-emerald-700">Ucapan &amp; Doa</p>
-      <div className="relative mx-auto mt-6 max-w-lg rounded-3xl border border-amber-200/60 bg-white/90 p-8 shadow-sm backdrop-blur-sm">
-        <Quote className="mx-auto mb-4 h-6 w-6 text-amber-500" />
-        <p className="whitespace-pre-line font-[family-name:var(--font-display)] text-lg leading-relaxed text-zinc-700">
-          {text}
-        </p>
-      </div>
-    </section>
+    <Reveal className="block">
+      <section id="pesan" className="mx-auto w-full max-w-3xl px-6 py-16">
+        <SectionHeader kicker="Pesan Mempelai" title="Ucapan & Doa" />
+        <blockquote className="relative mx-auto mt-8 max-w-lg rounded-[1.75rem] border border-amber-200/70 bg-white/90 p-9 shadow-xl shadow-emerald-900/5 backdrop-blur-sm">
+          <div className="pointer-events-none absolute inset-2 rounded-[1.35rem] border border-amber-100" aria-hidden />
+          <div className="relative text-center">
+            <span className="font-[family-name:var(--font-display)] text-5xl leading-none text-amber-300/80 select-none" aria-hidden>
+              &ldquo;
+            </span>
+            <p className="mt-4 whitespace-pre-line font-[family-name:var(--font-serif-elegant)] text-lg leading-relaxed text-zinc-700 italic">
+              {text}
+            </p>
+          </div>
+        </blockquote>
+      </section>
+    </Reveal>
   );
 }
 
 function StorySection({
   story,
 }: {
-  story: NonNullable<TemplateProps["data"]["story"]>;
+  story: StoryItem[];
 }) {
   return (
-    <section id="cerita" className="w-full max-w-3xl px-6 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.35em] text-emerald-700">Cerita Kami</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-zinc-900 sm:text-4xl">Perjalanan Cinta</h2>
-      <div className="mt-4">
-        <OrnamentDivider />
-      </div>
+    <Reveal className="block">
+      <section id="cerita" className="mx-auto w-full max-w-3xl px-6 py-16">
+        <SectionHeader kicker="Cerita Kami" title="Perjalanan Cinta" />
 
-      <div className="mx-auto mt-12 max-w-xl space-y-10 text-left">
-        {story.map((item, index) => (
-          <div key={item.id} className="relative pl-10">
-            {index < story.length - 1 && (
-              <span className="absolute left-[9px] top-7 h-full w-px bg-gradient-to-b from-amber-400/70 to-transparent" />
-            )}
-            <span className="absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-amber-400/80 bg-white">
-              <span className="h-2 w-2 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-500" />
-            </span>
-            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-amber-600">
-              {item.date ? formatDate(item.date) : "Momen"}
-            </p>
-            <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-900">
-              {item.title ?? ""}
-            </h3>
-            {item.description && (
-              <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-zinc-600">
-                {item.description}
+        <ol className="mx-auto mt-12 max-w-xl space-y-10 text-left">
+          {story.map((item, index) => (
+            <li key={item.id} className="relative pl-10">
+              {index < story.length - 1 && (
+                <span
+                  className="absolute left-[9px] top-7 h-full w-px bg-gradient-to-b from-amber-400/80 via-amber-300/50 to-transparent"
+                  aria-hidden
+                />
+              )}
+              {/* Penanda wajik emas */}
+              <span className="absolute left-0.5 top-1 flex h-5 w-5 -rotate-45 items-center justify-center rounded-[0.35rem] border border-amber-300/90 bg-white shadow-sm" aria-hidden>
+                <span className="h-1.5 w-1.5 rounded-[0.15rem] bg-gradient-to-br from-emerald-600 to-emerald-400" />
+              </span>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-600">
+                {item.date ? formatDate(item.date) : "Momen"}
               </p>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
+              <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl font-semibold leading-snug text-zinc-900">
+                {item.title ?? ""}
+              </h3>
+              {item.description && (
+                <p className="mt-2 whitespace-pre-line font-[family-name:var(--font-serif-elegant)] text-base leading-relaxed text-zinc-600">
+                  {item.description}
+                </p>
+              )}
+            </li>
+          ))}
+        </ol>
+      </section>
+    </Reveal>
   );
 }
 
 function GallerySection({
   gallery,
 }: {
-  gallery: NonNullable<TemplateProps["data"]["gallery"]>;
+  gallery: GalleryItem[];
 }) {
   return (
-    <section id="galeri" className="w-full max-w-3xl bg-gradient-to-b from-[#efe9d8] to-[#f4f1e8] px-6 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.35em] text-emerald-700">Galeri Foto</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-zinc-900 sm:text-4xl">Momen Berharga</h2>
-      <div className="mt-4">
-        <OrnamentDivider />
-      </div>
+    <Reveal className="block">
+      <section id="galeri" className="relative mx-auto w-full max-w-3xl overflow-hidden bg-gradient-to-b from-[#eee8d6] to-[#f7f4ea] px-6 pb-16 pt-32 sm:pt-40">
+        {/* Crest peonies memayungi band galeri — konten di atasnya */}
+        <FlowerCrest className="absolute left-1/2 top-0 z-0 w-32 -translate-x-1/2 -translate-y-4 opacity-95 sm:w-40" />
+        <div className="relative z-10">
+        <SectionHeader kicker="Galeri Foto" title="Momen Berharga" />
 
-      <div className="mx-auto mt-12 grid max-w-2xl grid-cols-1 gap-5 sm:grid-cols-2">
-        {gallery.map((item) => (
-          <figure
-            key={item.id}
-            className="group overflow-hidden rounded-2xl border border-amber-200/60 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-600/10"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={item.url}
-              alt={item.caption ?? "Foto galeri"}
-              className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            {item.caption && (
-              <figcaption className="px-4 py-3 text-left text-sm italic text-zinc-600">
-                {item.caption}
-              </figcaption>
-            )}
-          </figure>
-        ))}
-      </div>
-    </section>
+        <div className="mx-auto mt-12 grid max-w-2xl grid-cols-2 gap-4 sm:gap-5">
+          {gallery.map((item) => (
+            <figure
+              key={item.id}
+              className="group relative overflow-hidden rounded-2xl border border-amber-200/70 bg-white p-2 shadow-lg shadow-emerald-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-900/15"
+            >
+              <div className="relative overflow-hidden rounded-xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.url}
+                  alt={item.caption ?? "Foto galeri"}
+                  className="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+                {item.caption && (
+                  <figcaption className="absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-black/65 via-black/25 to-transparent p-3 pt-8 font-[family-name:var(--font-serif-elegant)] text-sm italic text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    {item.caption}
+                  </figcaption>
+                )}
+              </div>
+            </figure>
+          ))}
+        </div>
+        </div>
+      </section>
+    </Reveal>
   );
 }
 
 function GiftsSection({
   gifts,
 }: {
-  gifts: NonNullable<TemplateProps["data"]["gifts"]>;
+  gifts: GiftItem[];
 }) {
   return (
-    <section id="kado" className="w-full max-w-3xl px-6 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.35em] text-emerald-700">Tanda Kasih</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-zinc-900 sm:text-4xl">Kado Nikah</h2>
-      <div className="mt-4">
-        <OrnamentDivider />
-      </div>
-      <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-zinc-500">
-        Doa restu Anda adalah hadiah terbaik. Jika ingin memberi tanda kasih, Anda dapat
-        mengirimkannya melalui salah satu rekening berikut.
-      </p>
+    <Reveal className="block">
+      <section id="kado" className="mx-auto w-full max-w-3xl px-6 py-16">
+        <SectionHeader kicker="Tanda Kasih" title="Kado Nikah" />
+        <p className="mx-auto mt-5 max-w-md text-center font-[family-name:var(--font-serif-elegant)] text-base leading-relaxed text-zinc-600 italic">
+          Doa restu Anda adalah hadiah terbaik. Jika ingin memberi tanda kasih, Anda dapat
+          mengirimkannya melalui salah satu rekening berikut.
+        </p>
 
-      <div className="mx-auto mt-12 grid max-w-xl grid-cols-1 gap-5 sm:grid-cols-2">
-        {gifts.map((g) => (
-          <div
-            key={g.id}
-            className="rounded-2xl border border-amber-200/60 bg-white/90 p-6 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-600/10"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/60 text-amber-700">
-                <Landmark className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="font-[family-name:var(--font-display)] font-semibold text-zinc-900">{g.provider}</p>
-                {g.name && <p className="text-xs text-zinc-500">{g.name}</p>}
+        <div className="mx-auto mt-12 grid max-w-xl grid-cols-1 gap-5 sm:grid-cols-2">
+          {gifts.map((g) => (
+            <div
+              key={g.id}
+              className="rounded-[1.5rem] border border-amber-200/70 bg-white/90 p-7 text-left shadow-xl shadow-emerald-900/5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-2xl hover:shadow-emerald-900/10"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/70 text-amber-700">
+                  <Landmark className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="font-[family-name:var(--font-display)] font-semibold text-zinc-900">{g.provider}</p>
+                  {g.name && <p className="text-xs text-zinc-500">{g.name}</p>}
+                </div>
+              </div>
+              <div className="mt-5 border-t border-dashed border-amber-200/80 pt-4">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-400">No. Rekening</p>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <p className="font-mono text-lg font-semibold tracking-wide text-emerald-900">
+                    {g.accountNumber}
+                  </p>
+                  <CopyButton text={g.accountNumber} />
+                </div>
+                {g.holderName && (
+                  <p className="mt-2 font-[family-name:var(--font-serif-elegant)] text-sm text-zinc-600">
+                    a.n. {g.holderName}
+                  </p>
+                )}
               </div>
             </div>
-            <p className="mt-4 text-[11px] uppercase tracking-widest text-zinc-400">No. Rekening</p>
-            <div className="mt-1 flex items-center justify-between gap-2">
-              <p className="font-mono text-lg font-semibold tracking-wide text-zinc-900">
-                {g.accountNumber}
-              </p>
-              <CopyButton text={g.accountNumber} />
-            </div>
-            {g.holderName && (
-              <p className="mt-2 text-sm text-zinc-600">a.n. {g.holderName}</p>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
+          ))}
+        </div>
+      </section>
+    </Reveal>
   );
 }
 
@@ -656,24 +927,28 @@ function RsvpSection({
   borderClass: string;
 }) {
   return (
-    <section id="rsvp" className="w-full max-w-3xl bg-gradient-to-b from-[#efe9d8] to-[#f4f1e8] px-6 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.35em] text-emerald-700">Kehadiran</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-zinc-900 sm:text-4xl">Konfirmasi Kehadiran</h2>
-      <div className="mt-4">
-        <OrnamentDivider />
-      </div>
-      <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-zinc-500">
-        Mohon konfirmasi kehadiran Anda agar kami dapat menyiapkan segala sesuatunya.
-      </p>
-      <div className="mx-auto mt-10 max-w-md rounded-3xl border border-amber-200/60 bg-white/90 p-7 text-left shadow-lg shadow-emerald-600/5 backdrop-blur-sm">
-        <RsvpForm
-          invitationId={invitationId}
-          initialName={guestName}
-          accentClass={accentClass}
-          borderClass={borderClass}
-        />
-      </div>
-    </section>
+    <Reveal className="block">
+      <section id="rsvp" className="relative mx-auto w-full max-w-3xl overflow-hidden bg-gradient-to-b from-[#eee8d6] to-[#f7f4ea] px-6 pb-16 pt-32 sm:pt-40">
+        {/* Crest peonies memayungi band RSVP — konten di atasnya */}
+        <FlowerCrest className="absolute left-1/2 top-0 z-0 w-32 -translate-x-1/2 -translate-y-4 opacity-95 sm:w-40" />
+        <div className="relative z-10">
+        <SectionHeader kicker="Kehadiran" title="Konfirmasi Kehadiran" />
+        <p className="mx-auto mt-5 max-w-sm text-center font-[family-name:var(--font-serif-elegant)] text-base leading-relaxed text-zinc-600 italic">
+          Mohon konfirmasi kehadiran Anda agar kami dapat menyiapkan segala sesuatunya.
+        </p>
+        <div className="mx-auto mt-10 max-w-md rounded-[1.75rem] border border-amber-200/70 bg-white/85 p-2 shadow-xl shadow-emerald-900/5 backdrop-blur-sm">
+          <div className="rounded-[1.4rem] border border-amber-100 p-6 sm:p-7 text-left">
+            <RsvpForm
+              invitationId={invitationId}
+              initialName={guestName}
+              accentClass={accentClass}
+              borderClass={borderClass}
+            />
+          </div>
+        </div>
+        </div>
+      </section>
+    </Reveal>
   );
 }
 
@@ -686,30 +961,30 @@ function Wishes({
   invitationId: string;
   accentClass: string;
   borderClass: string;
-  wishes?: TemplateProps["wishes"];
+  wishes: WishItem[];
 }) {
   return (
-    <section id="ucapan" className="w-full max-w-3xl px-6 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.35em] text-emerald-700">Wedding Wall</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-zinc-900 sm:text-4xl">Kirim Ucapan &amp; Doa</h2>
-      <div className="mt-4">
-        <OrnamentDivider />
-      </div>
+    <Reveal className="block">
+      <section id="ucapan" className="mx-auto w-full max-w-3xl px-6 py-16">
+        <SectionHeader kicker="Wedding Wall" title="Kirim Ucapan & Doa" />
 
-      <div className="mx-auto mt-10 max-w-2xl">
-        <WishList
-          wishes={wishes ?? []}
-          cardClass="border-amber-200/60 bg-white/90"
-          nameClass="text-emerald-800"
-          avatarClass="bg-gradient-to-br from-emerald-600 to-emerald-500 text-amber-50"
-          emptyClass="text-zinc-400"
-        />
-      </div>
+        <div className="mx-auto mt-10 max-w-2xl">
+          <WishList
+            wishes={wishes}
+            cardClass="border-amber-200/60 bg-white/90"
+            nameClass="text-emerald-800"
+            avatarClass="bg-gradient-to-br from-emerald-600 to-emerald-500 text-amber-50"
+            emptyClass="text-zinc-400"
+          />
+        </div>
 
-      <div className="mx-auto mt-10 max-w-md rounded-3xl border border-amber-200/60 bg-white/90 p-7 text-left shadow-sm backdrop-blur-sm">
-        <WishForm invitationId={invitationId} accentClass={accentClass} borderClass={borderClass} />
-      </div>
-    </section>
+        <div className="mx-auto mt-10 max-w-md rounded-[1.75rem] border border-amber-200/70 bg-white/85 p-2 shadow-xl shadow-emerald-900/5 backdrop-blur-sm">
+          <div className="rounded-[1.4rem] border border-amber-100 p-6 sm:p-7 text-left">
+            <WishForm invitationId={invitationId} accentClass={accentClass} borderClass={borderClass} />
+          </div>
+        </div>
+      </section>
+    </Reveal>
   );
 }
 
@@ -720,18 +995,34 @@ function Footer({
   groomName?: string;
   brideName?: string;
 }) {
+  const initial = (s?: string) => (s?.trim() ? s.trim().charAt(0).toUpperCase() : "&");
   return (
-    <footer className="relative w-full overflow-hidden bg-gradient-to-b from-emerald-900 to-[#06281e] px-6 py-16 text-center text-emerald-50">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(180,140,60,0.18),transparent_60%)]" />
+    <footer className="relative w-full overflow-hidden bg-gradient-to-b from-[#0f3d2e] to-[#082a20] px-6 pb-16 pt-40 text-center text-emerald-50 sm:pt-48">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(176,141,63,0.22),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(176,141,63,0.08),transparent_55%)]" />
+      {/* Rangkaian peonies di tengah tepi atas footer */}
+      <FlowerCrest className="absolute left-1/2 top-0 z-10 w-36 -translate-x-1/2 -translate-y-8 opacity-90 drop-shadow-[0_10px_24px_rgba(0,0,0,0.35)] sm:w-44" />
       <div className="relative">
-        <div className="mb-6 flex justify-center">
+        {/* Monogram pasangan dalam medali emas */}
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-amber-300/70 shadow-[0_0_0_5px_rgba(176,141,63,0.15)]">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-amber-200/50 bg-white/5 font-[family-name:var(--font-display)] text-lg text-amber-200">
+            {initial(groomName)}&amp;{initial(brideName)}
+          </span>
+        </div>
+
+        <div className="mt-6 flex justify-center">
           <OrnamentDivider light />
         </div>
-        <p className="font-[family-name:var(--font-display)] text-3xl text-amber-100">
-          {groomName ?? "Pria"} <span className="mx-1 inline-block font-[family-name:var(--font-script)] text-3xl text-amber-300">&amp;</span> {brideName ?? "Wanita"}
+
+        <p className="mt-4 font-[family-name:var(--font-script)] text-3xl leading-snug text-amber-100">
+          {groomName ?? "Pria"} <span className="mx-1 text-amber-300">&amp;</span> {brideName ?? "Wanita"}
         </p>
-        <p className="mt-3 text-sm text-emerald-100/80">Terima kasih atas doa &amp; kehadiran Anda</p>
-        <p className="mt-8 text-xs tracking-widest text-emerald-200/50">© {new Date().getFullYear()} MEDUTA</p>
+        <p className="mt-3 font-[family-name:var(--font-serif-elegant)] text-sm italic text-emerald-100/80">
+          Terima kasih atas doa &amp; kehadiran Anda
+        </p>
+        <p className="mt-8 text-[10px] uppercase tracking-[0.35em] text-emerald-200/50">
+          © {new Date().getFullYear()} MEDUTA
+        </p>
       </div>
     </footer>
   );
