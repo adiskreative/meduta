@@ -60,6 +60,96 @@ const ACCENT =
 const BORDER =
   "border-emerald-200 bg-white/70 focus:border-emerald-600 focus:ring-emerald-100";
 
+/* ------------------------------------------------------------------ */
+/* CSS Khusus Template Garden — animasi bunga                          */
+/* Mirror (scaleX/scaleY) dipasang di elemen WRAPPER, bukan di <img>.   */
+/* Kalau dua-duanya di elemen yang sama, transform keyframes akan      */
+/* menimpa transform mirror saat bergoyang (bug sebelumnya).           */
+/* ------------------------------------------------------------------ */
+const GARDEN_STYLES = `
+  /* Bunga menggantung dari pojok atas — poros di pojok layar agar
+     tetap menempel ke tepi saat bergoyang */
+  @keyframes gdSway {
+    0%, 100% { transform: rotate(0deg) translate3d(0, 0, 0); }
+    35% { transform: rotate(2.4deg) translate3d(2px, 0, 0); }
+    70% { transform: rotate(1.1deg) translate3d(1px, 0, 0); }
+  }
+  .gd-sway-corner {
+    transform-origin: 0% 0%;
+    animation: gdSway 6.4s ease-in-out infinite;
+  }
+  /* Tanaman rambat dari tepi bawah — poros di dasar elemen,
+     bergerak searah angin */
+  @keyframes gdSwayGround {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(-2.6deg); }
+    65% { transform: rotate(1.4deg); }
+  }
+  .gd-sway-ground {
+    transform-origin: 50% 100%;
+    animation: gdSwayGround 7.2s ease-in-out infinite;
+  }
+  /* Ornamen kecil (ampersand, gazebo, merpati) mengapung halus */
+  @keyframes gdFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  .gd-float { animation: gdFloat 5.5s ease-in-out infinite; }
+  /* Kelopak jatuh perlahan, berputar sambil melengkung kiri-kanan */
+  @keyframes gdPetalFall {
+    0% { transform: translate3d(0, -5vh, 0) rotate(0deg) scale(1); opacity: 0; }
+    10% { opacity: 0.85; }
+    55% { transform: translate3d(26px, 55vh, 0) rotate(190deg) scale(1.05); opacity: 0.8; }
+    100% { transform: translate3d(-14px, 112vh, 0) rotate(400deg) scale(0.9); opacity: 0; }
+  }
+  .gd-petal {
+    position: absolute;
+    top: 0;
+    border-radius: 120% 0 120% 0;
+    box-shadow: 0 1px 2px rgba(190, 24, 93, 0.18);
+    animation: gdPetalFall linear infinite;
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gd-sway-corner, .gd-sway-ground, .gd-float { animation: none !important; }
+    .gd-petal { display: none !important; }
+  }
+`;
+
+/* Kelopak di cover — posisi/ukuran/waktu di-hardcode agar jatuhnya
+   terasa acak tanpa perlu randomizer di runtime */
+const PETALS = [
+  { left: "6%", size: 9, color: "#f9a8d4", delay: 0, dur: 12 },
+  { left: "18%", size: 7, color: "#fb7185", delay: 3.5, dur: 14 },
+  { left: "30%", size: 11, color: "#fbcfe8", delay: 6, dur: 11 },
+  { left: "42%", size: 8, color: "#f9a8d4", delay: 1.8, dur: 15 },
+  { left: "55%", size: 10, color: "#fecdd3", delay: 7.5, dur: 13 },
+  { left: "66%", size: 7, color: "#fb7185", delay: 4.6, dur: 12 },
+  { left: "78%", size: 11, color: "#f9a8d4", delay: 9, dur: 14 },
+  { left: "88%", size: 8, color: "#fbcfe8", delay: 2.6, dur: 12 },
+] as const;
+
+function FallingPetals() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+      {PETALS.map((p, i) => (
+        <span
+          key={i}
+          className="gd-petal"
+          style={{
+            left: p.left,
+            width: p.size,
+            height: p.size,
+            background: p.color,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.dur}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 type GateProps = { gateOpen?: boolean; onGateOpen?: () => void };
 
 export default function GardenTemplate(props: TemplateProps) {
@@ -123,6 +213,7 @@ function GardenShell({
 
   return (
     <div className="relative flex min-h-screen flex-col items-center bg-[#faf6ee] font-[family-name:var(--font-serif-elegant)] text-zinc-800">
+      <style>{GARDEN_STYLES}</style>
       {/* Nuansa taman: gradasi hijau-rose sangat lembut */}
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_10%_5%,rgba(16,94,66,0.06),transparent_45%),radial-gradient(ellipse_at_90%_90%,rgba(190,24,93,0.05),transparent_45%)]" />
 
@@ -214,12 +305,12 @@ function LeafDivider({ flip = false }: { flip?: boolean }) {
   return (
     <div className="flex items-center justify-center gap-1 py-2" aria-hidden="true">
       <span className="h-px w-14 bg-gradient-to-r from-transparent to-amber-500/60" />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={A.leafLine}
-        alt=""
-        className={`h-9 w-auto ${flip ? "-scale-x-100" : ""}`}
-      />
+      {/* Mirror flip di wrapper <span> supaya animasi float di <img>
+          tidak menimpa transform flip saat berjalan */}
+      <span className="inline-block" style={flip ? { transform: "scaleX(-1)" } : undefined}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={A.leafLine} alt="" className="gd-float h-9 w-auto" />
+      </span>
       <span className="h-px w-14 bg-gradient-to-l from-transparent to-amber-500/60" />
     </div>
   );
@@ -273,58 +364,95 @@ function Cover({
       <div className="pointer-events-none absolute inset-3 rounded-[2rem] border border-amber-500/40" />
       <div className="pointer-events-none absolute inset-5 rounded-[1.7rem] border border-amber-200/50" />
 
-      {/* Garland bunga FULL kiri-kanan — aset di-mirror-extend agar rimbun
-          sampai kedua tepi, dipasang dengan rasio asli (h-auto) sehingga
-          TIDAK ADA bagian yang terpotong */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/design/flower-garland-wide.webp"
-        alt=""
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-auto w-full drop-shadow-[0_10px_30px_rgba(190,24,93,0.25)]"
-      />
+      {/* Bunga pojok atas — set pasangan purple-bouquet (mawar putih +
+          eucalyptus, senada dengan palet garden). Aset kanan memang sudah
+          berorientasi pojok kanan-atas, jadi tanpa mirror. Poros sway di
+          pojok agar bunga tetap menempel tepi saat bergoyang. */}
+      {/* Pojok kiri atas (orientasi asli) */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -left-2 -top-2 z-[5] block w-70 sm:w-48"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/design/purple-bouquet.webp"
+          alt=""
+          className="gd-sway-corner block w-full opacity-95"
+          style={{ transformOrigin: "0% 0%" }}
+        />
+      </span>
+      {/* Pojok kanan atas (aset versi kanan, tanpa mirror) */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-2 -top-2 z-[5] block w-70 sm:w-48"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/design/purple-bouquet-right.webp"
+          alt=""
+          className="gd-sway-corner block w-full opacity-95"
+          style={{ transformOrigin: "100% 0%", animationDelay: "0.6s" }}
+        />
+      </span>
 
-      {/* Monstera menyeimbang pojok bawah */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={A.monstera}
-        alt=""
-        className="pointer-events-none absolute -bottom-4 -left-5 z-0 w-24 rotate-12 opacity-90 sm:w-32"
-      />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={A.leavesGreen}
-        alt=""
-        className="pointer-events-none absolute -right-5 bottom-8 z-0 w-20 -scale-x-100 opacity-90 sm:w-28"
-      />
+      {/* Tanaman menutup pojok bawah — poros di dasar, tumbuh ke atas */}
+      {/* Lavender dari kiri bawah (batang sudah berakar di bawah, tanpa mirror) */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -left-5 bottom-0 z-10 block w-40 sm:w-50"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/design/purple-lavender.webp"
+          alt=""
+          className="gd-sway-ground block w-full opacity-90"
+          style={{ transformOrigin: "0% 100%" }}
+        />
+      </span>
+      {/* Monstera dari kanan bawah (mirror horizontal — aset berakar kiri bawah) */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-5 bottom-0 z-10 block w-40 sm:w-50"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/design/purple-lavender.webp"
+          alt=""
+          className="gd-sway-ground block w-full opacity-90"
+          style={{ transformOrigin: "0% 100%" }} 
+        />
+      </span>
 
+      {/* Kelopak bunga jatuh — di atas konten (z-20) agar taman terasa hidup */}
+      <FallingPetals />
       {/* Lettering "The Wedding Of" (aset) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={A.theWeddingOf}
         alt="The Wedding Of"
-        className="relative z-10 mx-auto mb-2 w-40 mix-blend-multiply sm:w-48"
+        className="animate-fade-up-delay-1 relative z-10 mx-auto mb-2 w-40 mix-blend-multiply sm:w-48"
       />
 
-      {/* Nama mempelai dengan ampersand mawar */}
-      <h1 className="relative z-10 mt-2 font-[family-name:var(--font-display)] text-5xl font-semibold leading-tight text-zinc-900 sm:text-6xl">
+      {/* Nama mempelai dengan ampersand mawar yang mengapung halus */}
+      <h1 className="animate-fade-up-delay-2 relative z-10 mt-2 font-[family-name:var(--font-display)] text-5xl font-semibold leading-tight text-zinc-900 sm:text-6xl">
         {groomNick ?? "Pria"}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={A.ampersand}
           alt="&"
-          className="mx-2 inline-block h-14 w-auto align-middle drop-shadow-[0_4px_14px_rgba(190,24,93,0.35)] sm:h-16"
+          className="gd-float mx-2 inline-block h-14 w-auto align-middle drop-shadow-[0_4px_14px_rgba(190,24,93,0.35)] sm:h-16"
         />
         {brideNick ?? "Wanita"}
       </h1>
 
       {eventDate && (
-        <p className="relative z-10 mt-5 max-w-[260px] text-sm font-medium leading-relaxed tracking-[0.25em] text-emerald-800">
+        <p className="animate-fade-up-delay-3 relative z-10 mt-5 max-w-[260px] text-sm font-medium leading-relaxed tracking-[0.25em] text-emerald-800">
           {formatDate(eventDate)}
         </p>
       )}
 
       {guestName && (
-        <div className="relative z-10 mx-auto mt-9 max-w-sm rounded-3xl border border-amber-500/30 bg-white/75 p-5 shadow-xl shadow-emerald-900/10 backdrop-blur-md">
+        <div className="animate-fade-up-delay-4 relative z-10 mx-auto mt-9 max-w-sm rounded-3xl border border-amber-500/30 bg-white/75 p-5 shadow-xl shadow-emerald-900/10 backdrop-blur-md">
           <p className="text-[10px] uppercase tracking-[0.35em] text-emerald-700">
             Kepada Yth.
           </p>
@@ -371,14 +499,6 @@ function MainEvent({
   return (
     <section className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Akad & Resepsi" title="Rangkaian Bahagia" />
-
-      {/* Gazebo lentera sebagai ilustrasi pembuka section */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={A.gazebo}
-        alt=""
-        className="mx-auto mt-8 w-44 drop-shadow-[0_10px_25px_rgba(16,94,66,0.18)] sm:w-52"
-      />
 
       <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-zinc-500">
         Kehadiran dan doa restu Anda adalah hadiah terindah bagi kami.
@@ -789,23 +909,13 @@ function Footer({
     <footer className="relative w-full overflow-hidden bg-gradient-to-b from-emerald-900 to-[#043527] px-6 pb-44 pt-20 text-center text-emerald-50">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.15),transparent_55%)]" />
 
-      {/* Garland penutup — cermin vertikal dari garland cover, menutup
-          undangan secara simetris (atas: menggantung, bawah: tumbuh naik).
-          Rasio asli (h-auto) sehingga tidak ada bagian terpotong. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/design/flower-garland-wide.webp"
-        alt=""
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 mx-auto h-auto w-full max-w-3xl -scale-y-100 drop-shadow-[0_-10px_30px_rgba(190,24,93,0.3)]"
-      />
 
       <div className="relative">
-        {/* Merpati & cincin emas (aset) — penutup romantis */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* Merpati & cincin emas */}
         <img
           src={A.doves}
           alt=""
-          className="mx-auto mb-3 w-44 drop-shadow-[0_10px_30px_rgba(245,158,11,0.35)] sm:w-52"
+          className="gd-float mx-auto mb-3 w-44 drop-shadow-[0_10px_30px_rgba(245,158,11,0.35)] sm:w-52"
         />
 
         <div className="mb-4 flex items-center justify-center gap-3">

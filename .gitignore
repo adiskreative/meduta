@@ -32,6 +32,7 @@ yarn-error.log*
 
 # dev server stdout/stderr logs
 .dev-*.log
+.dev-*.err
 
 # OAuth client secrets (Google, dll) — jangan pernah commit
 client_secret_*.json

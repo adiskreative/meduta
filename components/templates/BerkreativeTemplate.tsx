@@ -12,7 +12,6 @@ import {
   AtSign,
 } from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
-import InvitationGate from "./InvitationGate";
 import { useBackgroundMusic, MusicFab, type MusicController } from "./BackgroundMusic";
 import WishForm from "./WishForm";
 import WishList from "./WishList";
@@ -25,6 +24,12 @@ import {
   type TemplateProps,
 } from "./types";
 import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decoration";
+import {
+  ASSET_FLOWER_PINK,
+  ASSET_WEDDING_LOGO,
+  BRAND_BG,
+} from "./berkreative-assets";
+import BerkreativeGate from "./BerkreativeGate";
 
 /**
  * Berkreative Royale — karakter paling playful & full-color:
@@ -37,14 +42,6 @@ import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decor
  */
 
 // Aset brand & galeri admin
-const BRAND_BG = "/design/bg-new-opt.jpg"; // navy berpola daun
-const BRAND_COUPLE = "/design/ilustrasi.webp"; // ilustrasi pasangan pink
-const ASSET_FLOWER_PINK =
-  "https://htrcniqylvhzhkjeukcw.supabase.co/storage/v1/object/public/templates/decor/280fc784-5503-4408-9e39-395cf5ae26dc.png";
-const ASSET_FLOWER_BLUE =
-  "https://htrcniqylvhzhkjeukcw.supabase.co/storage/v1/object/public/templates/decor/52708bac-c4fd-4842-9e12-5a26a4e6a16e.png";
-const ASSET_WEDDING_LOGO =
-  "https://htrcniqylvhzhkjeukcw.supabase.co/storage/v1/object/public/templates/image/a8123821-7e4c-4115-982e-f7fbcd7aa448.png";
 
 const ACCENT =
   "bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-500 hover:from-fuchsia-500 hover:via-pink-500 hover:to-rose-400 shadow-lg shadow-pink-600/30";
@@ -284,6 +281,23 @@ function Cover({
         className="animate-float-slow pointer-events-none absolute -left-15 top-[0%] z-0 w-100 opacity-100 drop-shadow-[0_8px_24px_rgba(236,72,153,0.45)]"
       />
 
+      {/* Bunga sama dengan pojok kiri atas, dipasang di pojok kanan bawah
+          dengan mirror dua arah (scale(-1, -1)) supaya karangan berlabuh
+          di pojok. Mirror di wrapper <span>, float di <img>; ukuran
+          disamakan (w-100) dan glow pink sama persis dengan pasangannya. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -bottom-6 -right-15 z-0 block w-100"
+        style={{ transform: "scale(-1, -1)" }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={ASSET_FLOWER_PINK}
+          alt=""
+          className="animate-float-slow block w-full opacity-100 drop-shadow-[0_8px_24px_rgba(236,72,153,0.45)]"
+        />
+      </span>
+     
       {/* Logo wedding dari aset admin */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -293,7 +307,7 @@ function Cover({
       />
 
       <div className="relative z-70">
-        <p className="animate-fade-up-delay-1 mb-70 text-xs font-semibold uppercase tracking-[0.45em] text-fuchsia-200">
+        <p className="animate-fade-up-delay-1 mb-70 text-xs font-semibold uppercase tracking-[0.45em] text-[#1e3a8a]">
           {eventName}
         </p>
 
@@ -315,10 +329,10 @@ function Cover({
 
         {guestName && (
           <div className="animate-fade-up-delay-4 mx-auto mt-10 max-w-sm rounded-3xl border border-white/25 bg-white/10 p-5 shadow-2xl shadow-fuchsia-900/40 backdrop-blur-md">
-            <p className="text-[10px] uppercase tracking-[0.35em] text-fuchsia-200">
+            <p className="text-[10px] uppercase tracking-[0.35em] text-[#1e3a8a]">
               Kepada Yth.
             </p>
-            <p className="mt-1 font-[family-name:var(--font-script)] text-3xl text-white">
+            <p className="mt-1 font-[family-name:var(--font-script)] text-3xl text-[#1e3a8a]">
               {guestName}
             </p>
           </div>
@@ -327,11 +341,10 @@ function Cover({
     </header>
   );
 
-  // Saat gerbang tertutup: konten dikunci + overlay "Buka Undangan" fullscreen
+  // Saat gerbang tertutup: halaman "Buka Undangan" khas Berkreative
   if (locked) {
     return (
-      <InvitationGate
-        theme="berkreative"
+      <BerkreativeGate
         eventName={eventName}
         groomNick={groomNick}
         brideNick={brideNick}

@@ -25,28 +25,30 @@ const THEME_STYLES: Record<
     amp: "text-gold-shimmer font-[family-name:var(--font-script)]",
   },
   minimal: {
+    // Modern Minimal — foto grayscale dengan tirai hitam hangat & aksen bronze
     photo:
       "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1200&q=70",
     overlay:
-      "linear-gradient(135deg, rgba(30,27,75,0.82), rgba(76,29,149,0.55), rgba(112,26,117,0.72))",
-    eyebrow: "text-fuchsia-200",
-    amp: "font-serif italic text-fuchsia-200",
+      "linear-gradient(to bottom, rgba(18,17,15,0.38), rgba(18,17,15,0.88))",
+    eyebrow: "text-[#D8CDBA]",
+    amp: "font-[family-name:var(--font-serif-elegant)] italic text-[#D8CDBA]",
   },
   floral: {
+    // Floral Premium — taman penuh warna: hijau daun, koral, & marigold
     photo:
       "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=70",
     overlay:
-      "linear-gradient(to bottom, rgba(120,26,60,0.42), rgba(88,14,50,0.66))",
-    eyebrow: "text-rose-100",
-    amp: "font-[family-name:var(--font-script)] text-pink-200",
+      "linear-gradient(to bottom, rgba(15,59,43,0.5), rgba(15,59,43,0.72) 55%, rgba(140,44,32,0.72))",
+    eyebrow: "text-[#F7D9A0]",
+    amp: "font-[family-name:var(--font-script)] text-[#F7D9A0]",
   },
   rustic: {
-    photo:
-      "https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=1200&q=80",
+    // Terracotta barn — lorong pelaminan dengan tirai zaitun & tanah liat
+    photo: "/design/rustic/aisle.webp",
     overlay:
-      "linear-gradient(to bottom, rgba(15,23,18,0.5), rgba(10,15,12,0.78))",
-    eyebrow: "text-amber-100",
-    amp: "font-[family-name:var(--font-script)] text-amber-200",
+      "radial-gradient(circle at 72% 18%, rgba(180,85,58,0.38), transparent 55%), linear-gradient(to bottom, rgba(47,58,40,0.5) 0%, rgba(47,58,40,0.58) 45%, rgba(36,24,17,0.88) 100%)",
+    eyebrow: "text-[#F0DCC2]",
+    amp: "font-[family-name:var(--font-script)] text-[#E3B98C]",
   },
   berkreative: {
     // Navy brand Meduta dengan bingkai bunga pink-biru
