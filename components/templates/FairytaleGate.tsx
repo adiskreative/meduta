@@ -199,7 +199,6 @@ export default function FairytaleGate({
         >
           <BookOpen className="h-6 w-6 transition-transform group-hover:rotate-12" />
           <span>Buka Undangan Dongeng</span>
-          <Sparkles className="h-5 w-5 text-yellow-300" />
         </button>
       </div>
     </div>

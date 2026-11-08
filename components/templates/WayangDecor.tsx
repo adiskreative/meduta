@@ -53,7 +53,7 @@ export function Gunungan({
 
 /** Motif kawung (batik bulatan 4 arah) — SVG data URL untuk background. */
 export const KAWUNG_URL =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='none' stroke='%23b98f3e' stroke-opacity='.22' stroke-width='1'%3E%3Cellipse cx='30' cy='15' rx='8' ry='14'/%3E%3Cellipse cx='30' cy='45' rx='8' ry='14'/%3E%3Cellipse cx='15' cy='30' rx='14' ry='8'/%3E%3Cellipse cx='45' cy='30' rx='14' ry='8'/%3E%3C/g%3E%3C/svg%3E\")";
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='60'%3E%3Cg fill='none' stroke='%23b98f3e' stroke-opacity='.22' stroke-width='1'%3E%3Cellipse cx='30' cy='15' rx='8' ry='14'/%3E%3Cellipse cx='30' cy='45' rx='8' ry='14'/%3E%3Cellipse cx='15' cy='30' rx='14' ry='8'/%3E%3Cellipse cx='45' cy='30' rx='14' ry='8'/%3E%3C/g%3E%3C/svg%3E\")";
 
 /** Motif parang (batik diagonal bergelombang) — SVG data URL. */
 export const PARANG_URL =

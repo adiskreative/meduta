@@ -1,13 +1,5 @@
 import Link from "next/link";
 
-/**
- * Logo Meduta.
- * - `full`: logo lengkap (mark M + teks "eduta") untuk latar gelap/terang.
- * - `mark`: hanya ikon M (lamaran) — untuk latar terang, favicon-ish.
- * Mark dirancang untuk latar gelap; di latar terang dipakai apa adanya
- * (pink kontras cukup), teks "Meduta" ditulis terpisah.
- */
-
 export function LogoMark({ className = "h-9 w-9" }: { className?: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element

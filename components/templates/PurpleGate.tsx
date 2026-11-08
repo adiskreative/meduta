@@ -171,7 +171,7 @@ export default function PurpleGate({
         <button
           type="button"
           onClick={handleOpen}
-          className="pp-btn-in group relative mt-9 rounded-full px-12 py-3.5 text-lg font-bold text-[#4a2c3a] shadow-xl transition-transform duration-300 hover:scale-[1.05] active:scale-95"
+          className="pp-btn-in group relative mt-9 rounded-full px-3 py-1.5 text-lg font-bold text-[#4a2c3a] shadow-xl transition-transform duration-300 hover:scale-[1.05] active:scale-95"
           style={{ background: CREAM }}
           aria-label="Buka Undangan"
         >
