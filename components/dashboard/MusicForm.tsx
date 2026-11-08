@@ -125,7 +125,7 @@ export default function MusicForm({
               return (
                 <div
                   key={item.id}
-                  className={`flex items-center gap-3 rounded-xl border p-3 transition ${
+                  className={`flex min-w-0 items-center gap-3 overflow-hidden rounded-xl border p-3 transition ${
                     selected
                       ? "border-rose-300 bg-rose-50/60"
                       : "border-zinc-200 bg-zinc-50 hover:border-zinc-300"
@@ -148,7 +148,13 @@ export default function MusicForm({
                     )}
                   </button>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-zinc-800">{item.name}</p>
+                    {/* min-w-0 di kartu (grid item) WAJIB: tanpa itu min-content
+                        kartu mengikuti lebar judul yang nowrap (truncate), sehingga
+                        kartu melebar melewati layar ponsel. title hanya untuk
+                        tooltip desktop, nama lengkap tetap diambil dari DB. */}
+                    <p title={item.name} className="truncate text-sm font-medium text-zinc-800">
+                      {item.name}
+                    </p>
                     <p className="text-[11px] text-zinc-400">
                       {selected ? "Terpilih" : "Lagu koleksi"}
                     </p>
