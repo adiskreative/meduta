@@ -83,7 +83,51 @@ const CEL_STYLES = `
   }
   .cel-float { animation: celFloat 6s ease-in-out infinite; }
   .cel-glow { animation: celGlow 4s ease-in-out infinite; }
+
+  /* Reveal khas Celestial: materialisasi bintang — turun sedikit dari atas
+     sambil membesar, lalu menyala. Berbeda dari template lain yang mengangkat
+     konten dari bawah. Transition menyertakan properti hover kartu agar efek
+     hover (border/background/shadow) tetap hidup setelah reveal selesai. */
+  .cs-reveal {
+    opacity: 0;
+    transform: translateY(-26px) scale(0.9);
+    transition: opacity .6s ease,
+      transform .6s cubic-bezier(.22, 1.4, .5, 1),
+      border-color .3s ease, background-color .3s ease,
+      box-shadow .3s ease, translate .3s ease, scale .3s ease;
+  }
+  .cs-reveal.cs-visible { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    /* Aksesibilitas: minta gerak minim → konten tampil penuh tanpa animasi */
+    .cs-reveal { opacity: 1; transform: none; transition: none; }
+  }
 `;
+
+/* Hook reveal tanpa deps agar node kondisional (konten setelah gerbang
+   dibuka / lightbox) ikut terpantau. Fallback tanpa IntersectionObserver:
+   langsung tampilkan semua supaya konten tidak pernah tertinggal tersembunyi. */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      document.querySelectorAll(".cs-reveal:not(.cs-visible)").forEach((el) => el.classList.add("cs-visible"));
+      return;
+    }
+    const els = document.querySelectorAll(".cs-reveal:not(.cs-visible)");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("cs-visible");
+            io.unobserve(e.target); // sekali muncul tidak perlu dipantau lagi
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
 
 /* ------------------------------------------------------------------ */
 /* Canvas langit: bintang berkelap-kelip + meteor (khas template ini)  */
@@ -233,6 +277,9 @@ function CelestialShell({
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // Reveal dipanggil sebelum early-return agar urutan hook stabil
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -390,12 +437,12 @@ function HeroSection({
     <section className="relative flex min-h-screen items-center justify-center px-4 pt-16">
       <div className="mx-auto max-w-3xl space-y-8 text-center">
         {/* Badge konstelasi */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-950/40 px-4 py-1.5 text-xs uppercase tracking-widest text-purple-200">
+        <div className="cs-reveal inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-950/40 px-4 py-1.5 text-xs uppercase tracking-widest text-purple-200">
           <span>{eventName ?? "Save The Cosmic Date"}</span>
         </div>
 
         {/* Nama pasangan */}
-        <div className="space-y-4">
+        <div className="cs-reveal space-y-4">
           <h1 className="cel-gold-text font-[family-name:var(--font-display)] text-5xl font-extrabold leading-tight tracking-wide md:text-7xl">
             {groomNick ?? "Pria"}
             <span className="cel-silver-text my-1 block font-[family-name:var(--font-serif-elegant)] text-3xl font-normal italic md:text-5xl">
@@ -412,7 +459,7 @@ function HeroSection({
         </div>
 
         {/* Foto arch bercahaya */}
-        <div className="relative mx-auto mt-8 h-80 w-64 md:h-96 md:w-72">
+        <div className="cs-reveal relative mx-auto mt-8 h-80 w-64 md:h-96 md:w-72">
           <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-tr from-amber-400/20 via-purple-600/30 to-slate-900 blur-xl" />
           <div className="cel-glass relative h-full w-full overflow-hidden rounded-t-full border-2 border-amber-300/40 p-2 shadow-2xl">
             {photo ? (
@@ -432,7 +479,7 @@ function HeroSection({
 
         {/* Simpan ke Google Calendar */}
         {eventDate && (
-          <div className="pt-4">
+          <div className="cs-reveal pt-4">
             <SaveToCalendarButton
               title={`Pernikahan ${groomNick ?? ""} & ${brideNick ?? ""}`.trim()}
               date={eventDate}
@@ -466,7 +513,7 @@ function CountdownSection({
 }) {
   return (
     <section className="relative mx-auto max-w-5xl px-4 text-center">
-      <div className="cel-glass cel-border-glow relative overflow-hidden rounded-3xl p-8 md:p-14">
+      <div className="cel-glass cel-border-glow cs-reveal relative overflow-hidden rounded-3xl p-8 md:p-14">
         {/* Dial celestial berputar */}
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 animate-[spin_60s_linear_infinite] rounded-full border border-amber-300/10">
           <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-amber-300/40" />
@@ -548,7 +595,7 @@ function PersonCard({
 }) {
   const handle = person?.instagram?.replace(/^@/, "").trim();
   return (
-    <div className="cel-glass cel-border-glow group relative space-y-6 overflow-hidden rounded-3xl p-8 text-center transition-all duration-500 hover:border-amber-300/60">
+    <div className="cel-glass cel-border-glow cs-reveal group relative space-y-6 overflow-hidden rounded-3xl p-8 text-center transition-all duration-500 hover:border-amber-300/60">
       <div className="relative mx-auto h-56 w-44 overflow-hidden rounded-t-full border border-amber-300/30 p-1.5">
         {person?.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -620,7 +667,7 @@ function LoveStorySection({
             ? String(new Date(item.date).getFullYear())
             : null;
           return (
-            <div key={item.id} className="group relative pl-8 md:pl-12">
+            <div key={item.id} className="cs-reveal group relative pl-8 md:pl-12">
               {/* Node bintang bercahaya */}
               <div className="absolute -left-[11px] top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-amber-300 bg-slate-900 transition-transform duration-300 group-hover:scale-125">
                 <div
@@ -759,7 +806,7 @@ function EventCard({
   mapUrl?: string;
 }) {
   return (
-    <div className="cel-glass cel-border-glow group relative flex flex-col justify-between space-y-6 overflow-hidden rounded-3xl p-8 transition-all duration-300 hover:border-amber-300/60">
+    <div className="cel-glass cel-border-glow cs-reveal group relative flex flex-col justify-between space-y-6 overflow-hidden rounded-3xl p-8 transition-all duration-300 hover:border-amber-300/60">
       {/* Watermark bintang */}
       <Star className="absolute right-4 top-4 h-8 w-8 text-amber-300/10" />
 
@@ -843,7 +890,7 @@ function GallerySection({
             key={img.id}
             type="button"
             onClick={() => setSelected({ url: img.url, caption: img.caption })}
-            className="cel-glass group relative h-64 cursor-pointer overflow-hidden rounded-2xl border border-amber-300/20 md:h-80"
+            className="cel-glass cs-reveal group relative h-64 cursor-pointer overflow-hidden rounded-2xl border border-amber-300/20 md:h-80"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -911,7 +958,7 @@ function RsvpSection({
 }) {
   return (
     <section className="relative mx-auto max-w-3xl px-4">
-      <div className="cel-glass cel-border-glow space-y-8 rounded-3xl p-8 md:p-12">
+      <div className="cel-glass cel-border-glow cs-reveal space-y-8 rounded-3xl p-8 md:p-12">
         <div className="space-y-3 text-center">
           <h2 className="font-[family-name:var(--font-display)] text-xs uppercase tracking-[0.3em] text-amber-300">
             Celestial Confirmation
@@ -964,7 +1011,7 @@ function GiftSection({
           {gifts.map((gift) => (
             <div
               key={gift.id}
-              className="space-y-4 rounded-2xl border border-amber-300/20 bg-slate-900/80 p-6 text-center transition-colors hover:border-amber-300/50"
+              className="cs-reveal space-y-4 rounded-2xl border border-amber-300/20 bg-slate-900/80 p-6 text-center transition-colors hover:border-amber-300/50"
             >
               <Landmark className="mx-auto h-6 w-6 text-amber-300" />
               <div className="space-y-1">
@@ -998,7 +1045,7 @@ function WishesSection({
 }) {
   return (
     <section className="relative mx-auto max-w-4xl px-4">
-      <div className="cel-glass cel-border-glow space-y-8 rounded-3xl p-8 md:p-12">
+      <div className="cel-glass cel-border-glow cs-reveal space-y-8 rounded-3xl p-8 md:p-12">
         <div className="space-y-3 text-center">
           <h2 className="font-[family-name:var(--font-display)] text-xs uppercase tracking-[0.3em] text-amber-300">
             Celestial Guestbook
@@ -1051,11 +1098,11 @@ function ClosingSection({
 }) {
   return (
     <section className="relative mx-auto max-w-3xl space-y-8 px-4 pt-8 text-center">
-      <div className="cel-glass cel-border-glow mx-auto flex h-16 w-16 items-center justify-center rounded-full">
+      <div className="cel-glass cel-border-glow cs-reveal mx-auto flex h-16 w-16 items-center justify-center rounded-full">
         <Moon className="cel-glow h-8 w-8 text-amber-300" />
       </div>
 
-      <div className="space-y-4">
+      <div className="cs-reveal space-y-4">
         <h3 className="cel-silver-text font-[family-name:var(--font-display)] text-3xl font-bold md:text-4xl">
           Terima Kasih
         </h3>
@@ -1065,7 +1112,7 @@ function ClosingSection({
         </p>
       </div>
 
-      <div className="space-y-2 pt-4">
+      <div className="cs-reveal space-y-2 pt-4">
         <p className="font-[family-name:var(--font-display)] text-xs uppercase tracking-widest text-amber-300">
           Kami yang berbahagia
         </p>
@@ -1101,7 +1148,7 @@ function SectionHeading({
   titleGold?: boolean;
 }) {
   return (
-    <div className="mb-16 space-y-4 text-center">
+    <div className="cs-reveal mb-16 space-y-4 text-center">
       <h2 className="font-[family-name:var(--font-display)] text-xs uppercase tracking-[0.3em] text-amber-300">
         {eyebrow}
       </h2>

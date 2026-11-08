@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CalendarDays,
   MapPin,
@@ -46,6 +46,38 @@ const ZEN = {
 
 /* Tekstur kertas grid halus (SVG data-URI dari desain referensi) */
 const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2323211E' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
+
+/* Reveal-on-scroll "embun jernih": sangat halus & lambat (1.3s) sesuai tema
+   tenang. Nama kelas WAJIB mengandung literal "-reveal"/"-visible":
+   app/preview/[key]/page.tsx (mode ?shot=1) memaksa semua [class*="-reveal"]
+   tampil tanpa animasi agar thumbnail tidak menangkap konten opacity-0. */
+const ZN_CSS = `
+  .zn-reveal {
+    opacity: 0;
+    transform: scale(1.035) translateY(10px);
+    transition: opacity 1.3s ease, transform 1.3s ease;
+  }
+  .zn-reveal.zn-visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* Mode embed (live iframe preview): gerbang sudah terbuka & konten
+     kondisional belum tentu sempat terpantau IO — paksa tampil instan
+     supaya tidak ada yang tertinggal tersembunyi. */
+  .zn-embed .zn-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  /* Aksesibilitas: hormati preferensi user yang mematikan animasi */
+  @media (prefers-reduced-motion: reduce) {
+    .zn-reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+`;
 
 /* Lingkaran Enso — goresan tinta zen (SVG inline) */
 function EnsoCircle({ className = "" }: { className?: string }) {
@@ -115,10 +147,15 @@ function ZenShell({
   isPublished,
   wishes,
   decorations,
+  embedded,
   gateOpen = true,
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // WAJIB sebelum early-return DraftNotice: hook harus terpanggil di semua
+  // jalur render (aturan React hooks) — effect tanpa dep aman dipanggil di sini.
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -143,9 +180,12 @@ function ZenShell({
 
   return (
     <div
-      className="relative min-h-screen font-[family-name:var(--font-sans)]"
+      className={`relative min-h-screen font-[family-name:var(--font-sans)] ${embedded ? "zn-embed" : ""}`}
       style={{ backgroundColor: ZEN.bg, color: ZEN.ink }}
     >
+      {/* CSS reveal-scrol lokal (lihat komentar di atas ZN_CSS) */}
+      <style>{ZN_CSS}</style>
+
       {/* Tekstur kertas grid di seluruh halaman */}
       <div
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.035]"
@@ -253,6 +293,42 @@ function DraftNotice() {
       </p>
     </div>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Reveal-on-scroll (pola senada dengan FloralTemplate)                */
+/* ------------------------------------------------------------------ */
+
+/* Effect TANPA dep array — why: biar dijalankan ulang tiap render sehingga
+   node yang baru muncul (gerbang terbuka, konten kondisional) tetap
+   terpantau IntersectionObserver. */
+function useReveal() {
+  useEffect(() => {
+    // Fallback lingkungan tanpa IntersectionObserver: jangan biarkan konten
+    // tersembunyi selamanya — langsung tandai semua sebagai visible.
+    if (typeof IntersectionObserver === "undefined") {
+      document.querySelectorAll(".zn-reveal:not(.zn-visible)").forEach((el) => el.classList.add("zn-visible"));
+      return;
+    }
+    const els = document.querySelectorAll(".zn-reveal:not(.zn-visible)");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("zn-visible");
+            io.unobserve(e.target); // sekali muncul, tidak perlu dipantau lagi
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
+
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`zn-reveal ${className}`}>{children}</div>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -511,7 +587,7 @@ function QuoteSection({
 }) {
   return (
     <section className="border-b px-6 py-20" style={{ borderColor: `${ZEN.ink}1A`, backgroundColor: `${ZEN.beige}80` }}>
-      <div className="mx-auto max-w-2xl space-y-6 text-center">
+      <Reveal className="mx-auto max-w-2xl space-y-6 text-center">
         <HankoSeal text="愛" subtext="Love & Harmony" />
         <blockquote className="whitespace-pre-line font-[family-name:var(--font-serif-elegant)] text-lg italic leading-relaxed opacity-80 md:text-xl">
           &ldquo;{text}&rdquo;
@@ -519,7 +595,7 @@ function QuoteSection({
         <p className="text-xs uppercase tracking-[0.25em]" style={{ color: ZEN.sage }}>
           — {source?.trim() || new Date().getFullYear()}
         </p>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -530,7 +606,9 @@ function QuoteSection({
 
 function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="mb-16 text-center">
+    // Semua judul section mendapat reveal dari satu titik ini — komponen ini
+    // dipakai di semua section, jadi tidak perlu menandai judul satu per satu.
+    <div className="mb-16 text-center zn-reveal">
       <span className="mb-2 block text-[10px] uppercase tracking-[0.3em]" style={{ color: ZEN.sage }}>
         {eyebrow}
       </span>
@@ -576,7 +654,9 @@ function PersonCard({
   seal: string;
 }) {
   return (
-    <div className="relative flex flex-col justify-between space-y-6 p-8" style={{ border: `1px solid ${ZEN.ink}1A`, backgroundColor: ZEN.bg }}>
+    // Kelas reveal langsung di child grid (bukan wrapper) supaya layout grid
+    // tetap persis seperti sebelumnya.
+    <div className="zn-reveal relative flex flex-col justify-between space-y-6 p-8" style={{ border: `1px solid ${ZEN.ink}1A`, backgroundColor: ZEN.bg }}>
       <div>
         <div className="mb-2 text-xs uppercase tracking-[0.2em]" style={{ color: ZEN.red }}>
           {kanji} • {role}
@@ -616,7 +696,9 @@ function StorySection({
         <SectionHeading eyebrow="Perjalanan Kisah" title="Kisah Kami" />
         <div className="relative ml-4 space-y-12 border-l pl-6 md:ml-12 md:pl-10" style={{ borderColor: `${ZEN.ink}26` }}>
           {story.map((item, i) => (
-            <div key={item.id} className="relative">
+            // Tiap momen muncul sendiri saat masuk viewport (bukan bareng
+            // seluruh section) agar terasa seperti kisah yang diceritakan
+            <div key={item.id} className="zn-reveal relative">
               <span
                 className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-4 md:-left-[47px]"
                 style={{
@@ -679,7 +761,7 @@ function EventsSection({
 
         {/* Countdown */}
         {eventDate && (
-          <div className="mx-auto mb-16 max-w-xl border p-8 text-center" style={{ borderColor: `${ZEN.ink}1A`, backgroundColor: `${ZEN.beige}66` }}>
+          <div className="zn-reveal mx-auto mb-16 max-w-xl border p-8 text-center" style={{ borderColor: `${ZEN.ink}1A`, backgroundColor: `${ZEN.beige}66` }}>
             <span className="mb-6 block text-[11px] uppercase tracking-[0.2em]" style={{ color: ZEN.sage }}>
               Hitung Mundur Hari Bahagia
             </span>
@@ -742,7 +824,8 @@ function EventCard({
   mapUrl?: string;
 }) {
   return (
-    <div className="flex flex-col justify-between space-y-6 p-8" style={{ border: `1px solid ${ZEN.ink}26`, backgroundColor: ZEN.bg }}>
+    // Reveal langsung di child grid, bukan wrapper — grid tidak boleh berubah
+    <div className="zn-reveal flex flex-col justify-between space-y-6 p-8" style={{ border: `1px solid ${ZEN.ink}26`, backgroundColor: ZEN.bg }}>
       <div>
         <div className="mb-4 flex items-center justify-between">
           <span className="font-mono text-xs uppercase tracking-[0.2em]" style={{ color: ZEN.red }}>
@@ -819,7 +902,7 @@ function GallerySection({
               key={item.id}
               type="button"
               onClick={() => setSelected(item.url)}
-              className={`group relative cursor-pointer overflow-hidden ${i === 0 ? "md:col-span-8 aspect-[16/10]" : i === 1 ? "md:col-span-4 aspect-[3/4]" : "md:col-span-4 aspect-[4/5]"}`}
+              className={`zn-reveal group relative cursor-pointer overflow-hidden ${i === 0 ? "md:col-span-8 aspect-[16/10]" : i === 1 ? "md:col-span-4 aspect-[3/4]" : "md:col-span-4 aspect-[4/5]"}`}
               style={{ border: `1px solid ${ZEN.ink}1A` }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -884,7 +967,7 @@ function RsvpSection({
         <p className="-mt-10 mb-12 text-center font-[family-name:var(--font-serif-elegant)] text-xs opacity-60">
           Kehadiran Anda adalah kebahagiaan dan kehormatan besar bagi kami.
         </p>
-        <div className="p-8" style={{ border: `1px solid ${ZEN.ink}26`, backgroundColor: ZEN.bg }}>
+        <div className="zn-reveal p-8" style={{ border: `1px solid ${ZEN.ink}26`, backgroundColor: ZEN.bg }}>
           <RsvpForm
             invitationId={invitationId}
             initialName={guestName}
@@ -917,7 +1000,7 @@ function GiftsSection({
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           {gifts.map((g) => (
-            <div key={g.id} className="space-y-4 p-6" style={{ border: `1px solid ${ZEN.ink}26`, backgroundColor: ZEN.bg }}>
+            <div key={g.id} className="zn-reveal space-y-4 p-6" style={{ border: `1px solid ${ZEN.ink}26`, backgroundColor: ZEN.bg }}>
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs uppercase tracking-widest opacity-70">{g.provider}</span>
                 <Landmark className="h-4 w-4" style={{ color: ZEN.sage }} />
@@ -956,7 +1039,7 @@ function Wishes({
       <div className="mx-auto max-w-4xl">
         <SectionHeading eyebrow="Buku Tamu & Doa Restu" title="Kirim Doa Restu" />
 
-        <div className="mb-12 space-y-6">
+        <div className="zn-reveal mb-12 space-y-6">
           <WishList
             wishes={wishes ?? []}
             cardClass="border-[#23211E]/10 bg-[#FAF8F5]"
@@ -966,7 +1049,7 @@ function Wishes({
           />
         </div>
 
-        <div className="space-y-6 border p-8" style={{ borderColor: `${ZEN.ink}26`, backgroundColor: `${ZEN.beige}4D` }}>
+        <div className="zn-reveal space-y-6 border p-8" style={{ borderColor: `${ZEN.ink}26`, backgroundColor: `${ZEN.beige}4D` }}>
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest" style={{ color: ZEN.sage }}>
             <HankoSeal text="祝" subtext="Blessing" />
           </div>
@@ -998,7 +1081,7 @@ function Footer({
 }) {
   return (
     <footer className="space-y-8 px-6 py-24 text-center" style={{ backgroundColor: ZEN.ink, color: ZEN.bg }}>
-      <div className="mx-auto max-w-md space-y-4">
+      <Reveal className="mx-auto max-w-md space-y-4">
         <EnsoCircle className="mx-auto h-24 w-24 opacity-80" />
         <h2 className="font-[family-name:var(--font-serif-elegant)] text-3xl">
           {groomNick ?? "Pria"}
@@ -1016,7 +1099,7 @@ function Footer({
             {groomName ?? ""} {brideName ? `& ${brideName}` : ""}
           </p>
         )}
-      </div>
+      </Reveal>
 
       <div className="mx-auto max-w-xs border-t pt-8 font-mono text-[10px] uppercase tracking-[0.3em] opacity-40" style={{ borderColor: `${ZEN.bg}1A` }}>
         Japanese Zen Wedding • {new Date().getFullYear()}

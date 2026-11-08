@@ -85,6 +85,81 @@ const FGR_STYLES = `
   }
   .fgr-spin-slow { animation: fgrSpin 18s linear infinite; }
   .fgr-sway { animation: fgrSway 4s ease-in-out infinite; }
+  /* Reveal-on-scroll gaya "sulap berkibar": blok miring naklalu lurus, seperti
+     sihir mekar. Kenapa hanya animasikan opacity+transform: aturan thumbnail
+     ?shot=1 (app/preview/[key]/page.tsx) hanya me-reset opacity, transform,
+     dan animation — properti lain bisa membuat konten tertinggal tersembunyi
+     di thumbnail. Kenapa kelas wajib memuat literal "-reveal": agar aturan
+     ?shot=1 itu cocok dan memaksa konten thumbnail selalu terlihat. */
+  .en-reveal:not(.en-anim) {
+    opacity: 0;
+    transform: skewX(-4deg) translateY(28px) scaleX(0.92);
+    transform-origin: 0 100%;
+    transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.22, 1.3, 0.4, 1);
+  }
+  .en-reveal:not(.en-anim).en-visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* en-r = varian miring ke kanan (blok kanan/genap bergantian) */
+  .en-reveal:not(.en-anim).en-r {
+    transform: skewX(4deg) translateY(28px) scaleX(0.92);
+    transform-origin: 100% 100%;
+  }
+  /* Varian en-anim (keyframes) untuk elemen yang sudah punya utility
+     transition Tailwind (kartu glass dengan hover). Kenapa: deklarasi
+     transition kelas reveal akan mengalahkan utility transition Tailwind
+     sehingga hover-nya berhenti mulus; keyframes tidak menyentuh transition. */
+  .en-reveal.en-anim {
+    opacity: 0;
+    transform-origin: 0 100%;
+  }
+  .en-reveal.en-anim.en-r {
+    transform-origin: 100% 100%;
+  }
+  .en-reveal.en-anim.en-visible {
+    animation: enBloomL 0.85s cubic-bezier(0.22, 1.3, 0.4, 1) both;
+  }
+  .en-reveal.en-anim.en-r.en-visible {
+    animation-name: enBloomR;
+  }
+  @keyframes enBloomL {
+    from {
+      opacity: 0;
+      transform: skewX(-4deg) translateY(28px) scaleX(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes enBloomR {
+    from {
+      opacity: 0;
+      transform: skewX(4deg) translateY(28px) scaleX(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  /* Mode embed (thumbnail live): semuanya langsung terlihat supaya tangkapan
+     iframe tidak pernah menangkap konten setengah tampil. */
+  .en-embed .en-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation-name: none !important;
+  }
+  /* Hormati preferensi pengguna yang mengurangi gerak: matikan efek reveal */
+  @media (prefers-reduced-motion: reduce) {
+    .en-reveal {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+      animation-name: none !important;
+    }
+  }
 `;
 
 /* ------------------------------------------------------------------ */
@@ -188,6 +263,54 @@ export default function EnchantedTemplate(props: TemplateProps) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Reveal-on-scroll (pola yang sama dengan FloralTemplate)             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Pantau semua elemen .en-reveal dan tambahkan en-visible saat masuk
+ * viewport. Kenapa tanpa array deps: effect harus dijalankan ulang pada
+ * setiap render supaya node yang dirender kondisional ikut terpantau.
+ * Kenapa ada fallback tanpa IntersectionObserver: browser lama mendapat
+ * fallback fail-open — semua konten langsung terlihat, tidak tersembunyi
+ * selamanya.
+ */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      document
+        .querySelectorAll(".en-reveal:not(.en-visible)")
+        .forEach((el) => el.classList.add("en-visible"));
+      return;
+    }
+    const elements = document.querySelectorAll(".en-reveal:not(.en-visible)");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("en-visible");
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  });
+}
+
+/** Wrapper blok reveal (varian transition) — fungsional setara Floral */
+function Reveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={`en-reveal ${className}`}>{children}</div>;
+}
+
 function EnchantedShell({
   invitationId,
   guestName,
@@ -195,10 +318,15 @@ function EnchantedShell({
   isPublished,
   wishes,
   decorations,
+  embedded,
   gateOpen = true,
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // Reveal HARUS dipanggil sebelum early-return isPublished (aturan hooks),
+  // dan tanpa deps agar konten yang muncul kondisional ikut terpantau.
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -230,7 +358,10 @@ function EnchantedShell({
   });
 
   return (
-    <div className="relative min-h-screen font-sans text-[#3a153d]" style={bgUrl ? undefined : { background: "linear-gradient(135deg, #fff0f5 0%, #fff7ed 20%, #f3e8ff 40%, #e0f2fe 60%, #f0fdf4 80%, #fff0f5 100%)", backgroundAttachment: "fixed" }}>
+    <div
+      className={`relative min-h-screen font-sans text-[#3a153d] ${embedded ? "en-embed" : ""}`}
+      style={bgUrl ? undefined : { background: "linear-gradient(135deg, #fff0f5 0%, #fff7ed 20%, #f3e8ff 40%, #e0f2fe 60%, #f0fdf4 80%, #fff0f5 100%)", backgroundAttachment: "fixed" }}
+    >
       <style>{FGR_STYLES}</style>
 
       {/* Background kustom user/admin sebagai lapisan penuh */}
@@ -348,7 +479,7 @@ function SectionHeading({
   desc?: string;
 }) {
   return (
-    <div className="mb-14 text-center">
+    <div className="en-reveal mb-14 text-center">
       <span
         className="text-4xl text-rose-500"
         style={{ fontFamily: "var(--font-script)" }}
@@ -403,7 +534,7 @@ function Cover({
         </svg>
       </div>
 
-      <div className="fgr-glass relative w-full max-w-2xl rounded-3xl border-2 border-white/90 p-6 shadow-2xl sm:p-12">
+      <div className="fgr-glass en-reveal en-anim relative w-full max-w-2xl rounded-3xl border-2 border-white/90 p-6 shadow-2xl sm:p-12">
         {/* Aksen bunga sudut */}
         <Flower2 className="pointer-events-none absolute -left-5 -top-5 h-16 w-16 animate-bounce text-rose-400" />
         <Sparkles className="fgr-sway pointer-events-none absolute -bottom-5 -right-5 h-16 w-16 text-purple-500" />
@@ -499,7 +630,7 @@ function CountdownSection({
   return (
     <section className="relative z-10 px-4 py-20 text-center">
       <div className="mx-auto max-w-4xl">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/40 bg-orange-200/30 px-4 py-1.5">
+        <div className="en-reveal mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/40 bg-orange-200/30 px-4 py-1.5">
           <Clock className="h-4 w-4 text-orange-500" />
           <span className="text-xs font-bold uppercase tracking-wider text-orange-600">
             Menghitung Hari Bahagia
@@ -514,7 +645,7 @@ function CountdownSection({
           taman bunga abadi.
         </p>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+        <div className="en-reveal grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
           {items.map((item) => (
             <div
               key={item.label}
@@ -533,7 +664,7 @@ function CountdownSection({
         </div>
 
         {eventDate ? (
-          <div className="mt-10">
+          <div className="en-reveal mt-10">
             <a
               href={calUrl}
               target="_blank"
@@ -584,7 +715,7 @@ function Couple({
         </div>          {/* Kutipan — bisa diganti user/admin sesuai kepercayaan,
               atau disembunyikan sepenuhnya */}
           {!quoteHidden && (
-          <div className="fgr-glass mx-auto mt-14 max-w-xl rounded-3xl p-6 text-center">
+          <div className="fgr-glass en-reveal mx-auto mt-14 max-w-xl rounded-3xl p-6 text-center">
             <Heart className="mx-auto mb-3 h-5 w-5 fill-current text-rose-500" />
             {quoteTitle?.trim() ? (
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.25em] text-purple-700">
@@ -626,7 +757,7 @@ function PersonCard({
 }) {
   return (
     <div
-      className={`fgr-glass group relative rounded-3xl border-2 p-8 text-center shadow-xl transition-all duration-500 hover:border-rose-400 ${borderColor}`}
+      className={`fgr-glass en-reveal en-anim group relative rounded-3xl border-2 p-8 text-center shadow-xl transition-all duration-500 hover:border-rose-400 ${role.includes("Wanita") ? "en-r" : ""} ${borderColor}`}
     >
       <div
         className={`relative mx-auto mb-6 h-48 w-48 rounded-full bg-gradient-to-tr p-2 ${ringColor}`}
@@ -708,7 +839,7 @@ function StorySection({
 
         <div className="relative ml-4 space-y-12 border-l-4 border-orange-300/60 md:ml-24">
           {story.map((item, index) => (
-            <div key={item.id} className="relative pl-8">
+            <div key={item.id} className={`en-reveal relative pl-8 ${index % 2 === 1 ? "en-r" : ""}`}>
               <div
                 className={`absolute -left-[13px] top-0 h-6 w-6 rounded-full border-4 border-white shadow-md ${DOTS[index % DOTS.length]}`}
               />
@@ -796,7 +927,7 @@ function EventsSection({
               .map((e) => (
                 <div
                   key={e.id}
-                  className="fgr-glass rounded-3xl p-6 text-left shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="fgr-glass en-reveal en-anim rounded-3xl p-6 text-left shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
                   <span className="inline-block rounded-full bg-gradient-to-r from-rose-500 to-purple-600 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
                     {formatDate(e.date)}
@@ -861,7 +992,7 @@ function EventCard({
 }) {
   return (
     <div
-      className={`fgr-glass relative overflow-hidden rounded-3xl border-2 p-8 text-center shadow-xl ${borderColor}`}
+      className={`fgr-glass en-reveal en-anim relative overflow-hidden rounded-3xl border-2 p-8 text-center shadow-xl ${borderColor}`}
     >
       <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${iconClass}`}>
         {icon}
@@ -932,7 +1063,7 @@ function GallerySection({
           {gallery.map((item) => (
             <div
               key={item.id}
-              className="group fgr-glass relative overflow-hidden rounded-3xl p-2 shadow-lg transition-all hover:shadow-2xl"
+              className="group fgr-glass en-reveal en-anim relative overflow-hidden rounded-3xl p-2 shadow-lg transition-all hover:shadow-2xl"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -974,7 +1105,7 @@ function GiftsSection({
           {gifts.map((g, i) => (
             <div
               key={g.id}
-              className={`fgr-glass relative overflow-hidden rounded-3xl border-2 p-8 text-left shadow-xl ${
+              className={`fgr-glass en-reveal en-anim relative overflow-hidden rounded-3xl border-2 p-8 text-left shadow-xl ${
                 i % 2 === 0 ? "border-rose-400/40" : "border-purple-400/40"
               }`}
             >
@@ -1016,7 +1147,7 @@ function RsvpSection({
 }) {
   return (
     <section className="relative z-10 px-4 py-20">
-      <div className="fgr-glass mx-auto max-w-2xl rounded-3xl border-2 border-white p-8 shadow-2xl md:p-12">
+      <div className="fgr-glass en-reveal en-anim mx-auto max-w-2xl rounded-3xl border-2 border-white p-8 shadow-2xl md:p-12">
         <div className="mb-8 text-center">
           <span
             className="text-4xl text-rose-500"
@@ -1055,7 +1186,7 @@ function Wishes({
   return (
     <section className="relative z-10 px-4 py-20">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-12 text-center">
+        <div className="en-reveal mb-12 text-center">
           <span
             className="text-4xl text-purple-600"
             style={{ fontFamily: "var(--font-script)" }}
@@ -1071,7 +1202,7 @@ function Wishes({
         </div>
 
         {/* Feed ucapan (tersimpan DB, ala wishes feed referensi) */}
-        <div className="mb-12 max-h-[500px] space-y-4 overflow-y-auto pr-2">
+        <div className="en-reveal mb-12 max-h-[500px] space-y-4 overflow-y-auto pr-2">
           <WishList
             wishes={wishes ?? []}
             cardClass="fgr-glass rounded-2xl shadow-md"
@@ -1081,7 +1212,7 @@ function Wishes({
           />
         </div>
 
-        <div className="fgr-glass rounded-3xl border-2 border-white p-6 shadow-xl md:p-8">
+        <div className="fgr-glass en-reveal en-anim rounded-3xl border-2 border-white p-6 shadow-xl md:p-8">
           <WishForm
             invitationId={invitationId}
             accentClass="bg-gradient-to-r from-rose-500 via-orange-500 to-purple-600 shadow-lg shadow-rose-500/30 hover:shadow-xl"
@@ -1099,7 +1230,7 @@ function Wishes({
 function MessageSection({ text }: { text: string }) {
   return (
     <section className="relative z-10 px-4 py-20 text-center">
-      <div className="fgr-glass mx-auto max-w-lg rounded-3xl p-8">
+      <div className="fgr-glass en-reveal mx-auto max-w-lg rounded-3xl p-8">
         <Sparkles className="mx-auto mb-4 h-6 w-6 text-orange-400" />
         <p className="whitespace-pre-line font-[family-name:var(--font-serif-elegant)] text-lg italic leading-relaxed text-[#3c096c]">
           {text}
@@ -1120,7 +1251,7 @@ function Footer({
   brideName?: string;
 }) {
   return (
-    <footer className="relative z-10 border-t border-orange-300/30 px-4 py-20 text-center">
+    <footer className="en-reveal relative z-10 border-t border-orange-300/30 px-4 py-20 text-center">
       <div className="mx-auto max-w-2xl space-y-6">
         <Flower2 className="fgr-spin-slow mx-auto h-12 w-12 text-rose-500" />
 

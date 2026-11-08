@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Camera,
   Calendar,
@@ -103,10 +103,119 @@ const SB_STYLES = `
   .sb-hand {
     font-family: "Caveat", "Comic Sans MS", cursive;
   }
+  /* Reveal-on-scroll gaya "stiker menempel": elemen muncul dengan pop dari
+     besar ke ukuran, khas sticker scrapbook. Kenapa hanya animasikan
+     opacity+transform: aturan thumbnail ?shot=1 (app/preview/[key]/page.tsx)
+     hanya me-reset opacity, transform, dan animation — properti lain bisa
+     membuat konten tertinggal tersembunyi di thumbnail. Kenapa kelas wajib
+     memuat literal "-reveal": supaya aturan ?shot=1 itu cocok dan memaksa
+     konten utk thumbnail selalu terlihat. */
+  .sk-reveal:not(.sk-anim) {
+    opacity: 0;
+    transform: rotate(-8deg) translateY(22px) scale(1.35);
+    transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.3, 1.7, 0.5, 1);
+  }
+  .sk-reveal:not(.sk-anim).sk-visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* Varian sk-anim (keyframes) untuk elemen yang sudah punya utility
+     transition Tailwind (polaroid miring, hover). Kenapa: deklarasi transition
+     di kelas reveal akan mengalahkan utility transition Tailwind sehingga
+     hover-nya berhenti mulus; keyframes tidak menyentuh transition sama sekali.
+     Fade-only (tanpa transform) supaya rotasi statis polaroid (-rotate-6 /
+     rotate-3) TIDAK terhapus oleh keyframe — kalau ikut dianimasikan, nilai
+     akhir transform:none membuat polaroid kehilangan kemiringannya. */
+  .sk-reveal.sk-anim {
+    opacity: 0;
+  }
+  .sk-reveal.sk-anim.sk-visible {
+    animation: skFadeIn 0.5s ease both;
+  }
+  @keyframes skFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  /* Mode embed (thumbnail live): semuanya langsung terlihat supaya tangkapan
+     iframe tidak pernah menangkap konten setengah tampil. Varian sk-anim
+     dikecualikan dari reset transform agar kemiringan polaroid tetap utuh. */
+  .sk-embed .sk-reveal:not(.sk-anim) {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation-name: none !important;
+  }
+  .sk-embed .sk-reveal.sk-anim {
+    opacity: 1 !important;
+    animation-name: none !important;
+  }
+  /* Hormati preferensi pengguna yang mengurangi gerak: matikan efek reveal
+     tanpa meratakan kemiringan polaroid statis. */
+  @media (prefers-reduced-motion: reduce) {
+    .sk-reveal:not(.sk-anim) {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+      animation-name: none !important;
+    }
+    .sk-reveal.sk-anim {
+      opacity: 1 !important;
+      animation-name: none !important;
+    }
+  }
 `;
 
 /* Rotasi polaroid deterministik per index (tanpa hydration mismatch) */
 const ROTATIONS = ["-rotate-2", "rotate-3", "-rotate-3", "rotate-2", "-rotate-1"];
+
+/* ------------------------------------------------------------------ */
+/* Reveal-on-scroll (pola yang sama dengan FloralTemplate)             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Pantau semua elemen .sk-reveal dan tambahkan sk-visible saat masuk
+ * viewport. Kenapa tanpa array deps: effect harus dijalankan ulang pada
+ * setiap render supaya node yang dirender kondisional (mis. konten utama
+ * yang baru muncul setelah gerbang dibuka) ikut terpantau. Kenapa ada
+ * fallback tanpa IntersectionObserver: browser lama akan langsung
+ * memperlihatkan semua konten (fail-open) daripada konten tertutup selamanya.
+ */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      document
+        .querySelectorAll(".sk-reveal:not(.sk-visible)")
+        .forEach((el) => el.classList.add("sk-visible"));
+      return;
+    }
+    const elements = document.querySelectorAll(".sk-reveal:not(.sk-visible)");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("sk-visible");
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  });
+}
+
+/** Wrapper blok reveal (varian transition) — cukup dipakai untuk blok statis */
+function Reveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={`sk-reveal ${className}`}>{children}</div>;
+}
+
 
 export default function ScrapbookTemplate(props: TemplateProps) {
   const isEmbed = !!props.embedded;
@@ -138,6 +247,7 @@ function ScrapbookShell({
   invitationId,
   wishes = [],
   decorations = [],
+  embedded,
   gateOpen,
   onGateOpen,
   music,
@@ -146,6 +256,10 @@ function ScrapbookShell({
   onGateOpen?: () => void;
   music: MusicController;
 }) {
+  // Reveal-on-scroll; tanpa early-return di Shell ini, tapi tetap di paling
+  // atas agar aman bila nanti ada return kondisional.
+  useReveal();
+
   const groom = data.groom;
   const bride = data.bride;
   const gallery = data.gallery ?? [];
@@ -165,7 +279,9 @@ function ScrapbookShell({
 
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden selection:text-white"
+      className={`relative min-h-screen overflow-x-hidden selection:text-white ${
+        embedded ? "sk-embed" : ""
+      }`}
       style={{
         background: bgUrl ? undefined : SB.cream,
         backgroundColor: SB.cream,
@@ -304,7 +420,9 @@ function HeroSection({
   const gallerySecond = secondPhoto;
   return (
     <section className="relative z-10 pb-12 pt-6 text-center">
-      <div className="relative inline-block">
+      {/* Konten putar sudah punya hiasan miring sendiri — wrapper ini fade/pop.
+          Judul hero di-reveal karena template ini tidak punya animasi masuk bawaan. */}
+      <Reveal className="relative inline-block">
         <span
           className="sb-hand -rotate-3 block text-3xl font-bold"
           style={{ color: SB.terracotta }}
@@ -327,13 +445,13 @@ function HeroSection({
         >
           {[formatDate(eventDate), place.split(" • ")[1]].filter(Boolean).join(" • ")}
         </p>
-      </div>
+      </Reveal>
 
       {/* Tumpukan foto polaroid berlapis */}
       <div className="relative mx-auto mt-10 max-w-md" style={{ height: 400 }}>
         {gallerySecond ? (
           <div
-            className="sb-polaroid absolute left-0 top-4 z-0 w-56 -rotate-6 rounded-sm border p-3 pb-8 transition-transform duration-500 hover:-rotate-3 sm:w-64"
+            className="sk-reveal sk-anim sb-polaroid absolute left-0 top-4 z-0 w-56 -rotate-6 rounded-sm border p-3 pb-8 transition-transform duration-500 hover:-rotate-3 sm:w-64"
             style={{ background: "#fff", borderColor: "rgba(62,47,40,0.1)" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -349,7 +467,7 @@ function HeroSection({
         ) : null}
 
         <div
-          className="sb-polaroid absolute right-0 top-0 z-10 w-56 rotate-3 rounded-sm border p-3 pb-10 transition-transform duration-500 hover:rotate-1 sm:w-64"
+          className="sk-reveal sk-anim sb-polaroid absolute right-0 top-0 z-10 w-56 rotate-3 rounded-sm border p-3 pb-10 transition-transform duration-500 hover:rotate-1 sm:w-64"
           style={{ background: "#fff", borderColor: "rgba(62,47,40,0.1)" }}
         >
           <span className="sb-tape-top" aria-hidden />
@@ -384,7 +502,7 @@ function HeroSection({
 
       {/* Kutipan */}
       <div
-        className="sb-polaroid relative mx-auto mt-10 max-w-lg rounded-lg border p-6 shadow-sm"
+        className="sk-reveal sb-polaroid relative mx-auto mt-10 max-w-lg rounded-lg border p-6 shadow-sm"
         style={{ background: SB.paper, borderColor: "rgba(62,47,40,0.1)" }}
       >
         <span className="sb-tape-green" aria-hidden />
@@ -413,7 +531,7 @@ function HeroSection({
 function CountdownSection({ eventDate }: { eventDate: string }) {
   return (
     <section
-      className="relative z-10 my-6 rounded-2xl border p-6 text-center"
+      className="sk-reveal relative z-10 my-6 rounded-2xl border p-6 text-center"
       style={{
         background: "rgba(242, 236, 225, 0.6)",
         borderColor: "rgba(62,47,40,0.1)",
@@ -463,7 +581,7 @@ function Polaroid({
 }) {
   return (
     <div
-      className={`sb-polaroid relative mx-auto w-full max-w-xs rounded-sm border p-3 pb-6 transition-transform duration-300 hover:scale-105 ${rotate}`}
+      className={`sk-reveal sk-anim sb-polaroid relative mx-auto w-full max-w-xs rounded-sm border p-3 pb-6 transition-transform duration-300 hover:scale-105 ${rotate}`}
       style={{ background: "#fff", borderColor: "rgba(62,47,40,0.1)" }}
     >
       {src ? (
@@ -497,7 +615,7 @@ function CoupleSection({
 }) {
   return (
     <section className="relative z-10 py-12 text-center">
-      <div className="mb-10 text-center">
+      <Reveal className="mb-10 text-center">
         <span className="sb-hand text-3xl" style={{ color: SB.terracotta }}>
           Mempelai
         </span>
@@ -511,7 +629,7 @@ function CoupleSection({
           className="mx-auto mt-2 h-0.5 w-16 rounded-full"
           style={{ background: "rgba(181,83,60,0.3)" }}
         />
-      </div>
+      </Reveal>
 
       <div className="space-y-10">
         {groom?.name ? (
@@ -523,7 +641,7 @@ function CoupleSection({
               tall
             />
             <div
-              className="relative mx-auto mt-6 max-w-sm rounded-xl border p-5 shadow-sm"
+              className="sk-reveal relative mx-auto mt-6 max-w-sm rounded-xl border p-5 shadow-sm"
               style={{ background: SB.paper, borderColor: "rgba(62,47,40,0.1)" }}
             >
               <p
@@ -571,7 +689,7 @@ function CoupleSection({
               tall
             />
             <div
-              className="relative mx-auto mt-6 max-w-sm rounded-xl border p-5 shadow-sm"
+              className="sk-reveal relative mx-auto mt-6 max-w-sm rounded-xl border p-5 shadow-sm"
               style={{ background: SB.paper, borderColor: "rgba(62,47,40,0.1)" }}
             >
               <p
@@ -636,8 +754,8 @@ function EventsSection({
   const additional = agenda.additional;
 
   return (
-    <section className="relative z-10 my-6 py-12">
-      <div className="mb-10 text-center">
+    <section className="sk-reveal relative z-10 my-6 py-12">
+      <Reveal className="mb-10 text-center">
         <span className="sb-hand text-3xl" style={{ color: SB.terracotta }}>
           Save The Date
         </span>
@@ -650,12 +768,12 @@ function EventsSection({
         <p className="mt-1 text-xs" style={{ color: SB.brownLight }}>
           Kehadiran Anda adalah keberkahan bagi kami
         </p>
-      </div>
+      </Reveal>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Kartu Acara Utama */}
         <div
-          className="sb-polaroid relative overflow-hidden rounded-xl border p-6 transition-colors hover:border-[rgba(181,83,60,0.4)]"
+          className="sk-reveal sk-anim sb-polaroid relative overflow-hidden rounded-xl border p-6 transition-colors hover:border-[rgba(181,83,60,0.4)]"
           style={{ background: SB.paper, borderColor: "rgba(62,47,40,0.15)" }}
         >
           <span className="sb-tape-top" aria-hidden />
@@ -694,7 +812,7 @@ function EventsSection({
 
         {/* Kartu Resepsi = acara tambahan pertama, atau kartu statis bila kosong */}
         <div
-          className="sb-polaroid relative overflow-hidden rounded-xl border p-6 transition-colors hover:border-[rgba(181,83,60,0.4)]"
+          className="sk-reveal sk-anim sb-polaroid relative overflow-hidden rounded-xl border p-6 transition-colors hover:border-[rgba(181,83,60,0.4)]"
           style={{ background: SB.paper, borderColor: "rgba(62,47,40,0.15)" }}
         >
           <span className="sb-tape-green" aria-hidden />
@@ -743,7 +861,7 @@ function EventsSection({
           {additional.slice(1).map((ev: EventItem) => (
             <div
               key={ev.id}
-              className="sb-polaroid relative rounded-xl border p-5"
+              className="sk-reveal sb-polaroid relative rounded-xl border p-5"
               style={{ background: SB.paper, borderColor: "rgba(62,47,40,0.15)" }}
             >
               <h3
@@ -800,8 +918,8 @@ function GallerySection({ gallery }: { gallery: NonNullable<TemplateProps["data"
     setActive((p) => (p === null ? null : p < gallery.length - 1 ? p + 1 : 0));
 
   return (
-    <section className="relative z-10 py-12">
-      <div className="mb-8 text-center">
+    <section className="sk-reveal relative z-10 py-12">
+      <Reveal className="mb-8 text-center">
         <span className="sb-hand text-3xl" style={{ color: SB.terracotta }}>
           Captured Moments
         </span>
@@ -814,14 +932,14 @@ function GallerySection({ gallery }: { gallery: NonNullable<TemplateProps["data"
         <p className="mt-1 text-xs" style={{ color: SB.brownLight }}>
           Klik pada foto untuk melihat ukuran penuh
         </p>
-      </div>
+      </Reveal>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
         {gallery.slice(0, 9).map((g, i) => (
           <div
             key={g.id}
             onClick={() => setActive(i)}
-            className={`sb-polaroid relative cursor-pointer rounded-sm border p-2.5 pb-6 transition-all duration-300 hover:z-20 hover:scale-105 ${
+            className={`sk-reveal sk-anim sb-polaroid relative cursor-pointer rounded-sm border p-2.5 pb-6 transition-all duration-300 hover:z-20 hover:scale-105 ${
               ROTATIONS[i % ROTATIONS.length]
             }`}
             style={{ background: "#fff", borderColor: "rgba(62,47,40,0.1)" }}
@@ -921,7 +1039,7 @@ function RsvpSection({
   return (
     <section className="relative z-10 my-6 py-12">
       <div
-        className="sb-polaroid relative rounded-2xl border p-6"
+        className="sk-reveal sb-polaroid relative rounded-2xl border p-6"
         style={{ background: SB.paper, borderColor: "rgba(62,47,40,0.15)" }}
       >
         <span className="sb-tape-top" aria-hidden />
@@ -985,7 +1103,7 @@ function GiftSection({ gifts }: { gifts: NonNullable<TemplateProps["data"]["gift
   return (
     <section className="relative z-10 my-6 py-10">
       <div
-        className="relative rounded-2xl border p-6 text-center"
+        className="sk-reveal relative rounded-2xl border p-6 text-center"
         style={{
           background: "rgba(242, 236, 225, 0.8)",
           borderColor: "rgba(62,47,40,0.15)",
@@ -1061,7 +1179,7 @@ function ClosingSection({
   return (
     <section className="relative z-10 py-12 text-center">
       <div
-        className="sb-polaroid relative mx-auto max-w-md rotate-1 rounded-sm border p-6 pb-10"
+        className="sk-reveal sk-anim sb-polaroid relative mx-auto max-w-md rotate-1 rounded-sm border p-6 pb-10"
         style={{ background: "#fff", borderColor: "rgba(62,47,40,0.1)" }}
       >
         <span className="sb-tape-top" aria-hidden />

@@ -34,6 +34,9 @@ import { getBackgroundUrl, getGatePhotoUrl, resolveGatePhoto } from "@/lib/decor
  * - Background gerbang memakai FOTO dengan opacity ±25% di atas maroon.
  * - Bunga sudut kiri/kanan atas-bawah bergoyang LAMBAT seperti tertiup
  *   angin (keyframes rwSwayT / rwSwayB).
+ * - SETIAP bagian punya animasi saat discroll (useReveal + .rw-reveal):
+ *   teks naik, foto zoom-in, timeline kisah menyelinap, bunga sudut &
+ *   bed bunga fade-in — supaya undangan terasa hidup.
  * - Galeri foto: slider otomatis (crossfade slide tiap ±4 detik).
  * - Semua fitur Meduta utuh: TemplateProps, RSVP & ucapan server action,
  *   musik latar, kado salin, countdown, acara splitAgenda + Map &
@@ -105,6 +108,9 @@ function RubyShell({
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController; closing?: boolean }) {
+  // Reveal saat scroll untuk seluruh konten template.
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -233,6 +239,35 @@ function RubyShell({
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Reveal-on-scroll: .rw-reveal dikasih .rw-on saat elemen masuk layar     */
+/* ------------------------------------------------------------------ */
+
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll(".rw-reveal:not(.rw-on)");
+    if (els.length === 0) return;
+    // Fallback browser lama tanpa IntersectionObserver: tampilkan langsung.
+    if (typeof IntersectionObserver === "undefined") {
+      els.forEach((el) => el.classList.add("rw-on"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("rw-on");
+            io.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }); // sengaja tanpa deps: konten kondisional (modal, dsb.) ikut terpantau
+}
+
 function DraftNotice() {
   return (
     <div
@@ -334,36 +369,6 @@ function Bloom({ x, y, tone = "#FBF8F4" }: { x: number; y: number; tone?: string
   );
 }
 
-/* Petal mawar magenta/pink — bed bunga penutup gerbang */
-function PinkBloom({
-  x,
-  y,
-  s = 1,
-  tone = "#D14B84",
-}: {
-  x: number;
-  y: number;
-  s?: number;
-  tone?: string;
-}) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <g fill={tone} stroke="#A82F63" strokeWidth="1" opacity=".97">
-        {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
-          <ellipse key={a} cx="0" cy="-30" rx="22" ry="32" transform={`rotate(${a})`} />
-        ))}
-      </g>
-      <g fill="#E06CA2" stroke="#C64F8D" strokeWidth=".7">
-        {[30, 102, 174, 246, 318].map((a) => (
-          <ellipse key={a} cx="0" cy="-17" rx="14" ry="20" transform={`rotate(${a})`} />
-        ))}
-      </g>
-      <circle r="9" fill="#B23A6F" />
-      <path d="M-5 0C-2 -5 4 -5 5 0C4 4 0 5 -2 3C-3 2 -1 1 0 1" fill="none" stroke="#8E2453" strokeWidth="1.4" />
-    </g>
-  );
-}
-
 /* Daun sage — path daun dengan tulang tengah */
 function Leaf({
   x,
@@ -386,20 +391,6 @@ function Leaf({
   );
 }
 
-/* Tangkai eucalyptus bulat kecil */
-function Eucalyptus({ x, y, r, s = 1 }: { x: number; y: number; r: number; s?: number }) {
-  return (
-    <g transform={`translate(${x} ${y}) rotate(${r}) scale(${s})`}>
-      <path d="M0 0C10 -26 16 -56 14 -92" fill="none" stroke="#6E806A" strokeWidth="2" />
-      <circle cx="12" cy="-16" r="7" fill="#9DB09A" />
-      <circle cx="16" cy="-36" r="6.5" fill="#8CA089" />
-      <circle cx="12" cy="-56" r="7" fill="#9DB09A" />
-      <circle cx="15" cy="-76" r="5.5" fill="#8CA089" />
-      <circle cx="14" cy="-92" r="5" fill="#A9BB9F" />
-    </g>
-  );
-}
-
 /* Mawar kuncup kecil untuk aksen */
 function Bud({ x, y, r, tone = "#F3EBDF" }: { x: number; y: number; r: number; tone?: string }) {
   return (
@@ -410,98 +401,14 @@ function Bud({ x, y, r, tone = "#F3EBDF" }: { x: number; y: number; r: number; t
   );
 }
 
-type CornerSym = "cluster" | "cluster-lg" | "bed";
+type CornerSym = "cluster" | "cluster-lg";
 
 const CORNER_ROSE_SIZE = "w-[35vw] min-w-[120px] max-w-[180px]";
 const CORNER_ROSE_LARGE_SIZE = "w-[42vw] min-w-[150px] max-w-[220px]";
 
 /**
- * CornerRose — cluster mawar putih sudut (vaivoBox scaled hingga w) sesuai
- * desain. Pembungkus animasi sway (tertiup angin) dipegang parent; komponen
- * ini hanya memegang geometri.
- */
-function RoseSVG({ sym }: { sym: CornerSym }) {
-  if (sym === "bed") {
-    return (
-      <svg viewBox="0 0 1080 380" aria-hidden="true" focusable="false" className="h-full w-full">
-        <defs>
-          <linearGradient id="rwGoldBar" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#8A5A12" />
-            <stop offset=".45" stopColor="#F3D476" />
-            <stop offset="1" stopColor="#C9971F" />
-          </linearGradient>
-        </defs>
-        {/* tangkai lebar menyapu */}
-        <g stroke="url(#rwGoldBar)" strokeWidth="3" fill="none" opacity=".55">
-          <path d="M60 380 C 220 320 300 240 380 150" />
-          <path d="M1020 380 C 880 330 800 260 690 160" />
-        </g>
-        <g fill="none" stroke="#5F6F59" strokeWidth="3" opacity=".8">
-          <path d="M540 380C500 320 460 260 430 200" />
-          <path d="M540 380C580 316 630 258 660 198" />
-          <path d="M300 380C340 330 400 292 456 268" />
-          <path d="M780 380C760 330 700 292 640 268" />
-        </g>
-        {/* daun & eucalyptus kiri */}
-        <Leaf x={210} y={330} r={-160} s={1.4} c="#F6F3EC" />
-        <Leaf x={150} y={360} r={-140} s={1.6} c="#EDF0E7" />
-        <Eucalyptus x={300} y={380} r={-18} s={1.2} />
-        <Leaf x={390} y={300} r={-120} s={1.1} c="#AFC2A6" />
-        {/* kanan (cermin) */}
-        <Leaf x={870} y={330} r={160} s={1.4} c="#F6F3EC" />
-        <Leaf x={930} y={360} r={140} s={1.6} c="#EDF0E7" />
-        <Eucalyptus x={780} y={380} r={198} s={1.2} />
-        <Leaf x={690} y={300} r={120} s={1.1} c="#AFC2A6" />
-        {/* kuncup merah kecil menabur */}
-        <Bud x={120} y={340} r={-30} tone="#C9558C" />
-        <Bud x={940} y={340} r={30} tone="#C9558C" />
-        <Bud x={250} y={290} r={-70} tone="#E8A3C4" />
-        <Bud x={840} y={290} r={70} tone="#E8A3C4" />
-        {/* bloom utama */}
-        <PinkBloom x={280} y={230} s={1.25} />
-        <PinkBloom x={800} y={230} s={1.25} />
-        <PinkBloom x={540} y={280} s={1.5} />
-        <PinkBloom x={440} y={330} s={.9} tone="#E8A3C4" />
-        <PinkBloom x={640} y={330} s={.9} tone="#EA93B8" />
-        {/* daun putih di tengah menutup batas */}
-        <Leaf x={500} y={350} r={-110} s={1.5} c="#F8F6F0" />
-        <Leaf x={580} y={350} r={110} s={1.5} c="#F8F6F0" />
-      </svg>
-    );
-  }
-
-  const isBig = sym === "cluster-lg";
-  return (
-    <svg viewBox={isBig ? "0 0 380 340" : "0 0 260 240"} aria-hidden="true" focusable="false" className="h-full w-full">
-      <defs>
-        <linearGradient id="rwGoldArc" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#8A5A12" />
-          <stop offset=".55" stopColor="#F3D476" />
-          <stop offset="1" stopColor="#C9971F" />
-        </linearGradient>
-      </defs>
-      {/* busur emas melengkung di belakang bunga */}
-      <g transform={isBig ? undefined : "scale(.85)"}>
-        <path d="M-30 210C70 240 150 170 190 60C220 -20 320 -30 380 20" fill="none" stroke="url(#rwGoldArc)" strokeWidth="4.5" opacity=".85" />
-        <path d="M40 250C110 250 180 200 200 110" fill="none" stroke="url(#rwGoldArc)" strokeWidth="2" opacity=".45" />
-        {/* daun sage + eucalyptus */}
-        <Leaf x={30} y={150} r={-70} s={1.5} />
-        <Leaf x={260} y={40} r={28} s={1.5} />
-        <Leaf x={220} y={120} r={90} s={1.3} c="#A9BB9C" />
-        <Eucalyptus x={120} y={160} r={-30} s={1.3} />
-        <Leaf x={60} y={210} r={-130} s={1.2} c="#EDF0E7" />
-        <Bud x={230} y={230} r={40} />
-        <Bud x={70} y={110} r={-40} tone="#E8A3C4" />
-        {/* bloom utama + sekunder */}
-        <Bloom x={160} y={80} />
-        <Bloom x={280} y={170} tone="#F6EFE7" />
-      </g>
-    </svg>
-  );
-}
-
-/**
- * CornerRose — pembungkus posisi + animasi sway angin lambat.
+ * CornerRose — pembungkus posisi + animasi sway angin lambat memakai
+ * roset asli desain (img). Geometri SVG lama dihapus; aset webp dipakai.
  * anchor top: transform-origin atas; anchor bottom: origin bawah.
  */
 function CornerRose({
@@ -525,7 +432,7 @@ function CornerRose({
       }${className}`}
     >
       <div
-        className="rw-sway h-full w-full"
+        className="rw-sway rw-reveal rv-f h-full w-full"
         style={{
           transformOrigin: top ? "50% 0%" : "50% 100%",
           animationDuration: `${duration}s`,
@@ -533,9 +440,17 @@ function CornerRose({
           animationName: top ? "rwSwayT" : "rwSwayB",
         }}
       >
-        {/* Roset putih ASLI desain (6.png) — bukan ilustrasi buatan */}
+        {/* Roset putih ASLI desain (6.png) — bukan ilustrasi buatan.
+            Drop-shadow lembut agar roset tidak tampak "mengapung datar"
+            di atas latar maroon. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={ASSET_ROSE} alt="" className="h-auto w-full" draggable={false} />
+        <img
+          src={ASSET_ROSE}
+          alt=""
+          className="h-auto w-full"
+          draggable={false}
+          style={{ filter: "drop-shadow(0 6px 16px rgba(20,1,8,.45))" }}
+        />
       </div>
     </div>
   );
@@ -546,6 +461,29 @@ const SWAY_KEYFRAMES = `
 @keyframes rwSwayT{0%{transform:rotate(-2.2deg) translateX(-4px)}100%{transform:rotate(2.6deg) translateX(4px)}}
 @keyframes rwSwayB{0%{transform:rotate(2.2deg) translateX(-4px)}100%{transform:rotate(-2.6deg) translateX(4px)}}
 .rw-sway{animation:rwSwayT 8.5s ease-in-out infinite alternate}
+/* Reveal saat scroll — IntersectionObserver menambah .rw-on.
+   Arah diatur lewat variabel CSS agar tidak bentrok utilitas transform
+   lain (mirroring/flip) yang mungkin menempel di elemen yang sama. */
+.rw-reveal{
+  opacity:0;
+  transform:translate3d(var(--rvx,0px),var(--rvy,30px),0) scale(var(--rvs,1));
+  transition:opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1);
+  will-change:opacity,transform;
+}
+.rw-reveal.rw-on{opacity:1;transform:none}
+/* varian arah: u=naik, l=dari kiri, r=dari kanan, z=zoom, f=fade saja */
+.rv-l{--rvx:-38px;--rvy:0px}
+.rv-r{--rvx:38px;--rvy:0px}
+.rv-z{--rvy:18px;--rvs:.88}
+/* khusus elemen yang sudah dianimasikan transform (sway bunga): opacity saja */
+.rv-f{--rvx:0px;--rvy:0px;--rvs:1}
+/* denyut napas lembut untuk artwork (heart, dsb.) */
+@keyframes rwFloatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.rw-float{animation:rwFloatY 6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){
+  .rw-reveal{opacity:1 !important;transform:none !important;transition:none !important}
+  .rw-float{animation:none}
+}
 `;
 
 /**
@@ -658,13 +596,21 @@ function Initial({
       className={`relative inline-block leading-none ${className}`}
       style={{ fontFamily: SERIF, fontWeight: 600, color }}
     >
-      {/* sulur daun kecil miring */}
+      {/* sulur daun kecil miring — warna emas eksplisit (svg terisolasi,
+          tidak bisa mereferensi gradient defs milik svg lain) */}
       <svg
         viewBox="0 0 60 60"
         className="absolute -left-2 top-1 h-9 w-9 -rotate-45 opacity-80"
         aria-hidden="true"
       >
-        <path d="M2 58C18 44 36 30 56 4" fill="none" stroke="url(#rwGoldArc)" strokeWidth="2.4" opacity=".8" />
+        <defs>
+          <linearGradient id="rwVineGold" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stopColor="#8A5A12" />
+            <stop offset=".55" stopColor="#F3D476" />
+            <stop offset="1" stopColor="#C9971F" />
+          </linearGradient>
+        </defs>
+        <path d="M2 58C18 44 36 30 56 4" fill="none" stroke="url(#rwVineGold)" strokeWidth="2.4" opacity=".8" />
         <Leaf x={22} y={34} r={-120} s={.42} c="#9DB09A" />
         <Leaf x={40} y={16} r={-80} s={.36} c="#A9BB9C" />
       </svg>
@@ -748,7 +694,7 @@ function RubyGate({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={ASSET_ARCH} alt="" className="w-full" draggable={false} />
         <div
-          className="rw-sway absolute bottom-0 left-0 w-full"
+          className="rw-sway rw-reveal rv-f absolute bottom-0 left-0 w-full"
           style={{ transformOrigin: "50% 100%", animationName: "rwSwayB", animationDuration: "10s" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -805,8 +751,11 @@ function RubyGate({
             className="absolute -top-[24%] left-0 text-[clamp(1.9rem,8vw,3rem)]"
             color={RW.cream}
           />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={ASSET_HEART} alt="" className="w-[60%]" draggable={false} />
+          {/* heart dibiarkan berdenyut pelan di antara inisial yang tetap */}
+          <div className="rw-float w-[60%]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={ASSET_HEART} alt="" className="h-auto w-full" draggable={false} />
+          </div>
           <Initial
             letter={brideNick.charAt(0)}
             className="absolute bottom-[-4%] right-0 text-[clamp(1.9rem,8vw,3rem)]"
@@ -834,7 +783,7 @@ function RubyGate({
         <button
           type="button"
           onClick={onOpen}
-          className="animate-fade-up-delay-3 mt-auto rounded-full px-12 py-3.5 text-[clamp(1.05rem,6vw,1.65rem)] font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_-12px_rgba(243,212,118,.5)] active:scale-95"
+          className="animate-fade-up-delay-3 mt-auto rounded-full px-3 py-1.5 text-[clamp(1.05rem,6vw,1.65rem)] font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_-12px_rgba(243,212,118,.5)] active:scale-95"
           style={{
             backgroundColor: "rgba(236,236,214,.97)",
             color: RW.maroonText,
@@ -910,7 +859,7 @@ function Hero({
       <CornerRose
         sym="cluster"
         top
-        className={`-left-7 -top-4 ${CORNER_ROSE_SIZE} sm:-left-9`}
+        className={`-left-7 top-0 ${CORNER_ROSE_SIZE} sm:-left-9`}
         duration={9.8}
         delay={-2}
       />
@@ -918,14 +867,14 @@ function Hero({
         sym="cluster"
         top
         mirrored
-        className={`-right-7 -top-4 ${CORNER_ROSE_SIZE} sm:-right-9`}
+        className={`-right-7 top-0 ${CORNER_ROSE_SIZE} sm:-right-9`}
         duration={8.2}
         delay={-1.1}
       />
       <CornerRose
         sym="cluster"
         top={false}
-        className={`-bottom-5 -left-6 ${CORNER_ROSE_SIZE}`}
+        className={`-left-6 bottom-0 ${CORNER_ROSE_SIZE}`}
         duration={11}
         delay={-4}
       />
@@ -933,7 +882,7 @@ function Hero({
         sym="cluster"
         top={false}
         mirrored
-        className={`-bottom-5 -right-6 ${CORNER_ROSE_SIZE}`}
+        className={`-right-6 bottom-0 ${CORNER_ROSE_SIZE}`}
         duration={9.4}
         delay={-6}
       />
@@ -945,9 +894,11 @@ function Hero({
         >
           The Wedding Of
         </p>
-        {/* heart kecil di antara nama */}
+        {/* heart kecil di antara nama — berdenyut pelan */}
         <div className="animate-fade-up-delay-1 mb-1 h-20 w-[104px] sm:h-24 sm:w-[124px]">
-          <HeartRings />
+          <div className="rw-float h-full w-full">
+            <HeartRings />
+          </div>
         </div>
         <div className="animate-fade-up-delay-1">
           <NamesTitle brideNick={brideNick} groomNick={groomNick} size="large" />
@@ -975,24 +926,26 @@ function Hero({
 
 function Quote({ title, text, source }: { title?: string; text: string; source?: string }) {
   return (
-    <section className="relative overflow-hidden py-12 md:py-16">
-      <CornerRose sym="cluster" top className={`-left-10 -top-6 ${CORNER_ROSE_SIZE} opacity-90`} duration={9} delay={-3} />
-      <CornerRose sym="cluster" top mirrored className={`-right-10 -top-6 ${CORNER_ROSE_SIZE} opacity-90`} duration={10} delay={-5} />
+    <section className="relative overflow-x-clip py-12 md:py-16">
+      <CornerRose sym="cluster" top className={`top-0 -left-10 ${CORNER_ROSE_SIZE} opacity-90`} duration={9} delay={-3} />
+      <CornerRose sym="cluster" top mirrored className={`top-0 -right-10 ${CORNER_ROSE_SIZE} opacity-90`} duration={10} delay={-5} />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-5 px-6 text-center">
         {title ? (
-          <p className="text-[11px] uppercase tracking-[.46em]" style={{ color: "rgba(243,212,118,.85)" }}>
+          <p className="rw-reveal rv-u text-[11px] uppercase tracking-[.46em]" style={{ color: "rgba(243,212,118,.85)" }}>
             {title}
           </p>
         ) : null}
-        <HeartRings className="h-14 w-16 opacity-80 shrink-0" />
+        <div className="rw-reveal rv-z shrink-0" style={{ transitionDelay: ".12s" }}>
+          <HeartRings className="h-14 w-16 opacity-80" />
+        </div>
         <blockquote
-          className="leading-relaxed"
-          style={{ fontFamily: SERIF, fontSize: "1.18rem", fontStyle: "italic", color: RW.cream }}
+          className="rw-reveal rv-u leading-relaxed"
+          style={{ fontFamily: SERIF, fontSize: "1.18rem", fontStyle: "italic", color: RW.cream, transitionDelay: ".22s" }}
         >
           &ldquo;{text}&rdquo;
         </blockquote>
         {source ? (
-          <p className="text-[11px] font-medium uppercase tracking-[.3em]" style={{ color: "rgba(243,212,118,.85)" }}>
+          <p className="rw-reveal rv-u text-[11px] font-medium uppercase tracking-[.3em]" style={{ color: "rgba(243,212,118,.85)", transitionDelay: ".34s" }}>
             {source}
           </p>
         ) : null}
@@ -1011,15 +964,20 @@ function PersonCard({
   photo,
   parentName,
   childOf,
+  revealDelay = 0,
 }: {
   nick: string;
   name?: string;
   photo?: string;
   parentName?: string;
   childOf?: string;
+  revealDelay?: number;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 text-center">
+    <div
+      className="rw-reveal rv-u flex flex-col items-center gap-1.5 text-center"
+      style={revealDelay ? { transitionDelay: `${revealDelay}s` } : undefined}
+    >
       {/* Progress report: nama di atas kartu? Desain: pill di bawah kartu */}
       <div className="relative mb-5 w-[45vw] max-w-[198px] sm:w-[300px] lg:w-[286px]">
         {/* bingkai putih offset ala desain */}
@@ -1068,7 +1026,7 @@ function Mempelai({
   bride?: TemplateProps["data"]["bride"];
 }) {
   return (
-    <section id="mempelai" className="relative overflow-hidden py-12 md:py-16">
+    <section id="mempelai" className="relative overflow-x-clip py-12 md:py-16">
       {/* Roset 4 sudut ukuran persis desain (mempelai.svg): atas ke-2 dan
           bawah ter-flip vertikal — goyangan angin */}
       <CornerRose sym="cluster" top className={`-left-[2.35%] top-0 ${CORNER_ROSE_LARGE_SIZE}`} duration={8.6} />
@@ -1079,7 +1037,7 @@ function Mempelai({
       <div className="relative z-10 mx-auto max-w-5xl px-6">
         <div className="text-center">
           <p
-            className="text-[clamp(2rem,7vw,2.6rem)] leading-[1.2]"
+            className="rw-reveal rv-u text-[clamp(2rem,7vw,2.6rem)] leading-[1.2]"
             style={{ fontFamily: SCRIPT, color: RW.cream }}
           >
             The Wedding Of
@@ -1095,7 +1053,7 @@ function Mempelai({
             childOf={groom?.childOf ?? groom?.bio}
           />
           <p
-            className="hidden text-[64px] leading-none lg:block"
+            className="rw-reveal rv-u hidden text-[64px] leading-none lg:block"
             style={{ fontFamily: SCRIPT, color: RW.goldHi }}
           >
             &amp;
@@ -1106,6 +1064,7 @@ function Mempelai({
             photo={bride?.photoUrl}
             parentName={bride?.parentName}
             childOf={bride?.childOf ?? bride?.bio}
+            revealDelay={0.18}
           />
         </div>
       </div>
@@ -1127,18 +1086,18 @@ const COUNT_LABELS: { key: "days" | "hours" | "minutes" | "seconds"; label: stri
 function Countdown({ eventDate }: { eventDate: string }) {
   const t = useCountdown(eventDate);
   return (
-    <section className="relative overflow-hidden py-12 md:py-16">
+    <section className="relative overflow-x-clip py-12 md:py-16">
       {/* Desain tidak memakai arch di halaman lain — hanya roset sudut */}
       <CornerRose sym="cluster" top className={`-left-[2.35%] top-0 ${CORNER_ROSE_LARGE_SIZE}`} duration={9.2} />
       <CornerRose sym="cluster" top mirrored className={`-right-[2.35%] top-0 ${CORNER_ROSE_LARGE_SIZE}`} duration={10.8} delay={-2.6} />
       <div className="relative z-10 mx-auto max-w-2xl px-6 text-center">
-        <p className="text-[11px] uppercase tracking-[.46em]" style={{ color: "rgba(243,212,118,.85)" }}>
+        <p className="rw-reveal rv-u text-[11px] uppercase tracking-[.46em]" style={{ color: "rgba(243,212,118,.85)" }}>
           Menuju Hari Bahagia
         </p>
-        <p className="mt-2 text-3xl" style={{ fontFamily: SCRIPT, color: RW.rose }}>
+        <p className="rw-reveal rv-u mt-2 text-3xl" style={{ fontFamily: SCRIPT, color: RW.rose, transitionDelay: ".12s" }}>
           Menghitung Hari
         </p>
-        <div className="mt-9 grid grid-cols-4 gap-2">
+        <div className="rw-reveal rv-z mt-9 grid grid-cols-4 gap-2" style={{ transitionDelay: ".25s" }}>
           {COUNT_LABELS.map((u) => (
             <div key={u.key} className="flex flex-col items-center">
               <span
@@ -1205,19 +1164,19 @@ function Acara({
   ];
 
   return (
-    <section id="acara" className="relative overflow-hidden py-12 md:py-16">
-      <CornerRose sym="cluster" top className={`-left-8 -top-5 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.4} />
-      <CornerRose sym="cluster" top mirrored className={`-right-8 -top-5 ${CORNER_ROSE_SIZE} opacity-85`} duration={8.4} delay={-3} />
-      <CornerRose sym="cluster" top={false} className={`-bottom-6 -left-9 ${CORNER_ROSE_SIZE} opacity-85`} duration={10.2} delay={-5} />
-      <CornerRose sym="cluster" top={false} mirrored className={`-bottom-6 -right-9 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.6} delay={-2} />
+    <section id="acara" className="relative overflow-x-clip py-12 md:py-16">
+      <CornerRose sym="cluster" top className={`top-0 -left-8 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.4} />
+      <CornerRose sym="cluster" top mirrored className={`top-0 -right-8 ${CORNER_ROSE_SIZE} opacity-85`} duration={8.4} delay={-3} />
+      <CornerRose sym="cluster" top={false} className={`bottom-0 -left-9 ${CORNER_ROSE_SIZE} opacity-85`} duration={10.2} delay={-5} />
+      <CornerRose sym="cluster" top={false} mirrored className={`bottom-0 -right-9 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.6} delay={-2} />
       <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
         <p
-          className="inline-block rounded-2xl px-6 py-2.5 text-[clamp(1.5rem,5.5vw,1.9rem)] leading-tight"
+          className="rw-reveal rv-u inline-block rounded-2xl px-6 py-2.5 text-[clamp(1.5rem,5.5vw,1.9rem)] leading-tight"
           style={{ fontFamily: SCRIPT, color: RW.goldHi }}
         >
           Our Wedding Events
         </p>
-        <p className="mx-auto mt-4 max-w-sm text-sm" style={{ color: RW.creamSoft }}>
+        <p className="rw-reveal rv-u mx-auto mt-4 max-w-sm text-sm" style={{ color: RW.creamSoft, transitionDelay: ".12s" }}>
           Kami bermaksud untuk mengundang saudara/i dalam acara pernikahan kami:
         </p>
 
@@ -1226,9 +1185,9 @@ function Acara({
             <>
               {cards.map((e, idx) => (
                 <div key={e.id} style={{ display: "contents" }}>
-                  <EventBlock title={e.title} date={e.date} time={e.time} venue={e.venue} mapUrl={e.mapUrl} />
+                  <EventBlock title={e.title} date={e.date} time={e.time} venue={e.venue} mapUrl={e.mapUrl} revealDelay={idx * 0.2} />
                   {idx === 0 && (
-                    <span aria-hidden="true" className="mx-auto hidden h-full min-h-[220px] w-px lg:block" style={{ backgroundColor: "rgba(243,212,118,.28)" }} />
+                    <span aria-hidden="true" className="rw-reveal rv-z mx-auto hidden h-full min-h-[220px] w-px lg:block" style={{ backgroundColor: "rgba(243,212,118,.28)" }} />
                   )}
                 </div>
               ))}
@@ -1246,20 +1205,22 @@ function Acara({
               href={cards[0]?.mapUrl ?? locationMap}
               target="_blank"
               rel="noopener noreferrer"
-              className="rw-btn"
+              className="rw-btn rw-reveal rv-u"
             >
               <MapPin className="h-3.5 w-3.5" />
               Navigasi Map
             </a>
           )}
           {agenda.main.date && (
-            <SaveToCalendarButton
-              title={`Pernikahan ${agenda.main.venue ?? "Kami"}`}
-              date={agenda.main.date}
-              time={agenda.main.time}
-              location={agenda.main.venue}
-              className="rw-btn"
-            />
+            <span className="rw-reveal rv-u" style={{ transitionDelay: ".15s" }}>
+              <SaveToCalendarButton
+                title={`Pernikahan ${agenda.main.venue ?? "Kami"}`}
+                date={agenda.main.date}
+                time={agenda.main.time}
+                location={agenda.main.venue}
+                className="rw-btn"
+              />
+            </span>
           )}
         </div>
       </div>
@@ -1273,15 +1234,20 @@ function EventBlock({
   time,
   venue,
   mapUrl,
+  revealDelay = 0,
 }: {
   title: string;
   date?: string;
   time?: string;
   venue?: string;
   mapUrl?: string;
+  revealDelay?: number;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 text-center">
+    <div
+      className="rw-reveal rv-u flex flex-col items-center gap-2 text-center"
+      style={revealDelay ? { transitionDelay: `${revealDelay}s` } : undefined}
+    >
       <h3
         className="text-[clamp(2rem,6vw,2.5rem)] leading-tight"
         style={{ fontFamily: SCRIPT, color: RW.rose }}
@@ -1337,17 +1303,17 @@ function yearLabel(date?: string): string {
 
 function Kisah({ story }: { story: NonNullable<TemplateProps["data"]["story"]> }) {
   return (
-    <section id="kisah" className="relative overflow-hidden py-12 md:py-16">
-      <CornerRose sym="cluster" top className={`-left-9 -top-5 ${CORNER_ROSE_SIZE} opacity-80`} duration={9.6} delay={-2} />
-      <CornerRose sym="cluster" top mirrored className={`-right-9 -top-5 ${CORNER_ROSE_SIZE} opacity-80`} duration={8.8} delay={-4.4} />
-      <CornerRose sym="cluster" top={false} className={`-bottom-6 -left-8 ${CORNER_ROSE_SIZE} opacity-80`} duration={10} delay={-3} />
-      <CornerRose sym="cluster" top={false} mirrored className={`-bottom-6 -right-8 ${CORNER_ROSE_SIZE} opacity-80`} duration={9} delay={-5.6} />
+    <section id="kisah" className="relative overflow-x-clip py-12 md:py-16">
+      <CornerRose sym="cluster" top className={`top-0 -left-9 ${CORNER_ROSE_SIZE} opacity-80`} duration={9.6} delay={-2} />
+      <CornerRose sym="cluster" top mirrored className={`top-0 -right-9 ${CORNER_ROSE_SIZE} opacity-80`} duration={8.8} delay={-4.4} />
+      <CornerRose sym="cluster" top={false} className={`bottom-0 -left-8 ${CORNER_ROSE_SIZE} opacity-80`} duration={10} delay={-3} />
+      <CornerRose sym="cluster" top={false} mirrored className={`bottom-0 -right-8 ${CORNER_ROSE_SIZE} opacity-80`} duration={9} delay={-5.6} />
       <div className="relative z-10 mx-auto max-w-4xl px-6">
         <div className="text-center">
-          <p className="text-3xl" style={{ fontFamily: SCRIPT, color: RW.rose }}>
+          <p className="rw-reveal rv-u text-3xl" style={{ fontFamily: SCRIPT, color: RW.rose }}>
             Perjalanan kami
           </p>
-          <h2 className="rw-h2 mt-2">Kisah Kami</h2>
+          <h2 className="rw-h2 rw-reveal rv-u mt-2">Kisah Kami</h2>
         </div>
         <div className="relative mt-14">
           <span
@@ -1366,9 +1332,9 @@ function Kisah({ story }: { story: NonNullable<TemplateProps["data"]["story"]> }
                   <span className="block h-3 w-3 rounded-full" style={{ backgroundColor: RW.goldHi, boxShadow: "0 0 9px rgba(243,212,118,.65)" }} />
                 </span>
                 <div
-                  className={`col-start-2 lg:row-start-1 ${
-                    story.indexOf(s) % 2 === 0 ? "lg:col-start-3 lg:pl-9" : "lg:col-start-1 lg:pr-9 lg:text-right"
-                  }`}
+                  className={`rw-reveal ${
+                    story.indexOf(s) % 2 === 0 ? "rv-r lg:col-start-3 lg:row-start-1 lg:pl-9" : "rv-l lg:col-start-1 lg:row-start-1 lg:pr-9 lg:text-right"
+                  } col-start-2`}
                 >
                   <time
                     className="text-[11px] font-semibold uppercase tracking-[.34em]"
@@ -1427,7 +1393,7 @@ function Galeri({ gallery }: { gallery: NonNullable<TemplateProps["data"]["galle
   }, [total]);
 
   return (
-    <section id="galeri" className="relative overflow-hidden pt-24 pb-36 md:py-16">
+    <section id="galeri" className="relative overflow-x-clip pt-24 pb-36 md:py-16">
       {/* Roset 4 sudut ukuran persis desain (galeri.svg) — tanpa arch */}
       <CornerRose sym="cluster-lg" top className={`-left-[2.35%] top-0 ${CORNER_ROSE_LARGE_SIZE}`} duration={9.2} />
       <CornerRose sym="cluster-lg" top mirrored className={`-right-[2.35%] top-0 ${CORNER_ROSE_LARGE_SIZE}`} duration={10.4} delay={-3.2} />
@@ -1435,7 +1401,7 @@ function Galeri({ gallery }: { gallery: NonNullable<TemplateProps["data"]["galle
       <CornerRose sym="cluster-lg" top={false} mirrored className={`-right-[2.35%] bottom-0 ${CORNER_ROSE_LARGE_SIZE}`} duration={8.8} delay={-2.4} />
 
       <div className="relative z-10 mx-auto max-w-2xl px-6">
-        <div className="flex justify-center">
+        <div className="rw-reveal rv-u flex justify-center">
           <span
             className="rounded-full px-10 py-3.5 text-[13px] font-bold uppercase tracking-[.3em] sm:text-[15px]"
             style={{ backgroundColor: "rgba(236,236,214,.95)", color: RW.maroonText, fontFamily: SANS }}
@@ -1446,7 +1412,7 @@ function Galeri({ gallery }: { gallery: NonNullable<TemplateProps["data"]["galle
 
         {/* Frame foto besar (rounded tebal, sesuai mockup) + slider otomatis */}
         <div
-          className="group relative mt-28 aspect-[7/5] w-full overflow-hidden"
+          className="rw-reveal rv-z group relative mt-28 aspect-[7/5] w-full overflow-hidden"
           style={{
             borderRadius: "42px",
             border: "2px solid rgba(236,236,214,.2)",
@@ -1498,7 +1464,7 @@ function Galeri({ gallery }: { gallery: NonNullable<TemplateProps["data"]["galle
         </div>
 
         {/* titik indikator slide */}
-        <div className="mt-7 flex items-center justify-center gap-2.5">
+        <div className="rw-reveal rv-u mt-7 flex items-center justify-center gap-2.5" style={{ transitionDelay: ".25s" }}>
           {gallery.map((g, i) => (
             <button
               key={g.id}
@@ -1539,11 +1505,11 @@ function Rsvp({
   const closeModal = useCallback(() => setIsOpen(false), []);
 
   return (
-    <section id="rsvp" className="relative overflow-hidden py-16 md:py-20">
-      <CornerRose sym="cluster" top className={`-left-10 -top-6 ${CORNER_ROSE_SIZE} opacity-80`} duration={9.8} />
-      <CornerRose sym="cluster" top mirrored className={`-right-10 -top-6 ${CORNER_ROSE_SIZE} opacity-80`} duration={8.8} delay={-4} />
+    <section id="rsvp" className="relative overflow-x-clip py-16 md:py-20">
+      <CornerRose sym="cluster" top className={`top-0 -left-10 ${CORNER_ROSE_SIZE} opacity-80`} duration={9.8} />
+      <CornerRose sym="cluster" top mirrored className={`top-0 -right-10 ${CORNER_ROSE_SIZE} opacity-80`} duration={8.8} delay={-4} />
       <div className="relative z-10 mx-auto max-w-xl px-6 text-center">
-        <div className="flex flex-col items-center gap-3">
+        <div className="rw-reveal rv-u flex flex-col items-center gap-3">
           <h2 className="rw-h2">RSVP</h2>
           <p className="text-[11px] uppercase tracking-[.46em]" style={{ color: "rgba(243,212,118,.85)" }}>
             Konfirmasi Kehadiran
@@ -1582,7 +1548,7 @@ function Kado({ gifts }: { gifts: NonNullable<TemplateProps["data"]["gifts"]> })
 
   return (
     <div id="kado" className="mt-16 flex flex-col items-center gap-4 border-t border-[rgba(243,212,118,.24)] pt-12">
-      <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4 px-6 text-center">
+      <div className="rw-reveal rv-u relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4 px-6 text-center">
         <p className="text-3xl" style={{ fontFamily: SCRIPT, color: RW.rose }}>
           Tanda kasih
         </p>
@@ -1655,6 +1621,10 @@ function RubyModal({
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Modal milik subtree Rsvp/Kado: RubyShell tidak me-render ulang saat
+  // modal dibuka, jadi pemantauan reveal dijalankan ulang di sini.
+  useReveal();
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     const previousActiveElement = document.activeElement;
@@ -1685,7 +1655,7 @@ function RubyModal({
       }}
     >
       <div className="rw-sheet">
-        <CornerRose sym="cluster" top className="-left-5 -top-4 w-24 opacity-90" duration={8} />
+        <CornerRose sym="cluster" top className="top-0 -left-5 w-24 opacity-90" duration={8} />
         <button ref={closeButtonRef} type="button" className="rw-close" onClick={onClose} aria-label="Tutup">
           ×
         </button>
@@ -1708,16 +1678,16 @@ function Ucapan({
   wishes?: TemplateProps["wishes"];
 }) {
   return (
-    <section id="ucapan" className="relative overflow-hidden py-12 md:py-16">
-      <CornerRose sym="cluster" top className={`-left-10 -top-6 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.2} />
-      <CornerRose sym="cluster" top mirrored className={`-right-10 -top-6 ${CORNER_ROSE_SIZE} opacity-85`} duration={10.6} delay={-3.8} />
-      <CornerRose sym="cluster" top={false} className={`-bottom-7 -left-10 ${CORNER_ROSE_SIZE} opacity-85`} duration={8.6} delay={-5} />
-      <CornerRose sym="cluster" top={false} mirrored className={`-bottom-7 -right-10 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.8} delay={-1.6} />
+    <section id="ucapan" className="relative overflow-x-clip py-12 md:py-16">
+      <CornerRose sym="cluster" top className={`top-0 -left-10 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.2} />
+      <CornerRose sym="cluster" top mirrored className={`top-0 -right-10 ${CORNER_ROSE_SIZE} opacity-85`} duration={10.6} delay={-3.8} />
+      <CornerRose sym="cluster" top={false} className={`bottom-0 -left-10 ${CORNER_ROSE_SIZE} opacity-85`} duration={8.6} delay={-5} />
+      <CornerRose sym="cluster" top={false} mirrored className={`bottom-0 -right-10 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.8} delay={-1.6} />
       <div className="relative z-10 mx-auto max-w-lg px-6">
-        <h2 className="rw-h2 text-center">Ucapan &amp; Doa</h2>
+        <h2 className="rw-h2 rw-reveal rv-u text-center">Ucapan &amp; Doa</h2>
         <div
-          className="mt-10 rounded-3xl p-5 text-left"
-          style={{ backgroundColor: "rgba(236,236,214,.96)", boxShadow: "0 24px 54px -26px rgba(0,0,0,.6)" }}
+          className="rw-reveal rv-u mt-10 rounded-3xl p-5 text-left"
+          style={{ backgroundColor: "rgba(236,236,214,.96)", boxShadow: "0 24px 54px -26px rgba(0,0,0,.6)", transitionDelay: ".15s" }}
         >
           <WishForm
             invitationId={invitationId}
@@ -1725,7 +1695,7 @@ function Ucapan({
             borderClass="border-[rgba(201,151,31,.4)] bg-white focus:border-[#C9971F] focus:ring-[#F3D476]/50"
           />
         </div>
-        <div className="mt-10">
+        <div className="rw-reveal rv-u mt-10" style={{ transitionDelay: ".3s" }}>
           <WishList
             wishes={wishes ?? []}
             cardClass="border-[rgba(243,212,118,.32)] bg-[rgba(67,16,31,.55)] backdrop-blur-md"
@@ -1806,32 +1776,35 @@ function Closing({
         ))}
       </div>
 
-      <CornerRose sym="cluster" top className={`-left-12 -top-8 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.6} />
-      <CornerRose sym="cluster" top mirrored className={`-right-12 -top-8 ${CORNER_ROSE_SIZE} opacity-85`} duration={10.8} delay={-4.2} />
+      <CornerRose sym="cluster" top className={`top-0 -left-12 ${CORNER_ROSE_SIZE} opacity-85`} duration={9.6} />
+      <CornerRose sym="cluster" top mirrored className={`top-0 -right-12 ${CORNER_ROSE_SIZE} opacity-85`} duration={10.8} delay={-4.2} />
 
       <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4 px-6 pb-24 text-center">
-        <p className="text-[clamp(2rem,7vw,2.6rem)] leading-[1.25]" style={{ fontFamily: SCRIPT, color: RW.goldHi }}>
+        <p className="rw-reveal rv-u text-[clamp(2rem,7vw,2.6rem)] leading-[1.25]" style={{ fontFamily: SCRIPT, color: RW.goldHi }}>
           Terima Kasih
         </p>
-        <p className="text-sm leading-loose" style={{ color: RW.creamSoft }}>
+        <p className="rw-reveal rv-u text-sm leading-loose" style={{ color: RW.creamSoft, transitionDelay: ".15s" }}>
           Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila
           Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kami.
         </p>
-        <p className="mt-5 text-[11px] uppercase tracking-[.4em]" style={{ color: "rgba(243,212,118,.9)" }}>
+        <p className="rw-reveal rv-u mt-5 text-[11px] uppercase tracking-[.4em]" style={{ color: "rgba(243,212,118,.9)", transitionDelay: ".3s" }}>
           Hormat Kami
         </p>
-        <div className="mt-2">
+        <div className="rw-reveal rv-u mt-2" style={{ transitionDelay: ".42s" }}>
           <NamesTitle brideNick={brideNick} groomNick={groomNick} size="medium" />
         </div>
       </div>
 
-      {/* Bed bunga magenta di dasar penutup */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-[34%] w-full opacity-95">
+      {/* Bed bunga magenta ASLI desain di dasar penutup — img dengan
+          tinggi aspek alami (agar tak kena keterbatasan height:% pada
+          svg di dalam section min-height yang bikin artwork tersayat) */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] w-full opacity-95">
         <div
-          className="rw-sway h-full w-full"
+          className="rw-sway rw-reveal rv-f w-full"
           style={{ transformOrigin: "50% 100%", animationName: "rwSwayB", animationDuration: "10.5s" }}
         >
-          <RoseSVG sym="bed" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={ASSET_BED} alt="" className="w-full" draggable={false} />
         </div>
       </div>
     </section>

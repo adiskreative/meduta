@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   ArrowDown,
@@ -47,6 +47,43 @@ const VOGUE = {
 const GRAY =
   "grayscale contrast-125 transition-transform duration-700 group-hover:scale-[1.03] group-hover:grayscale-0";
 
+/* Reveal-on-scroll "tirai editorial": wipe horizontal (unrolling scaleX)
+   khas majalah. Nama kelas WAJIB mengandung literal "-reveal"/"-visible":
+   app/preview/[key]/page.tsx (mode ?shot=1) memaksa semua [class*="-reveal"]
+   tampil tanpa animasi agar thumbnail tidak menangkap konten opacity-0. */
+const VG_CSS = `
+  .vg-reveal {
+    opacity: 0;
+    transform: scaleX(.02);
+    transform-origin: 0 50%;
+    transition: opacity .35s ease, transform .85s cubic-bezier(.9,0,.15,1);
+  }
+  .vg-reveal.vg-visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* vg-r: wipe dari sisi kanan — untuk blok yang berada di kolom kanan */
+  .vg-reveal.vg-r {
+    transform-origin: 100% 50%;
+  }
+  /* Mode embed (live iframe preview): gerbang sudah terbuka & konten
+     kondisional belum tentu sempat terpantau IO — paksa tampil instan
+     supaya tidak ada yang tertinggal tersembunyi. */
+  .vg-embed .vg-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  /* Aksesibilitas: hormati preferensi user yang mematikan animasi */
+  @media (prefers-reduced-motion: reduce) {
+    .vg-reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+`;
+
 /* ------------------------------------------------------------------ */
 /* Komponen utama                                                      */
 /* ------------------------------------------------------------------ */
@@ -82,10 +119,15 @@ function VogueShell({
   isPublished,
   wishes,
   decorations,
+  embedded,
   gateOpen = true,
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // WAJIB sebelum early-return DraftNotice: hook harus terpanggil di semua
+  // jalur render (aturan React hooks) — effect tanpa dep aman dipanggil di sini.
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -110,9 +152,12 @@ function VogueShell({
 
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden bg-[#F9F8F3] text-[#111111]"
+      className={`relative min-h-screen overflow-x-hidden bg-[#F9F8F3] text-[#111111] ${embedded ? "vg-embed" : ""}`}
       style={{ fontFamily: "Montserrat, var(--font-sans), sans-serif" }}
     >
+      {/* CSS reveal-scrol lokal (lihat komentar di atas VG_CSS) */}
+      <style>{VG_CSS}</style>
+
       <div className="relative z-10">
         <Cover
           eventName={data.eventName ?? "Undangan Pernikahan"}
@@ -195,6 +240,42 @@ function VogueShell({
       ) : null}
     </div>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Reveal-on-scroll (pola senada dengan FloralTemplate)                */
+/* ------------------------------------------------------------------ */
+
+/* Effect TANPA dep array — why: biar dijalankan ulang tiap render sehingga
+   node yang baru muncul (gerbang terbuka, konten kondisional) tetap
+   terpantau IntersectionObserver. */
+function useReveal() {
+  useEffect(() => {
+    // Fallback lingkungan tanpa IntersectionObserver: jangan biarkan konten
+    // tersembunyi selamanya — langsung tandai semua sebagai visible.
+    if (typeof IntersectionObserver === "undefined") {
+      document.querySelectorAll(".vg-reveal:not(.vg-visible)").forEach((el) => el.classList.add("vg-visible"));
+      return;
+    }
+    const els = document.querySelectorAll(".vg-reveal:not(.vg-visible)");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("vg-visible");
+            io.unobserve(e.target); // sekali muncul, tidak perlu dipantau lagi
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
+
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`vg-reveal ${className}`}>{children}</div>;
 }
 
 function DraftNotice() {
@@ -514,7 +595,9 @@ function InvitationSection({
   return (
     <section className="border-t border-[#DCD8CE] bg-[#F9F8F3] py-24">
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 md:grid-cols-12 md:px-16">
-        <div className="relative md:col-span-5">
+        {/* Kiri & kanan wipe berlawanan arah: kurva unrolling deretan majalah
+            diarahkan keluar dari spine halaman */}
+        <div className="vg-reveal relative md:col-span-5">
           <span className="absolute -left-6 -top-12 select-none font-[family-name:var(--font-display)] text-9xl text-[#111111]/10">
             &ldquo;
           </span>
@@ -526,7 +609,7 @@ function InvitationSection({
           </p>
         </div>
 
-        <div className="space-y-6 pl-0 text-sm leading-relaxed text-[#111111]/80 md:col-span-7 md:border-l md:border-[#111111]/20 md:pl-8 md:text-base">
+        <div className="vg-reveal vg-r space-y-6 pl-0 text-sm leading-relaxed text-[#111111]/80 md:col-span-7 md:border-l md:border-[#111111]/20 md:pl-8 md:text-base">
           <div className="mb-2 flex items-center gap-3 text-xs uppercase tracking-[0.4em] text-[#66635F]">
             <span className="h-px w-8 bg-[#66635F]" />
             <span>Official Invitation</span>
@@ -581,7 +664,7 @@ function Couple({
   return (
     <section className="overflow-hidden bg-[#111111] py-24 text-[#F9F8F3]">
       <div className="mx-auto max-w-7xl px-4 md:px-12">
-        <div className="mb-16 flex flex-col justify-between border-b border-[#66635F]/30 pb-6 md:flex-row md:items-end">
+        <div className="vg-reveal mb-16 flex flex-col justify-between border-b border-[#66635F]/30 pb-6 md:flex-row md:items-end">
           <div>
             <span className="text-[10px] uppercase tracking-[0.4em] text-[#66635F]">
               Protagonists
@@ -596,8 +679,10 @@ function Couple({
         </div>
 
         <div className="grid grid-cols-1 items-start gap-16 lg:grid-cols-2">
-          <PersonCard person={groom} role="The Groom" />
-          <div className="lg:mt-24">
+          {/* Kartu kiri wipe dari kiri, kartu kanan wipe dari kanan (vg-r) —
+              simetris seperti halaman spread majalah */}
+          <PersonCard person={groom} role="The Groom" className="vg-reveal" />
+          <div className="vg-reveal vg-r lg:mt-24">
             <PersonCard person={bride} role="The Bride" />
           </div>
         </div>
@@ -609,12 +694,16 @@ function Couple({
 function PersonCard({
   person,
   role,
+  className = "",
 }: {
   person?: TemplateProps["data"]["groom"];
   role: string;
+  className?: string;
 }) {
   return (
-    <div className="group space-y-6">
+    // Kelas reveal bisa diterima dari luar (grid child tidak boleh dibungkus
+    // div tambahan) — root tak punya transisi sendiri, jadi aman ditumpuk
+    <div className={`group space-y-6 ${className}`}>
       <div className="relative aspect-[3/4] overflow-hidden border border-[#66635F]/30">
         {person?.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -673,7 +762,7 @@ function StorySection({
   return (
     <section className="border-t border-[#DCD8CE] bg-[#F9F8F3] py-24">
       <div className="mx-auto max-w-7xl px-6 md:px-16">
-        <div className="mx-auto mb-20 max-w-2xl text-center">
+        <div className="vg-reveal mx-auto mb-20 max-w-2xl text-center">
           <span className="text-[10px] uppercase tracking-[0.4em] text-[#66635F]">
             Editorial Spread
           </span>
@@ -689,11 +778,13 @@ function StorySection({
               key={item.id}
               className="mb-16 grid grid-cols-1 items-center gap-8 last:mb-0 md:grid-cols-12"
             >
-              {/* Teks: kiri pada bab ganjil, kanan pada bab genap */}
+              {/* Teks: kiri pada bab ganjil, kanan pada bab genap.
+                  Arah wipe mengikuti posisi kolom agar tirai selalu membuka
+                  keluar dari spine tengah (blok kanan pakai vg-r) */}
               <div
                 className={`space-y-4 md:col-span-5 ${
                   i % 2 === 0 ? "md:order-1" : "md:order-2 md:pl-6"
-                }`}
+                } ${i % 2 === 0 ? "vg-reveal" : "vg-reveal vg-r"}`}
               >
                 <span className="font-[family-name:var(--font-display)] text-3xl italic text-[#66635F]">
                   Chapter {String(i + 1).padStart(2, "0")}
@@ -717,7 +808,7 @@ function StorySection({
               <div
                 className={`group overflow-hidden border border-[#111111]/20 shadow-xl md:col-span-7 ${
                   i % 2 === 0 ? "md:order-2" : "md:order-1"
-                }`}
+                } ${i % 2 === 0 ? "vg-reveal vg-r" : "vg-reveal"}`}
               >
                 <div className="relative aspect-[16/10]">
                   {photo ? (
@@ -778,7 +869,7 @@ function EventsSection({
   return (
     <section id="acara" className="border-y border-[#DCD8CE] bg-[#EFECE6] py-24">
       <div className="mx-auto max-w-6xl px-6 md:px-16">
-        <div className="mb-10 flex flex-col justify-between border-b border-[#111111]/20 pb-6 md:flex-row md:items-end">
+        <div className="vg-reveal mb-10 flex flex-col justify-between border-b border-[#111111]/20 pb-6 md:flex-row md:items-end">
           <div>
             <span className="text-[10px] uppercase tracking-[0.4em] text-[#66635F]">
               Timetable
@@ -794,7 +885,7 @@ function EventsSection({
 
         {/* Countdown */}
         {eventDate && (
-          <div className="mx-auto mb-16 max-w-xl bg-[#F9F8F3] p-8 shadow-sm">
+          <div className="vg-reveal mx-auto mb-16 max-w-xl bg-[#F9F8F3] p-8 shadow-sm">
             <span className="mb-6 block text-center text-[11px] uppercase tracking-[0.3em] text-[#66635F]">
               Hitung Mundur Hari Bahagia
             </span>
@@ -808,26 +899,32 @@ function EventsSection({
         )}
 
         <div className="space-y-8">
-          <EventRow
-            time={agenda.main.time}
-            label="Sacred Ceremony"
-            title="Akad Nikah"
-            venue={agenda.main.venue}
-            mapUrl={agenda.main.mapUrl}
-            date={agenda.main.date}
-            tag="All Invited Guests"
-          />
-          {agenda.additional.map((e, i) => (
+          {/* EventRow punya transisi hover sendiri (transition-all) — reveal
+              dipasang lewat wrapper luar agar transisi hover kartu tidak
+              tertimpa daftar transisi kelas vg-reveal */}
+          <Reveal>
             <EventRow
-              key={e.id}
-              time={e.time}
-              label={i % 2 === 0 ? "Celebration" : "Editorial Gathering"}
-              title={e.title ?? "Acara"}
-              venue={e.location}
-              mapUrl={e.locationMap}
-              date={e.date}
-              tag={i % 2 === 0 ? "Family & Intimate" : "All Invited Guests"}
+              time={agenda.main.time}
+              label="Sacred Ceremony"
+              title="Akad Nikah"
+              venue={agenda.main.venue}
+              mapUrl={agenda.main.mapUrl}
+              date={agenda.main.date}
+              tag="All Invited Guests"
             />
+          </Reveal>
+          {agenda.additional.map((e, i) => (
+            <Reveal key={e.id}>
+              <EventRow
+                time={e.time}
+                label={i % 2 === 0 ? "Celebration" : "Editorial Gathering"}
+                title={e.title ?? "Acara"}
+                venue={e.location}
+                mapUrl={e.locationMap}
+                date={e.date}
+                tag={i % 2 === 0 ? "Family & Intimate" : "All Invited Guests"}
+              />
+            </Reveal>
           ))}
         </div>
       </div>
@@ -925,7 +1022,7 @@ function GallerySection({
   return (
     <section className="bg-[#111111] py-24 text-[#F9F8F3]">
       <div className="mx-auto max-w-7xl px-4 md:px-12">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
+        <div className="vg-reveal mx-auto mb-16 max-w-2xl text-center">
           <span className="text-[10px] uppercase tracking-[0.4em] text-[#66635F]">
             Lookbook
           </span>
@@ -943,7 +1040,7 @@ function GallerySection({
               key={item.id}
               type="button"
               onClick={() => setSelected(item.url)}
-              className={`group relative cursor-pointer overflow-hidden border border-[#66635F]/30 ${
+              className={`vg-reveal group relative cursor-pointer overflow-hidden border border-[#66635F]/30 ${
                 i === 0
                   ? "aspect-[4/5] md:col-span-7"
                   : i === 1

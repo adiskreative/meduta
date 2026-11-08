@@ -99,6 +99,12 @@ function SenjaShell({
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController; closing?: boolean }) {
+  // Reveal-on-scroll dipanggil di Shell TERATAS, sebelum early-return
+  // isPublished — aturan React hooks melarang dipanggil setelah return,
+  // dan semua node yang dirender (termasuk DraftNotice tapi bukan target)
+  // harus selalu terpantau tiap render.
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -229,6 +235,47 @@ function SenjaShell({
       ) : null}
     </div>
   );
+}
+
+/* Reveal-on-scroll: hook TANPA deps — efek dijalankan ulang tiap render
+   supaya node kondisional (mis. kartu acara tambahan, galeri kosong)
+   tetap terpantau. Fallback: bila IntersectionObserver tidak ada,
+   semua elemen langsung dimunculkan agar konten tidak macet opacity 0. */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      // Lingkungan tanpa IO (SSR/test/utility lama): pastikan semua terlihat
+      document.querySelectorAll(".sj-reveal:not(.sj-visible)").forEach((el) => el.classList.add("sj-visible"));
+      return;
+    }
+    const els = Array.from(document.querySelectorAll<HTMLElement>(".sj-reveal:not(.sj-visible)"));
+    // Baris judul ber-mask (sj-line) digeser 112% ke bawah dan dipotong
+    // overflow-hidden pembungkusnya — IntersectionObserver melihat luas
+    // irisan 0 sehingga baris itu TIDAK PERNAH terpicu jika dipantau
+    // langsung. Karena itu pantau pembungkus mask-nya, lalu tandai teks
+    // di dalamnya. Elemen biasa tetap dipantau dirinya sendiri.
+    const groups = new Map<Element, HTMLElement[]>();
+    for (const el of els) {
+      const watch =
+        el.classList.contains("sj-line") && el.parentElement ? el.parentElement : el;
+      const group = groups.get(watch);
+      if (group) group.push(el);
+      else groups.set(watch, [el]);
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            groups.get(e.target)?.forEach((el) => el.classList.add("sj-visible"));
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    groups.forEach((_, watch) => io.observe(watch));
+    return () => io.disconnect();
+  });
 }
 
 function DraftNotice() {
@@ -679,7 +726,9 @@ function Quote({ title, text, source }: { title?: string; text: string; source?:
     <section className="relative overflow-hidden py-20 md:py-24">
       <Floral sym="cluster" className="absolute -left-16 -top-10 w-48 opacity-85" />
       <Floral sym="cluster" className="absolute -bottom-10 -right-16 w-48 opacity-85" />
-      <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-5 px-6 text-center">
+      {/* Blok kutipan: reveal bawa transform standar (bukan sj-line —
+          bukan judul editorial, dan anak-anaknya teks statis) */}
+      <div className="sj-reveal relative z-10 mx-auto flex max-w-xl flex-col items-center gap-5 px-6 text-center">
         {title ? (
           <p className="text-[11px] uppercase tracking-[0.46em]" style={{ color: SN.accentInk }}>
             {title}
@@ -721,7 +770,10 @@ function Person({
   side: "w" | "m";
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 text-center">
+    // Root kartu mempelai — reveal langsung di anak grid, tanpa wrapper baru.
+    // Foto/ornamen di dalamnya memakai translate utilities sendiri dan tidak
+    // tersentuh transform reveal ini (transform tidak mewarisi ke anak).
+    <div className="sj-reveal flex flex-col items-center gap-1.5 text-center">
         <div className="relative mb-6 w-56 max-w-full sm:w-64 lg:w-72">
         {/* Garis bingkai offset */}
         <div
@@ -789,10 +841,15 @@ function Couple({
     >
       <Floral sym="cluster" className="absolute -right-14 -top-6 w-44 opacity-80" />
       <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
-        <p className="text-[11px] uppercase tracking-[0.46em]" style={{ color: SN.accentInk }}>
-          Mempelai
-        </p>
-        <p className="mx-auto mb-14 mt-5 max-w-sm font-[family-name:var(--font-serif-elegant)] text-2xl italic leading-snug sm:text-3xl" style={{ color: SN.brown }}>
+        {/* Judul section: mask overflow-hidden statis, teks naik dari balik
+            mask (sj-line). Div mask tidak diberi kelas transform agar hanya
+            teksnya yang bergerak — layout tidak berubah. */}
+        <div className="overflow-hidden">
+          <p className="sj-reveal sj-line text-[11px] uppercase tracking-[0.46em]" style={{ color: SN.accentInk }}>
+            Mempelai
+          </p>
+        </div>
+        <p className="sj-reveal mx-auto mb-14 mt-5 max-w-sm font-[family-name:var(--font-serif-elegant)] text-2xl italic leading-snug sm:text-3xl" style={{ color: SN.brown }}>
           Kami mohon do&apos;a &amp; restunya atas pernikahan kami
         </p>
         <div className="grid grid-cols-1 items-center justify-items-center gap-14 lg:grid-cols-[1fr_auto_1fr] lg:gap-x-6">
@@ -804,7 +861,7 @@ function Couple({
             parentName={bride?.parentName}
             childOf={bride?.childOf ?? bride?.bio}
           />
-          <p className="font-[family-name:var(--font-script)] text-6xl leading-none" style={{ color: SN.rose }}>
+          <p className="sj-reveal font-[family-name:var(--font-script)] text-6xl leading-none" style={{ color: SN.rose }}>
             &amp;
           </p>
           <Person
@@ -858,7 +915,7 @@ function Countdown({ eventDate, photo }: { eventDate: string; photo?: string }) 
       <Floral sym="cluster" className="absolute -left-10 -top-8 w-44 opacity-80" />
       <Floral sym="cluster" className="absolute -bottom-8 -right-10 w-44 opacity-80" />
 
-      <div className="relative z-10 mx-auto max-w-2xl px-6 text-center">
+      <div className="sj-reveal relative z-10 mx-auto max-w-2xl px-6 text-center">
         <p className="text-[11px] uppercase tracking-[0.46em]" style={{ color: "#EBD9CB" }}>
           Menuju Hari Bahagia
         </p>
@@ -933,8 +990,11 @@ function Acara({
       <Floral sym="sprig" className="absolute -left-6 top-[8%] w-16 opacity-85 sm:w-20" />
       <Floral sym="sprig" className="absolute -right-6 bottom-[6%] w-16 -scale-x-100 -scale-y-100 opacity-85 sm:w-20" />
       <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
-        <h2 className="sn-h2">Acara</h2>
-        <p className="mx-auto mt-5 max-w-sm text-sm">
+        {/* Judul dengan teknik mask line — mask statis, html naik dari bawah */}
+        <div className="overflow-hidden">
+          <h2 className="sj-reveal sj-line sn-h2">Acara</h2>
+        </div>
+        <p className="sj-reveal mx-auto mt-5 max-w-sm text-sm">
           Kami bermaksud untuk mengundang saudara/i dalam acara pernikahan kami pada:
         </p>
 
@@ -957,7 +1017,7 @@ function Acara({
           )}
         </div>
 
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-2.5">
+        <div className="sj-reveal mt-14 flex flex-wrap items-center justify-center gap-2.5">
           {(cards[0]?.mapUrl ?? locationMap) && (
             <a
               href={cards[0]?.mapUrl ?? locationMap}
@@ -998,7 +1058,9 @@ function EventBlock({
   mapUrl?: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 text-center">
+    // Reveal langsung di root kartu (anak grid) — jangan dibungkus div baru
+    // supaya struktur grid lg berdampingan tidak berubah.
+    <div className="sj-reveal flex flex-col items-center gap-2 text-center">
       <h3 className="sn-h2 text-2xl sm:text-3xl" style={{ letterSpacing: ".18em" }}>
         {title}
       </h3>
@@ -1049,10 +1111,13 @@ function Kisah({ story }: { story: NonNullable<TemplateProps["data"]["story"]> }
       <Floral sym="cluster" className="absolute -left-14 -top-8 w-44 opacity-80" />
       <div className="relative z-10 mx-auto max-w-4xl px-6">
         <div className="text-center">
-          <p className="font-[family-name:var(--font-script)] text-3xl" style={{ color: SN.rose }}>
-            Perjalanan kami
-          </p>
-          <h2 className="sn-h2 mt-2">Kisah Cinta</h2>
+          {/* Judul script gaya editorial: muncul dari balik mask */}
+          <div className="overflow-hidden">
+            <p className="sj-reveal sj-line font-[family-name:var(--font-script)] text-3xl" style={{ color: SN.rose }}>
+              Perjalanan kami
+            </p>
+          </div>
+          <h2 className="sj-reveal sn-h2 mt-2">Kisah Cinta</h2>
         </div>
 
         <div className="relative mt-14">
@@ -1064,7 +1129,9 @@ function Kisah({ story }: { story: NonNullable<TemplateProps["data"]["story"]> }
           />
           <ol className="space-y-12">
             {story.map((s) => (
-              <li key={s.id} className="relative grid grid-cols-[24px_1fr] gap-x-5 lg:grid-cols-[1fr_56px_1fr] lg:items-center lg:gap-x-0">
+              // Reveal tiap item timeline (level <li> langsung) — garis &
+              // titik progres adalah anaknya dan tak ikut bertransformasi.
+              <li key={s.id} className="sj-reveal relative grid grid-cols-[24px_1fr] gap-x-5 lg:grid-cols-[1fr_56px_1fr] lg:items-center lg:gap-x-0">
                 <span
                   aria-hidden="true"
                   className="relative z-10 mt-1 grid h-5 w-5 place-items-center rounded-full lg:col-start-2 lg:row-start-1 lg:mx-auto lg:mt-0"
@@ -1140,7 +1207,9 @@ function Galeri({ gallery }: { gallery: NonNullable<TemplateProps["data"]["galle
       <Floral sym="cluster" className="absolute -right-14 -top-7 w-40 opacity-85" />
       <Floral sym="cluster" className="absolute -bottom-7 -left-14 w-40 opacity-85" />
       <div className="relative z-10 mx-auto max-w-6xl px-6">
-        <h2 className="sn-h2 text-center">Galeri</h2>
+        <div className="overflow-hidden">
+          <h2 className="sj-reveal sj-line sn-h2 text-center">Galeri</h2>
+        </div>
         {/* Ponsel/tablet: 2 kolom, foto besar tiap 3. Laptop: mosaik 12 kolom */}
         <div className="mt-12 grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-12 lg:items-start lg:gap-5">
           {gallery.map((g, i) => (
@@ -1149,7 +1218,7 @@ function Galeri({ gallery }: { gallery: NonNullable<TemplateProps["data"]["galle
               type="button"
               onClick={() => setIndex(i)}
               aria-label={`Buka foto ${i + 1}: ${g.caption ?? "foto galeri"}`}
-              className={`group relative overflow-hidden rounded-md shadow-[0_18px_34px_-24px_rgba(64,54,51,.55)] ${
+              className={`sj-reveal group relative overflow-hidden rounded-md shadow-[0_18px_34px_-24px_rgba(64,54,51,.55)] ${
                 i % 3 === 0 ? "col-span-2 aspect-[4/5]" : "aspect-[3/4]"
               } ${galClass(i)}`}
               style={{ backgroundColor: SN.beige }}
@@ -1239,12 +1308,14 @@ function Rsvp({ invitationId, guestName }: { invitationId: string; guestName?: s
       <Floral sym="cluster" className="absolute -left-16 -top-9 w-48 opacity-90" />
       <Floral sym="cluster" className="absolute -bottom-9 -right-16 w-48 opacity-90" />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-3 px-6 text-center">
-        <h2 className="sn-h2">RSVP</h2>
-        <p className="text-[11px] uppercase tracking-[0.46em]" style={{ color: SN.accentInk }}>
+        <div className="overflow-hidden">
+          <h2 className="sj-reveal sj-line sn-h2">RSVP</h2>
+        </div>
+        <p className="sj-reveal text-[11px] uppercase tracking-[0.46em]" style={{ color: SN.accentInk }}>
           Konfirmasi Kehadiran
         </p>
-        <p className="text-sm">Kehadiran dan doa Anda adalah hadiah terbaik bagi kami.</p>
-        <button type="button" className="sn-btn sn-btn-solid mt-6" onClick={() => setIsOpen(true)}>
+        <p className="sj-reveal text-sm">Kehadiran dan doa Anda adalah hadiah terbaik bagi kami.</p>
+        <button type="button" className="sj-reveal sn-btn sn-btn-solid mt-6" onClick={() => setIsOpen(true)}>
           Konfirmasi Kehadiran
         </button>
       </div>
@@ -1275,15 +1346,18 @@ function Kado({ gifts }: { gifts: NonNullable<TemplateProps["data"]["gifts"]> })
     <section id="kado" className="relative overflow-hidden py-20 md:py-24">
       <Floral sym="sprig" className="absolute -right-6 top-[10%] w-16 -scale-x-100 opacity-85 sm:w-20" />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4 px-6 text-center">
-        <p className="font-[family-name:var(--font-script)] text-3xl" style={{ color: SN.rose }}>
-          Tanda kasih
-        </p>
-        <h2 className="sn-h2">Kado</h2>
-        <p className="text-sm">
+        {/* Script judul kado: teknik mask line yang sama dengan judul lain */}
+        <div className="overflow-hidden">
+          <p className="sj-reveal sj-line font-[family-name:var(--font-script)] text-3xl" style={{ color: SN.rose }}>
+            Tanda kasih
+          </p>
+        </div>
+        <h2 className="sj-reveal sn-h2">Kado</h2>
+        <p className="sj-reveal text-sm">
           Doa restu Anda sudah cukup bagi kami. Bila ingin memberi tanda kasih,
           kami berterima kasih dengan tulus.
         </p>
-        <button type="button" className="sn-btn sn-btn-solid mt-6" onClick={() => setIsOpen(true)}>
+        <button type="button" className="sj-reveal sn-btn sn-btn-solid mt-6" onClick={() => setIsOpen(true)}>
           Kirim Kado
         </button>
       </div>
@@ -1410,9 +1484,11 @@ function Ucapan({
     >
       <Floral sym="cluster" className="absolute -right-14 -top-7 w-40 opacity-80" />
       <div className="relative z-10 mx-auto max-w-lg px-6">
-        <h2 className="sn-h2 text-center">Ucapan &amp; Doa</h2>
+        <div className="overflow-hidden">
+          <h2 className="sj-reveal sj-line sn-h2 text-center">Ucapan &amp; Doa</h2>
+        </div>
         <div
-          className="mt-10 rounded-2xl border-l-4 p-5 text-left"
+          className="sj-reveal mt-10 rounded-2xl border-l-4 p-5 text-left"
           style={{
             borderColor: SN.rose,
             backgroundColor: "rgba(251,248,244,.7)",
@@ -1424,7 +1500,7 @@ function Ucapan({
             borderClass="border-[rgba(176,138,112,.38)] bg-transparent focus:border-[#9A7358] focus:ring-[#EFE7DE]"
           />
         </div>
-        <div className="mt-10">
+        <div className="sj-reveal mt-10">
           <WishList
             wishes={wishes ?? []}
             cardClass="border-[rgba(176,138,112,.38)] bg-[rgba(251,248,244,.75)]"
@@ -1506,16 +1582,18 @@ function Closing({
       <Floral sym="cluster" className="absolute -left-14 -top-8 w-44 opacity-80" />
       <Floral sym="cluster" className="absolute -right-14 -top-8 w-44 opacity-80" />
 
+      {/* Blok penutup: reveal mana pun yang penting hanya opacity+transform;
+          kelopak/sjn-petal & foto latar tidak diubah agar efeknya tetap jalan */}
       <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-4 px-6 text-center">
-        <p className="font-[family-name:var(--font-serif-elegant)] text-2xl italic leading-relaxed sm:text-3xl">
+        <p className="sj-reveal font-[family-name:var(--font-serif-elegant)] text-2xl italic leading-relaxed sm:text-3xl">
           &ldquo;Atas kehadiran saudara/i &amp; Do&apos;a restunya,
           <br />
           kami ucapkan terimakasih&rdquo;
         </p>
-        <p className="mt-6 text-[11px] uppercase tracking-[0.4em]" style={{ color: "#EBD9CB" }}>
+        <p className="sj-reveal mt-6 text-[11px] uppercase tracking-[0.4em]" style={{ color: "#EBD9CB" }}>
           Hormat Kami
         </p>
-        <div className="mt-2">
+        <div className="sj-reveal mt-2">
           <NamesTitle brideNick={brideNick} groomNick={groomNick} cream size="medium" />
         </div>
       </div>
@@ -1618,6 +1696,32 @@ const SENJA_KINETICS = `
   0%{transform:translate(0,-30px) rotate(0); opacity:0}
   10%{opacity:.5} 90%{opacity:.42}
   100%{transform:translate(var(--sx,40px), 680px) rotate(420deg); opacity:0}
+}
+/* Reveal-on-scroll (kelas wajib mengandung "-reveal"/"-visible": mode
+   thumbnail ?shot=1 di app/preview/[key]/page.tsx memaksa semua elemen
+   [class*="-reveal"] terlihat supaya tangkapan layar tidak tertangkap
+   opacity 0). Signatur Senja: "baris naik dari balik" — hanya opacity +
+   transform, tidak pernah menyentuh clip-path/filter/margin/height. */
+.sj-reveal{
+  opacity:0;
+  transform:translateY(26px);
+  transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1);
+}
+.sj-reveal.sj-visible{opacity:1;transform:none}
+/* Judul editorial — muncul dari bawah mask overflow-hidden. Mask-nya
+   (div pembungkus) sengaja TANPA kelas sj-reveal supaya tidak ikut
+   bertransformasi; hanya elemen teks di dalam mask yang bergerak. */
+.sj-reveal.sj-line{
+  transform:translateY(112%);
+  transition:transform .75s cubic-bezier(.2,.85,.25,1);
+}
+/* WAJIB setelah .sj-line: selector .sj-line (spesifisitas sama) akan
+   menimpa transform:none milik .sj-visible sehingga judul tetap teronggok
+   di luar mask selamanya. */
+.sj-reveal.sj-line.sj-visible{transform:none}
+@media (prefers-reduced-motion:reduce){
+  /* Reveal dimatikan: konten langsung tampak penuh tanpa animasi */
+  .sj-reveal{opacity:1;transform:none;transition:none}
 }
 @media (prefers-reduced-motion:reduce){
   .sn-scroll-line, .sn-petal{animation:none}

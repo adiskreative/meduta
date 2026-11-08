@@ -10,7 +10,6 @@ import {
   ExternalLink,
   AtSign,
   Gift,
-  Sparkles,
   ChevronDown,
   ArrowUp,
   PartyPopper,
@@ -97,7 +96,52 @@ const FT_STYLES = `
     50% { transform: translateY(8px); opacity: 0.6; }
   }
   .ft-scroll-hint { animation: ftScrollBounce 1.8s ease-in-out infinite; }
+
+  /* Reveal khas Fairytale: konten "diturunkan dari langit dongeng" — turun
+     dari atas sambil sedikit miring, lalu lurus. Kebalikan template lain
+     yang umumnya mengangkat dari bawah. Properti hover kartu ikut
+     ditransisikan agar efek hover (rotate/scale) tetap hidup. */
+  .ft-reveal {
+    opacity: 0;
+    transform: translateY(-44px) rotate(1.6deg);
+    transform-origin: 50% 0;
+    transition: opacity .7s ease,
+      transform .7s cubic-bezier(.22, 1, .36, 1),
+      translate .5s ease, scale .5s ease, rotate .5s ease,
+      border-color .3s ease, background-color .3s ease, box-shadow .3s ease;
+  }
+  .ft-reveal.ft-visible { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    /* Aksesibilitas: minta gerak minim → tampil penuh tanpa animasi */
+    .ft-reveal { opacity: 1; transform: none; transition: none; }
+  }
 `;
+
+/* Hook reveal tanpa deps: effect dijalankan ulang tiap render supaya node
+   kondisional (konten setelah gerbang dibuka, modal galeri) tetap terpantau.
+   Fallback tanpa IntersectionObserver: langsung tampilkan semua. */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      document.querySelectorAll(".ft-reveal:not(.ft-visible)").forEach((el) => el.classList.add("ft-visible"));
+      return;
+    }
+    const els = document.querySelectorAll(".ft-reveal:not(.ft-visible)");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("ft-visible");
+            io.unobserve(e.target); // sekali muncul tidak perlu dipantau lagi
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
 
 /* ------------------------------------------------------------------ */
 /* Kupu-kupu animasi (CSS murni pengganti framer-motion referensi)     */
@@ -314,6 +358,9 @@ function FairytaleShell({
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // Reveal dipanggil sebelum early-return agar urutan hook stabil
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -469,7 +516,7 @@ function SectionHeading({
   desc?: string;
 }) {
   return (
-    <div className="mb-14 text-center">
+    <div className="ft-reveal mb-14 text-center">
       <span
         className={`text-4xl ${scriptColor}`}
         style={{ fontFamily: "var(--font-script)" }}
@@ -525,7 +572,7 @@ function Cover({
       </div>
 
       {/* Bingkai wreath watercolor mengelilingi foto pasangan */}
-      <div className="relative mx-auto my-6 h-64 w-64 sm:h-80 sm:w-80">
+      <div className="ft-reveal relative mx-auto my-6 h-64 w-64 sm:h-80 sm:w-80">
         <WatercolorFlowerFrame className="pointer-events-none absolute -inset-8 z-10" />
         <div className="relative z-0 h-full w-full overflow-hidden rounded-full border-4 border-white shadow-2xl">
           {gatePhoto ? (
@@ -543,12 +590,12 @@ function Cover({
         </div>
       </div>
 
-      <span className="inline-block rounded-full border border-purple-200 bg-white/80 px-5 py-1.5 text-sm font-semibold uppercase tracking-widest text-purple-700 shadow-sm">
+      <span className="ft-reveal inline-block rounded-full border border-purple-200 bg-white/80 px-5 py-1.5 text-sm font-semibold uppercase tracking-widest text-purple-700 shadow-sm">
         {eventName}
       </span>
 
       <h1
-        className="ft-glow-text my-4 text-5xl font-bold leading-tight sm:text-7xl"
+        className="ft-glow-text ft-reveal my-4 text-5xl font-bold leading-tight sm:text-7xl"
         style={{
           fontFamily: "var(--font-script)",
           backgroundImage:
@@ -562,14 +609,14 @@ function Cover({
         {groomNick ?? "Pria"} &amp; {brideNick ?? "Wanita"}
       </h1>
 
-      <p className="mx-auto max-w-xl font-[family-name:var(--font-serif-elegant)] text-lg italic text-slate-700 md:text-xl">
+      <p className="ft-reveal mx-auto max-w-xl font-[family-name:var(--font-serif-elegant)] text-lg italic text-slate-700 md:text-xl">
         &ldquo;Sama seperti kelopak bunga yang mekar di musim semi, cinta kami
         tumbuh menjadi keabadian.&rdquo;
       </p>
 
       {/* Pill tanggal & lokasi (dari referensi) — kartu solid agar teks tajam */}
       {(eventDate || venue) && (
-        <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-3 rounded-full border-2 border-pink-200 bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-lg md:text-base">
+        <div className="ft-reveal mt-8 inline-flex flex-wrap items-center justify-center gap-3 rounded-full border-2 border-pink-200 bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-lg md:text-base">
           {eventDate ? (
             <>
               <CalendarDays className="h-5 w-5 text-pink-600" />
@@ -587,7 +634,7 @@ function Cover({
       )}
 
       {/* Indikator gulir */}
-      <div className="mt-10 flex flex-col items-center">
+      <div className="ft-reveal mt-10 flex flex-col items-center">
         <span className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-purple-600">
           Gulir Ke Bawah
         </span>
@@ -638,7 +685,7 @@ function CountdownSection({
   return (
     <section className="relative px-4 py-16 text-center">
       <div className="mx-auto max-w-4xl">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-pink-100 p-2 text-pink-600">
+        <div className="ft-reveal mb-3 inline-flex items-center gap-2 rounded-full bg-pink-100 p-2 text-pink-600">
           <Clock className="h-6 w-6" />
         </div>
         <h2 className="mb-2 font-[family-name:var(--font-serif-elegant)] text-3xl font-bold text-slate-800 md:text-4xl">
@@ -648,7 +695,7 @@ function CountdownSection({
           Menghitung detik menuju pengikatan janji suci
         </p>
 
-        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+        <div className="ft-reveal mx-auto grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
           {items.map((item) => (
             <div
               key={item.label}
@@ -666,7 +713,7 @@ function CountdownSection({
         </div>
 
         {eventDate ? (
-          <div className="mt-10">
+          <div className="ft-reveal mt-10">
             <a
               href={calUrl}
               target="_blank"
@@ -742,7 +789,7 @@ function PersonCard({
 }) {
   return (
     <div
-      className={`ft-card relative rounded-[35px] border-4 p-8 text-center shadow-2xl ${borderColor}`}
+      className={`ft-card ft-reveal relative rounded-[35px] border-4 p-8 text-center shadow-2xl ${borderColor}`}
     >
       <div className={`relative mx-auto mb-6 h-48 w-48 overflow-hidden rounded-full border-4 shadow-lg ${ringColor}`}>
         {person?.photoUrl ? (
@@ -820,7 +867,7 @@ function StorySection({
           {story.map((item, index) => (
             <div
               key={item.id}
-              className="ft-card relative rounded-3xl border-2 border-pink-200 p-6 shadow-lg md:p-8"
+              className="ft-card ft-reveal relative rounded-3xl border-2 border-pink-200 p-6 shadow-lg md:p-8"
             >
               <div className="mb-2 flex flex-wrap items-center gap-3">
                 {item.date ? (
@@ -905,7 +952,7 @@ function EventsSection({
               .map((e) => (
                 <div
                   key={e.id}
-                  className="ft-card rounded-3xl p-6 text-left shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="ft-card ft-reveal rounded-3xl p-6 text-left shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
                   <span className="inline-block rounded-full bg-gradient-to-r from-pink-500 to-purple-500 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
                     {formatDate(e.date)}
@@ -967,7 +1014,7 @@ function EventCard({
 }) {
   return (
     <div
-      className={`ft-card relative overflow-hidden rounded-[35px] border-4 p-8 shadow-2xl ${borderColor}`}
+      className={`ft-card ft-reveal relative overflow-hidden rounded-[35px] border-4 p-8 shadow-2xl ${borderColor}`}
     >
       <div className={`mb-4 inline-block rounded-2xl p-3 ${iconClass}`}>{icon}</div>
       <h3 className="font-[family-name:var(--font-serif-elegant)] text-2xl font-bold text-slate-800">
@@ -1029,7 +1076,7 @@ function GallerySection({
               key={item.id}
               type="button"
               onClick={() => setSelected({ url: item.url, caption: item.caption })}
-              className={`ft-card group relative h-80 overflow-hidden rounded-3xl border-4 border-pink-200/80 shadow-xl transition-transform duration-500 hover:rotate-2 hover:scale-105 ${
+              className={`ft-card ft-reveal group relative h-80 overflow-hidden rounded-3xl border-4 border-pink-200/80 shadow-xl transition-transform duration-500 hover:rotate-2 hover:scale-105 ${
                 index % 2 === 0 ? "hover:rotate-2" : "hover:-rotate-2"
               }`}
             >
@@ -1091,7 +1138,7 @@ function GiftsSection({
   return (
     <section className="relative px-4 py-20 text-center">
       <div className="mx-auto max-w-4xl">
-        <div className="ft-card relative overflow-hidden rounded-[40px] border-4 border-amber-300 p-8 text-left shadow-2xl md:p-12">
+        <div className="ft-card ft-reveal relative overflow-hidden rounded-[40px] border-4 border-amber-300 p-8 text-left shadow-2xl md:p-12">
           <div className="mb-4 text-center">
             <div className="mb-4 inline-block rounded-3xl bg-amber-100 p-4 text-amber-600">
               <Gift className="h-10 w-10 animate-bounce" />
@@ -1109,7 +1156,7 @@ function GiftsSection({
             {gifts.map((g, i) => (
               <div
                 key={g.id}
-                className={`relative rounded-3xl border-2 bg-white/90 p-6 shadow-md ${ACCENTS[i % ACCENTS.length]}`}
+                className={`ft-reveal relative rounded-3xl border-2 bg-white/90 p-6 shadow-md ${ACCENTS[i % ACCENTS.length]}`}
               >
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
                   {g.provider}
@@ -1144,7 +1191,7 @@ function RsvpSection({
 }) {
   return (
     <section className="relative px-4 py-20">
-      <div className="ft-card mx-auto max-w-2xl rounded-[40px] border-4 border-pink-300 p-8 shadow-2xl md:p-12">
+      <div className="ft-card ft-reveal mx-auto max-w-2xl rounded-[40px] border-4 border-pink-300 p-8 shadow-2xl md:p-12">
         <div className="mb-8 text-center">
           <span
             className="text-4xl text-pink-600"
@@ -1180,7 +1227,7 @@ function Wishes({
   return (
     <section className="relative px-4 py-16">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-12 text-center">
+        <div className="ft-reveal mb-12 text-center">
           <span
             className="text-4xl text-purple-600"
             style={{ fontFamily: "var(--font-script)" }}
@@ -1203,7 +1250,7 @@ function Wishes({
           />
         </div>
 
-        <div className="ft-card rounded-3xl border-2 border-pink-200 p-6 shadow-xl md:p-8">
+        <div className="ft-reveal ft-card rounded-3xl border-2 border-pink-200 p-6 shadow-xl md:p-8">
           <WishForm
             invitationId={invitationId}
             accentClass="bg-gradient-to-r from-pink-500 via-purple-500 to-teal-500 shadow-lg shadow-pink-500/30 hover:shadow-xl"
@@ -1221,8 +1268,7 @@ function Wishes({
 function MessageSection({ text }: { text: string }) {
   return (
     <section className="relative px-4 py-20 text-center">
-      <div className="ft-card mx-auto max-w-lg rounded-[40px] border-4 border-teal-200 p-8 shadow-2xl">
-        <Sparkles className="mx-auto mb-4 h-6 w-6 text-amber-400" />
+      <div className="ft-card ft-reveal mx-auto max-w-lg rounded-[40px] border-4 border-teal-200 p-8 shadow-2xl">
         <p className="whitespace-pre-line font-[family-name:var(--font-serif-elegant)] text-lg italic leading-relaxed text-slate-800">
           {text}
         </p>
@@ -1242,7 +1288,7 @@ function Footer({
   brideName?: string;
 }) {
   return (
-    <footer className="relative border-t border-pink-200/60 bg-white/40 px-4 py-12 text-center backdrop-blur-md">
+    <footer className="ft-reveal relative border-t border-pink-200/60 bg-white/40 px-4 py-12 text-center backdrop-blur-md">
       <h3
         className="text-3xl font-bold text-pink-600"
         style={{ fontFamily: "var(--font-script)" }}

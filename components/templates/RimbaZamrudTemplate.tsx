@@ -179,6 +179,34 @@ export default function RimbaZamrudTemplate(props: TemplateProps) {
   );
 }
 
+/* Reveal-on-scroll "sulur menyelip": hook TANPA deps — efek dijalankan
+   ulang tiap render supaya node kondisional yang baru dirender tetap
+   terpantau. Fallback: bila IntersectionObserver tidak ada, semua elemen
+   langsung dimunculkan agar konten tidak macet opacity 0. */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      // Lingkungan tanpa IO (SSR/test): pastikan semua terlihat
+      document.querySelectorAll(".rz-reveal:not(.rz-visible)").forEach((el) => el.classList.add("rz-visible"));
+      return;
+    }
+    const els = document.querySelectorAll(".rz-reveal:not(.rz-visible)");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("rz-visible");
+            io.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
+
 function RimbaShell({
   invitationId,
   guestName,
@@ -191,6 +219,11 @@ function RimbaShell({
   onOpen,
   music,
 }: TemplateProps & GateProps & { music: MusicController }) {
+  // Reveal-on-scroll dipanggil di Shell TERATAS, sebelum early-return
+  // isPublished — aturan React hooks melarang dipanggil setelah return,
+  // dan semua node yang dirender harus terpantau tiap render.
+  useReveal();
+
   if (!isPublished) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0F2A22] px-6 text-center text-[#EEF4EE]">
@@ -484,7 +517,9 @@ function SectionHeading({
   title: string;
 }) {
   return (
-    <div className="mx-auto max-w-2xl text-center">
+    // Judul section: satu titik pemasangan reveal untuk SEMUA judul
+    // (mempelai, countdown, acara, kisah, galeri, rsvp, kado, ucapan)
+    <div className="rz-reveal mx-auto max-w-2xl text-center">
       <p className="text-[10px] font-semibold uppercase tracking-[.32em] text-[#CFB27A]">
         {eyebrow}
       </p>
@@ -521,7 +556,9 @@ function Quote({
         height={900}
         className="pointer-events-none absolute -left-24 bottom-[-10%] hidden w-64 rotate-[12deg] -scale-x-100 opacity-50 sm:block"
       />
-      <div className="relative z-10 mx-auto max-w-3xl text-center">
+      {/* Blok kutipan: reveal arah kiri (default) — teks statis tanpa
+          ornamen bertransformasi di dalamnya */}
+      <div className="rz-reveal relative z-10 mx-auto max-w-3xl text-center">
         <div className="mx-auto mb-7 flex h-12 w-12 items-center justify-center rounded-full border border-[#CFB27A]/45 text-[#CFB27A]">
           <Leaf className="h-5 w-5" />
         </div>
@@ -566,17 +603,18 @@ function Couple({
       />
       <div className="relative z-10 mx-auto max-w-5xl">
         <SectionHeading eyebrow="Dengan penuh rasa syukur" title="Kedua Mempelai" />
-        <p className="mx-auto mt-5 max-w-xl text-center text-sm leading-7 text-[#BCD2C3]">
+        <p className="rz-reveal mx-auto mt-5 max-w-xl text-center text-sm leading-7 text-[#BCD2C3]">
           Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan.
           Dengan memohon rahmat dan ridho-Nya, kami bermaksud menyelenggarakan
           pernikahan putra-putri kami.
         </p>
         <div className="mt-12 grid gap-10 md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-8">
-          <PersonCard person={bride} fallbackName="Mempelai Wanita" />
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#CFB27A]/45 bg-[#E9D7A8]/10 text-[#E9D7A8]">
+          {/* Signatur sulur: kartu kiri menyelip dari kiri, kanan dari kanan */}
+          <PersonCard className="rz-reveal" person={bride} fallbackName="Mempelai Wanita" />
+          <div className="rz-reveal mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#CFB27A]/45 bg-[#E9D7A8]/10 text-[#E9D7A8]">
             <Heart className="h-6 w-6" />
           </div>
-          <PersonCard person={groom} fallbackName="Mempelai Pria" />
+          <PersonCard className="rz-reveal rz-r" person={groom} fallbackName="Mempelai Pria" />
         </div>
       </div>
     </section>
@@ -586,13 +624,19 @@ function Couple({
 function PersonCard({
   person,
   fallbackName,
+  className = "",
 }: {
   person?: TemplateProps["data"]["groom"];
   fallbackName: string;
+  /** Kelas tambahan di root kartu — dipakai untuk kelas reveal (rz-reveal/rz-r)
+      agar kartu mempelai berayun masuk dari kiri/kanan sesuai posisinya. */
+  className?: string;
 }) {
   if (!person?.name) return null;
   return (
-    <article className="text-center">
+    // Reveal langsung di root article (anak grid) — tanpa wrapper baru supaya
+    // struktur grid & ornamen di dalamnya tidak berubah.
+    <article className={className + " text-center"}>
       <div className="relative mx-auto h-72 w-56 overflow-hidden rounded-t-[130px] border border-[#CFB27A]/70 bg-[#1C4636] shadow-[0_26px_70px_-40px_rgba(0,0,0,.8)]">
         {person.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -674,8 +718,8 @@ function CountdownSection({ eventDate }: { eventDate: string }) {
       />
       <div className="relative mx-auto max-w-3xl">
         <SectionHeading eyebrow="Catat tanggalnya" title="Menuju Hari Bahagia" />
-        <p className="mt-5 text-center text-sm text-white/75">{formatDate(eventDate)}</p>
-        <div className="mt-9 grid grid-cols-4 gap-2 sm:gap-4">
+        <p className="rz-reveal mt-5 text-center text-sm text-white/75">{formatDate(eventDate)}</p>
+        <div className="rz-reveal mt-9 grid grid-cols-4 gap-2 sm:gap-4">
           {values.map(({ label, value }) => (
             <div
               key={label}
@@ -738,10 +782,12 @@ function Events({
       />
       <div className="relative mx-auto max-w-5xl">
         <SectionHeading eyebrow="Rangkaian acara" title="Lokasi & Waktu" />
-        <p className="mt-4 text-center text-sm text-[#BCD2C3]">Dengan penuh kebahagiaan, kami mengundang Anda untuk hadir.</p>
+        <p className="rz-reveal mt-4 text-center text-sm text-[#BCD2C3]">Dengan penuh kebahagiaan, kami mengundang Anda untuk hadir.</p>
         <div className="mt-11 grid gap-5 md:grid-cols-2">
+          {/* Signatur sulur: kartu kiri (akad) dari kiri, kartu kanan dari kanan */}
           {hasMainEvent && (
             <EventCard
+              className="rz-reveal"
               title="Akad Nikah"
               date={agenda.main.date}
               time={agenda.main.time}
@@ -752,6 +798,7 @@ function Events({
           {agenda.additional.map((event) => (
             <EventCard
               key={event.id}
+              className="rz-reveal rz-r"
               title={event.title || "Rangkaian Acara"}
               date={event.date}
               time={event.time}
@@ -760,7 +807,7 @@ function Events({
             />
           ))}
         </div>
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
+        <div className="rz-reveal mt-7 flex flex-wrap justify-center gap-3">
           {agenda.main.mapUrl && (
             <a
               href={agenda.main.mapUrl}
@@ -792,15 +839,21 @@ function EventCard({
   time,
   venue,
   location,
+  className = "",
 }: {
   title: string;
   date?: string;
   time?: string;
   venue?: string;
   location?: string;
+  /** Kelas tambahan di root kartu — dipakai untuk kelas reveal
+      (rz-reveal/rz-r), arah sulur bergantung posisi kartu di grid. */
+  className?: string;
 }) {
   return (
-    <article className="rz-card relative overflow-hidden p-6 text-center sm:p-8">
+    // Reveal langsung di root article (anak grid) — ornamen di dalamnya
+    // berdiri sendiri dan tidak ikut bertransformasi.
+    <article className={className + " rz-card relative overflow-hidden p-6 text-center sm:p-8"}>
       <Image
         src={DECOR.fernSoft}
         alt=""
@@ -852,7 +905,9 @@ function Story({ items }: { items: NonNullable<TemplateProps["data"]["story"]> }
             {items.map((item, index) => (
               <article
                 key={item.id}
-                className={`relative pl-12 sm:w-1/2 sm:pl-0 ${index % 2 === 0 ? "sm:pr-10 sm:text-right" : "sm:ml-auto sm:pl-10"}`}
+                className={`rz-reveal ${index % 2 === 1 ? "rz-r" : ""} relative pl-12 sm:w-1/2 sm:pl-0 ${
+                  index % 2 === 0 ? "sm:pr-10 sm:text-right" : "sm:ml-auto sm:pl-10"
+                }`}
               >
                 <span className={`absolute left-[8px] top-2 h-4 w-4 rounded-full border-[3px] border-[#0F2A22] bg-[#CFB27A] shadow-[0_0_0_1px_#CFB27A] sm:left-auto ${index % 2 === 0 ? "sm:-right-[8px]" : "sm:-left-[8px]"}`} />
                 <p className="text-[10px] uppercase tracking-[.23em] text-[#CFB27A]">{item.date}</p>
@@ -905,7 +960,7 @@ function Gallery({ items }: { items: GalleryItem[] }) {
               key={item.id}
               type="button"
               onClick={() => setSelectedImage(item)}
-              className={`rz-gallery-image group relative overflow-hidden rounded-2xl bg-[#1C4636] text-left shadow-md ${index % 5 === 1 ? "aspect-[4/5]" : "aspect-square"}`}
+              className={`rz-reveal ${index % 2 === 1 ? "rz-r" : ""} rz-gallery-image group relative overflow-hidden rounded-2xl bg-[#1C4636] text-left shadow-md ${index % 5 === 1 ? "aspect-[4/5]" : "aspect-square"}`}
               aria-label={`Perbesar foto ${item.caption || index + 1}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1080,8 +1135,9 @@ function Gifts({ gifts }: { gifts: NonNullable<TemplateProps["data"]["gifts"]> }
         dapat melalui informasi berikut.
       </p>
       <div className="mt-7 grid gap-4 sm:grid-cols-2">
-        {gifts.map((gift) => (
-          <article key={gift.id} className="rz-card rz-card-sm relative overflow-hidden p-5 text-left">
+        {gifts.map((gift, index) => (
+          // Signatur sulur: kartu hadiah kolom kanan menyelip dari kanan
+          <article key={gift.id} className={`rz-reveal ${index % 2 === 1 ? "rz-r" : ""} rz-card rz-card-sm relative overflow-hidden p-5 text-left`}>
             <Image
               src={DECOR.roseSprig}
               alt=""
@@ -1128,14 +1184,14 @@ function Wishes({
       />
       <div className="relative mx-auto max-w-5xl">
         <SectionHeading eyebrow="Doa terbaik untuk kami" title="Ucapan & Doa" />
-        <div className="rz-card mx-auto mt-9 max-w-xl p-5 sm:p-8">
+        <div className="rz-card rz-form rz-reveal mx-auto mt-9 max-w-xl p-5 sm:p-8">
           <WishForm
             invitationId={invitationId}
             accentClass="bg-[#CFB27A] hover:bg-[#E9D7A8] text-[#1B120C]"
             borderClass="border-[#CFB27A]/35 focus:border-[#E9D7A8] focus:ring-[#E9D7A8]/20"
           />
         </div>
-        <div className="mt-9">
+        <div className="rz-reveal mt-9">
           <WishList
             wishes={wishes}
             cardClass="rz-card rz-card-sm"
@@ -1178,7 +1234,10 @@ function Closing({
         height={900}
         className="rz-float rz-mirror pointer-events-none absolute -bottom-24 -right-36 hidden w-72 -scale-x-100 opacity-90 sm:block"
       />
-      <div className="relative mx-auto max-w-2xl">
+      {/* Blok penutup: reveal aman karena elemen ini adalah teks di ATAS
+          layer foto — animasi breathe/sulur hiasan ada di <Image> terpisah
+          (rz-scene-backdrop / rz-float), tidak membungkus blok ini. */}
+      <div className="rz-reveal relative mx-auto max-w-2xl">
         <Heart className="mx-auto h-7 w-7 text-[#CFB27A]" />
         <p className="mt-6 text-[10px] uppercase tracking-[.32em] text-[#E9D7A8]">Terima Kasih</p>
         <h2 className="rz-names mt-4 text-4xl sm:text-6xl">
@@ -1340,6 +1399,30 @@ const RIMBA_STYLES = `
   @media (prefers-reduced-motion: reduce) {
     .rz-gate-backdrop, .rz-cover-backdrop, .rz-gate-flower, .rz-float, .rz-floral-decor, .rz-scene-backdrop, .rz-open-button, .rz-open-button::after, .rz-garland-sway, .rz-glow, .rz-spark, .rz-mist { animation: none; }
     .rz-gate-out { transition-duration: .01ms; }
+  }
+  /* Reveal-on-scroll gaya "sulur menyelip": blok menyelip masuk sambil
+     berayun, arah kiri (default) / kanan (.rz-r) bergantian. Kelas wajib
+     mengandung "-reveal"/"-visible" — mode thumbnail ?shot=1 di
+     app/preview/[key]/page.tsx memaksa semua [class*="-reveal"] terlihat
+     supaya tangkapan layar tidak tertangkap opacity 0. Hanya opacity +
+     transform (tanpa clip-path/filter/margin/height). */
+  .rz-reveal {
+    opacity: 0;
+    transform: translateX(-64px) rotate(-2.5deg) scale(.96);
+    transform-origin: 0 100%;
+    transition: opacity .75s ease, transform .75s cubic-bezier(.22, 1.18, .3, 1);
+  }
+  .rz-reveal.rz-r {
+    transform: translateX(64px) rotate(2.5deg) scale(.96);
+    transform-origin: 100% 100%;
+  }
+  .rz-reveal.rz-visible {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Reveal dimatikan: konten langsung tampak penuh tanpa animasi */
+    .rz-reveal { opacity: 1; transform: none; transition: none; }
   }
   .rz-button { display: inline-flex; align-items: center; justify-content: center; gap: .55rem; border-radius: 9999px; padding: .7rem 1.15rem; font-size: .75rem; font-weight: 600; transition: background-color .2s, color .2s, transform .2s; }
   .rz-button:hover { transform: translateY(-1px); }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CalendarDays,
   MapPin,
@@ -48,6 +48,91 @@ const ACCENT =
 const BORDER =
   "border-fuchsia-200 bg-white/60 focus:border-fuchsia-500 focus:ring-fuchsia-100";
 
+/* CSS reveal-on-scroll (gaya "kolase tersibak"): tiap blok masuk seperti
+   lembar collage yang disibakkan — datang miring, sedikit membesar, lalu
+   "memantul" menempel lewat easing back-out.
+   Kenapa kelasnya mengandung literal "-reveal": rule global di
+   app/preview/[key]/page.tsx (?shot=1) menargetkan [class*="-reveal"] untuk
+   memaksa opacity/transform normal di thumbnail. Rule itu hanya me-reset
+   opacity/transform/animation, jadi animasi di sini sengaja HANYA memakai dua
+   properti tersebut — clip-path/height dsb. bisa membuat elemen tertinggal
+   tersembunyi di thumbnail.
+   Kenapa transition menyertakan translate/rotate/box-shadow/border/bg:
+   kartu-kartu di template ini punya efek hover via utilitas Tailwind v4
+   (translate/rotate sebagai properti terpisah + transition-all); shorthand
+   "transition" di bawah unlayered akan menimpa utility layer Tailwind, jadi
+   properti hover ikut dilist agar animasi hover kartu tidak mati. */
+const BK_REVEAL_CSS = `
+  .bk-reveal {
+    opacity: 0;
+    transform: rotate(-4deg) translateY(36px) scale(1.05);
+    transition: opacity .7s cubic-bezier(.34,1.56,.64,1),
+      transform .7s cubic-bezier(.34,1.56,.64,1),
+      translate .3s ease, rotate .3s ease, scale .3s ease,
+      box-shadow .3s ease, border-color .3s ease, background-color .3s ease;
+  }
+  .bk-reveal.bk-visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* Varian sisi kiri: kartu bergantian masuk dari kiri sedangkan default
+     masuk dari kanan-bawah, memperkuat kesan collage yang renggang */
+  .bk-reveal.bk-l {
+    transform: rotate(4deg) translateY(36px) translateX(-30px) scale(1.05);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Aksesibilitas: siapa pun yang minta gerak minim, konten langsung tampil
+       penuh tanpa transisi — bukan sekadar dipatamkan setengah */
+    .bk-reveal, .bk-reveal.bk-l {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+`;
+
+/* Hook reveal tanpa deps: effect dijalankan ulang tiap render supaya node yang
+   muncul kondisional (section yang baru dirender setelah gerbang dibuka)
+   tetap terpantau. Ada fallback tanpa IntersectionObserver (mis. webview tua)
+   yang langsung memunculkan semua node — konten tidak pernah hilang. */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      document
+        .querySelectorAll(".bk-reveal:not(.bk-visible)")
+        .forEach((el) => el.classList.add("bk-visible"));
+      return;
+    }
+
+    const els = document.querySelectorAll(".bk-reveal:not(.bk-visible)");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("bk-visible");
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
+
+/* Pembungkus reveal untuk elemen lepas (bukan anak grid); sisanya cukup
+   menempelkan kelas bk-reveal langsung di elemen yang ada. */
+function Reveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={`bk-reveal ${className}`}>{children}</div>;
+}
+
 type GateProps = { gateOpen?: boolean; onGateOpen?: () => void };
 
 export default function BerkreativeTemplate(props: TemplateProps) {
@@ -80,6 +165,10 @@ function BerkreativeShell({
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // WAJIB sebelum early-return isPublished di bawah: aturan hook menuntut
+  // urutan pemanggilan yang konsisten antar render.
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -120,6 +209,7 @@ function BerkreativeShell({
         backgroundAttachment: "fixed",
       }}
     >
+      <style>{BK_REVEAL_CSS}</style>
       {/* Lapisan warna full-color di atas latar navy */}
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_15%_10%,rgba(217,70,239,0.22),transparent_45%),radial-gradient(ellipse_at_85%_25%,rgba(59,130,246,0.18),transparent_45%),radial-gradient(ellipse_at_50%_90%,rgba(244,63,94,0.16),transparent_50%)]" />
 
@@ -214,7 +304,7 @@ function SectionHeading({
   title: string;
 }) {
   return (
-    <div className="text-center">
+    <div className="text-center bk-reveal">
       <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-fuchsia-300">
         {eyebrow}
       </p>
@@ -376,19 +466,20 @@ function MainEvent({
   return (
     <section className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Akad & Resepsi" title="Rangkaian Bahagia" />
-      <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-white/70">
+      <p className="bk-reveal mx-auto mt-5 max-w-md text-sm leading-relaxed text-white/70">
         Kehadiran dan doa restu Anda adalah hadiah terindah bagi kami.
       </p>
 
       <div className="mx-auto mt-12 grid max-w-xl grid-cols-1 gap-5 sm:grid-cols-3">
         {eventDate && (
-          <InfoCard icon={<CalendarDays className="h-5 w-5" />} label={formatDate(eventDate)} />
+          <InfoCard l={false} icon={<CalendarDays className="h-5 w-5" />} label={formatDate(eventDate)} />
         )}
         {eventTime && (
-          <InfoCard icon={<Clock className="h-5 w-5" />} label={formatTime(eventTime)} />
+          <InfoCard l icon={<Clock className="h-5 w-5" />} label={formatTime(eventTime)} />
         )}
         {(venueName || location) && (
           <InfoCard
+            l={false}
             icon={<MapPin className="h-5 w-5" />}
             label={[venueName, location].filter(Boolean).join(", ")}
           />
@@ -396,24 +487,34 @@ function MainEvent({
       </div>
 
       {locationMap && (
-        <a
-          href={locationMap}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${ACCENT} mt-10 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition`}
-        >
-          <MapPin className="h-4 w-4" />
-          Lihat Lokasi di Peta
-          <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-        </a>
+        // Dibungkus Reveal (bukan kelas langsung) di div blok terpisah:
+        // tetap rata tengah karena parent section punya text-center.
+        <Reveal>
+          <a
+            href={locationMap}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${ACCENT} mt-10 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition`}
+          >
+            <MapPin className="h-4 w-4" />
+            Lihat Lokasi di Peta
+            <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+          </a>
+        </Reveal>
       )}
     </section>
   );
 }
 
-function InfoCard({ icon, label }: { icon: React.ReactNode; label: string }) {
+function InfoCard({
+  icon,
+  label,
+  l = false,
+}: { icon: React.ReactNode; label: string; l?: boolean }) {
   return (
-    <div className="group rounded-3xl border border-white/15 bg-white/[0.07] p-6 shadow-lg shadow-fuchsia-900/20 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-300/50 hover:bg-white/[0.12]">
+    <div
+      className={`bk-reveal${l ? " bk-l" : ""} group rounded-3xl border border-white/15 bg-white/[0.07] p-6 shadow-lg shadow-fuchsia-900/20 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-300/50 hover:bg-white/[0.12]`}
+    >
       <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white shadow-lg shadow-pink-600/40 transition-transform duration-300 group-hover:scale-110">
         {icon}
       </span>
@@ -448,11 +549,11 @@ function Couple({
 
       <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
         <PersonCard person={groom} role="Mempelai Pria" gradient="from-fuchsia-500 to-pink-500" />
-        <PersonCard person={bride} role="Mempelai Wanita" gradient="from-violet-500 to-blue-500" />
+        <PersonCard person={bride} role="Mempelai Wanita" gradient="from-violet-500 to-blue-500" l />
       </div>
 
       {!quoteHidden && (
-      <div className="mx-auto mt-10 max-w-xl rounded-3xl border border-amber-200/25 bg-white/[0.07] p-6 backdrop-blur-md">
+      <div className="bk-reveal bk-l mx-auto mt-10 max-w-xl rounded-3xl border border-amber-200/25 bg-white/[0.07] p-6 backdrop-blur-md">
         <Quote className="mx-auto mb-3 h-5 w-5 text-amber-300" />
         {quoteTitle?.trim() ? (
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-fuchsia-300">
@@ -478,13 +579,16 @@ function PersonCard({
   person,
   role,
   gradient,
+  l = false,
 }: {
   person?: TemplateProps["data"]["groom"];
   role: string;
   gradient: string;
+  // l: varian reveal dari kiri (kartu kedua bergantian arah masuk)
+  l?: boolean;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.07] p-8 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-300/50 hover:shadow-2xl hover:shadow-fuchsia-900/40">
+    <div className={`relative group bk-reveal${l ? " bk-l" : ""} overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.07] p-8 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-300/50 hover:shadow-2xl hover:shadow-fuchsia-900/40`}>
       {/* Glow sudut */}
       <div
         className={`pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br ${gradient} opacity-25 blur-2xl transition-transform duration-500 group-hover:scale-150`}
@@ -541,7 +645,7 @@ function AdditionalEvents({
         {events.map((e, i) => (
           <div
             key={e.id}
-            className="group relative overflow-hidden rounded-3xl border border-white/15 bg-white/[0.07] p-6 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-fuchsia-300/50 hover:shadow-xl hover:shadow-fuchsia-900/30"
+            className={`bk-reveal${i % 2 === 1 ? " bk-l" : ""} group relative overflow-hidden rounded-3xl border border-white/15 bg-white/[0.07] p-6 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-fuchsia-300/50 hover:shadow-xl hover:shadow-fuchsia-900/30`}
           >
             {/* Strip gradasi beda tiap kartu — full color */}
             <div
@@ -591,7 +695,7 @@ function MessageSection({ text }: { text: string }) {
   return (
     <section id="pesan" className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Ucapan & Doa" title="Pesana Kami" />
-      <div className="relative mx-auto mt-6 max-w-lg rounded-3xl border border-amber-200/25 bg-white/[0.07] p-8 backdrop-blur-md">
+      <div className="bk-reveal relative mx-auto mt-6 max-w-lg rounded-3xl border border-amber-200/25 bg-white/[0.07] p-8 backdrop-blur-md">
         <Quote className="mx-auto mb-4 h-6 w-6 text-amber-300" />
         <p className="whitespace-pre-line font-[family-name:var(--font-display)] text-lg leading-relaxed text-white/90">
           {text}
@@ -612,7 +716,11 @@ function StorySection({
 
       <div className="mx-auto mt-12 max-w-xl space-y-10 text-left">
         {story.map((item, index) => (
-          <div key={item.id} className="relative pl-10">
+          <div
+            key={item.id}
+            // Item timeline bergantian arah masuk (l pada index ganjil)
+            className={`bk-reveal${index % 2 === 1 ? " bk-l" : ""} relative pl-10`}
+          >
             {index < story.length - 1 && (
               <span className="absolute left-[9px] top-7 h-full w-px bg-gradient-to-b from-fuchsia-400/70 via-pink-400/40 to-transparent" />
             )}
@@ -650,7 +758,7 @@ function GallerySection({
         {gallery.map((item, i) => (
           <figure
             key={item.id}
-            className={`group relative overflow-hidden rounded-3xl border border-white/15 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-fuchsia-900/40 ${
+            className={`bk-reveal${i % 2 === 1 ? " bk-l" : ""} group relative overflow-hidden rounded-3xl border border-white/15 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-fuchsia-900/40 ${
               i % 3 === 0 ? "rotate-[-1.5deg]" : i % 3 === 1 ? "rotate-[1.2deg]" : ""
             }`}
           >
@@ -687,10 +795,10 @@ function GiftsSection({
       </p>
 
       <div className="mx-auto mt-12 grid max-w-xl grid-cols-1 gap-5 sm:grid-cols-2">
-        {gifts.map((g) => (
+        {gifts.map((g, i) => (
           <div
             key={g.id}
-            className="rounded-3xl border border-white/15 bg-white/[0.07] p-6 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300/50 hover:shadow-xl hover:shadow-amber-900/20"
+            className={`bk-reveal${i % 2 === 1 ? " bk-l" : ""} rounded-3xl border border-white/15 bg-white/[0.07] p-6 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300/50 hover:shadow-xl hover:shadow-amber-900/20`}
           >
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-lg shadow-amber-600/30">
@@ -734,10 +842,10 @@ function RsvpSection({
   return (
     <section id="rsvp" className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Kehadiran" title="Konfirmasi Kehadiran" />
-      <p className="mx-auto mt-5 max-w-sm text-sm leading-relaxed text-white/70">
+      <p className="bk-reveal mx-auto mt-5 max-w-sm text-sm leading-relaxed text-white/70">
         Mohon konfirmasi kehadiran Anda agar kami dapat menyiapkan segala sesuatunya.
       </p>
-      <div className="mx-auto mt-10 max-w-md rounded-3xl border border-white/15 bg-white/[0.07] p-7 text-left shadow-2xl shadow-fuchsia-900/30 backdrop-blur-md">
+      <div className="bk-reveal mx-auto mt-10 max-w-md rounded-3xl border border-white/15 bg-white/[0.07] p-7 text-left shadow-2xl shadow-fuchsia-900/30 backdrop-blur-md">
         <RsvpForm
           invitationId={invitationId}
           initialName={guestName}
@@ -764,7 +872,7 @@ function Wishes({
     <section id="ucapan" className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Wedding Wall" title="Kirim Ucapan & Doa" />
 
-      <div className="mx-auto mt-10 max-w-2xl">
+      <div className="bk-reveal mx-auto mt-10 max-w-2xl">
         <WishList
           wishes={wishes ?? []}
           cardClass="border-white/15 bg-white/[0.07] backdrop-blur-md"
@@ -774,7 +882,7 @@ function Wishes({
         />
       </div>
 
-      <div className="mx-auto mt-10 max-w-md rounded-3xl border border-white/15 bg-white/[0.07] p-7 text-left backdrop-blur-md">
+      <div className="bk-reveal bk-l mx-auto mt-10 max-w-md rounded-3xl border border-white/15 bg-white/[0.07] p-7 text-left backdrop-blur-md">
         <WishForm invitationId={invitationId} accentClass={accentClass} borderClass={borderClass} />
       </div>
     </section>
@@ -791,7 +899,7 @@ function Footer({
   return (
     <footer className="relative w-full overflow-hidden bg-gradient-to-b from-[#0b1030] via-[#1a0b2e] to-[#2d0a24] px-6 py-16 text-center text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(217,70,239,0.2),transparent_60%)]" />
-      <div className="relative">
+      <div className="bk-reveal relative">
         <div className="mb-6 flex justify-center">
           <span className="h-px w-12 bg-gradient-to-r from-transparent to-amber-300/70" />
           <RingIcon className="mx-3 h-4 w-4 text-amber-300" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CalendarDays,
   MapPin,
@@ -114,6 +114,37 @@ const GARDEN_STYLES = `
     .gd-sway-corner, .gd-sway-ground, .gd-float { animation: none !important; }
     .gd-petal { display: none !important; }
   }
+  /* Reveal-on-scroll (gaya "tumbuh dari tanah"): blok muncul naik dari bawah
+     sambil membesar dengan poros di dasar elemen — seperti tanaman yang
+     berakar di dalam layar, senada identitas taman template ini.
+     Kelas wajib mengandung literal "-reveal" karena rule global di
+     app/preview/[key]/page.tsx (?shot=1) menargetkan [class*="-reveal"] agar
+     thumbnail tidak tertangkap sama sekali; dan karena rule itu hanya me-reset
+     opacity/transform/animation, efek di sini dibatasi dua properti itu saja.
+     Properti translate/box-shadow/border/bg ikut di-transisi agar efek hover
+     kartu (utilitas Tailwind v4 + transition-all) tidak mati ditimpa. */
+  .gd-reveal {
+    opacity: 0;
+    transform: translateY(56px) scale(.94);
+    transform-origin: 50% 100%;
+    transition: opacity .8s cubic-bezier(.22,1.65,.36,1),
+      transform .8s cubic-bezier(.22,1.65,.36,1),
+      translate .3s ease, rotate .3s ease, scale .3s ease,
+      box-shadow .3s ease, border-color .3s ease, background-color .3s ease;
+  }
+  .gd-reveal.gd-visible {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Konten langsung tampil tanpa transisi supaya tidak ada deret elemen
+       yang "lupa" ter-animasi bagi pengguna sensitif gerak */
+    .gd-reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
 `;
 
 /* Kelopak di cover — posisi/ukuran/waktu di-hardcode agar jatuhnya
@@ -152,6 +183,48 @@ function FallingPetals() {
 
 type GateProps = { gateOpen?: boolean; onGateOpen?: () => void };
 
+/* Hook reveal tanpa deps: effect jalan ulang tiap render Shell supaya
+   section yang muncul kondisional (setelah gerbang dibuka) tetap dipantau.
+   Fallback tanpa IntersectionObserver langsung menampilkan semua node —
+   kontennya tidak pernah hilang, hanya kehilangan animasi. */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      document
+        .querySelectorAll(".gd-reveal:not(.gd-visible)")
+        .forEach((el) => el.classList.add("gd-visible"));
+      return;
+    }
+
+    const els = document.querySelectorAll(".gd-reveal:not(.gd-visible)");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("gd-visible");
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
+
+/* Pembungkus reveal untuk elemen lepas di luar grid; elemen lain cukup
+   menempel kelas gd-reveal langsung agar layout grid tidak rusak. */
+function Reveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={`gd-reveal ${className}`}>{children}</div>;
+}
+
 export default function GardenTemplate(props: TemplateProps) {
   const isEmbed = !!props.embedded;
   const [gateOpen, setGateOpen] = useState(isEmbed);
@@ -181,6 +254,9 @@ function GardenShell({
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // Wajib sebelum early-return isPublished agar urutan hook aman.
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -318,7 +394,7 @@ function LeafDivider({ flip = false }: { flip?: boolean }) {
 
 function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="text-center">
+    <div className="text-center gd-reveal">
       <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-emerald-700">
         {eyebrow}
       </p>
@@ -500,7 +576,7 @@ function MainEvent({
     <section className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Akad & Resepsi" title="Rangkaian Bahagia" />
 
-      <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-zinc-500">
+      <p className="gd-reveal mx-auto mt-4 max-w-md text-sm leading-relaxed text-zinc-500">
         Kehadiran dan doa restu Anda adalah hadiah terindah bagi kami.
       </p>
 
@@ -520,16 +596,20 @@ function MainEvent({
       </div>
 
       {locationMap && (
-        <a
-          href={locationMap}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${ACCENT} mt-10 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition`}
-        >
-          <MapPin className="h-4 w-4" />
-          Lihat Lokasi di Peta
-          <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-        </a>
+        // Tombol dibungkus Reveal (elemen lepas, bukan anak grid);
+        // tetap rata tengah karena section-nya text-center.
+        <Reveal>
+          <a
+            href={locationMap}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${ACCENT} mt-10 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition`}
+          >
+            <MapPin className="h-4 w-4" />
+            Lihat Lokasi di Peta
+            <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+          </a>
+        </Reveal>
       )}
     </section>
   );
@@ -537,7 +617,7 @@ function MainEvent({
 
 function InfoCard({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="group flex flex-col items-center gap-3 rounded-2xl border border-amber-200/70 bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-700/10">
+    <div className="gd-reveal group flex flex-col items-center gap-3 rounded-2xl border border-amber-200/70 bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-700/10">
       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/70 text-amber-700 transition-colors group-hover:from-emerald-700 group-hover:to-emerald-600 group-hover:text-white">
         {icon}
       </span>
@@ -572,11 +652,10 @@ function Couple({
 
       <div className="mt-12 grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-6">
         <PersonCard person={groom} role="Mempelai Pria" />
-        <PersonCard person={bride} role="Mempelai Wanita" />
-      </div>
+        <PersonCard person={bride} role="Mempelai Wanita" />      </div>
 
       {!quoteHidden && (
-      <div className="relative mx-auto mt-12 max-w-xl">
+      <div className="gd-reveal relative mx-auto mt-12 max-w-xl">
         {/* Wreath emas tipis membingkai kutipan */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -615,7 +694,9 @@ function PersonCard({
   role: string;
 }) {
   return (
-    <div className="group relative">
+    // Tumbuh dari tanah: kartu person diberi kelas langsung (tanpa wrapper)
+    // supaya layout grid kolom tidak berubah.
+    <div className="gd-reveal group relative">
       {/* Foto bulat dengan cincin emas ganda — bersih, wajah sepenuhnya terlihat */}
       <div className="relative mx-auto h-48 w-48 rounded-full bg-gradient-to-br from-amber-300 via-amber-100 to-amber-300 p-[3px] shadow-lg shadow-amber-600/20 transition-transform duration-300 group-hover:scale-[1.03]">
         <div className="h-full w-full rounded-full bg-white p-1.5">
@@ -665,7 +746,7 @@ function AdditionalEvents({
         {events.map((e) => (
           <div
             key={e.id}
-            className="group relative overflow-hidden rounded-3xl border border-amber-200/70 bg-white/85 p-7 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-700/10"
+            className="gd-reveal group relative overflow-hidden rounded-3xl border border-amber-200/70 bg-white/85 p-7 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-700/10"
           >
             {/* Aksen garis emas-botani di tepi atas kartu — bersih tanpa ornamen mengganggu */}
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400/70 via-emerald-500/50 to-amber-400/70" />
@@ -708,7 +789,7 @@ function MessageSection({ text }: { text: string }) {
   return (
     <section id="pesan" className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Ucapan & Doa" title="Pesana Kami" />
-      <div className="relative mx-auto mt-6 max-w-lg rounded-3xl border border-amber-200/70 bg-white/85 p-8 shadow-sm backdrop-blur-sm">
+      <div className="gd-reveal relative mx-auto mt-6 max-w-lg rounded-3xl border border-amber-200/70 bg-white/85 p-8 shadow-sm backdrop-blur-sm">
         <Quote className="mx-auto mb-4 h-6 w-6 text-amber-600" />
         <p className="whitespace-pre-line font-[family-name:var(--font-display)] text-lg leading-relaxed text-zinc-700">
           {text}
@@ -729,7 +810,7 @@ function StorySection({
 
       <div className="mx-auto mt-12 max-w-xl space-y-10 text-left">
         {story.map((item, index) => (
-          <div key={item.id} className="relative pl-12">
+          <div key={item.id} className="gd-reveal relative pl-12">
             {index < story.length - 1 && (
               <span className="absolute left-[11px] top-7 h-full w-px bg-gradient-to-b from-amber-500/60 via-emerald-400/40 to-transparent" />
             )}
@@ -769,7 +850,10 @@ function GallerySection({
         {gallery.map((item) => (
           <figure
             key={item.id}
-            className="group relative overflow-hidden rounded-2xl border-[3px] border-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-800/15"
+            // Kelas reveal langsung di figure agar grid galeri tetap utuh;
+            // efek hover-nya memakai utilitas translate Tailwind v4
+            // (properti terpisah), jadi tidak bentrok dengan transform CSS.
+            className="gd-reveal group relative overflow-hidden rounded-2xl border-[3px] border-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-800/15"
             style={{ boxShadow: "0 0 0 1px rgba(245,158,11,0.45), 0 8px 24px rgba(6,78,59,0.10)" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -807,7 +891,7 @@ function GiftsSection({
         {gifts.map((g) => (
           <div
             key={g.id}
-            className="rounded-2xl border border-amber-200/70 bg-white/85 p-6 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-700/10"
+            className="gd-reveal rounded-2xl border border-amber-200/70 bg-white/85 p-6 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-700/10"
           >
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200/70 text-amber-700">
@@ -851,10 +935,10 @@ function RsvpSection({
   return (
     <section id="rsvp" className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Kehadiran" title="Konfirmasi Kehadiran" />
-      <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-zinc-500">
+      <p className="gd-reveal mx-auto mt-4 max-w-sm text-sm leading-relaxed text-zinc-500">
         Mohon konfirmasi kehadiran Anda agar kami dapat menyiapkan segala sesuatunya.
       </p>
-      <div className="mx-auto mt-10 max-w-md rounded-3xl border border-amber-200/70 bg-white/85 p-7 text-left shadow-lg shadow-emerald-700/5 backdrop-blur-sm">
+      <div className="gd-reveal mx-auto mt-10 max-w-md rounded-3xl border border-amber-200/70 bg-white/85 p-7 text-left shadow-lg shadow-emerald-700/5 backdrop-blur-sm">
         <RsvpForm
           invitationId={invitationId}
           initialName={guestName}
@@ -881,7 +965,7 @@ function Wishes({
     <section id="ucapan" className="w-full max-w-3xl px-6 py-20 text-center">
       <SectionHeading eyebrow="Wedding Wall" title="Kirim Ucapan & Doa" />
 
-      <div className="mx-auto mt-10 max-w-2xl">
+      <div className="gd-reveal mx-auto mt-10 max-w-2xl">
         <WishList
           wishes={wishes ?? []}
           cardClass="border-amber-200/70 bg-white/85"
@@ -891,7 +975,7 @@ function Wishes({
         />
       </div>
 
-      <div className="mx-auto mt-10 max-w-md rounded-3xl border border-amber-200/70 bg-white/85 p-7 text-left shadow-sm backdrop-blur-sm">
+      <div className="gd-reveal mx-auto mt-10 max-w-md rounded-3xl border border-amber-200/70 bg-white/85 p-7 text-left shadow-sm backdrop-blur-sm">
         <WishForm invitationId={invitationId} accentClass={accentClass} borderClass={borderClass} />
       </div>
     </section>
@@ -910,7 +994,7 @@ function Footer({
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.15),transparent_55%)]" />
 
 
-      <div className="relative">
+      <div className="gd-reveal relative">
         {/* Merpati & cincin emas */}
         <img
           src={A.doves}

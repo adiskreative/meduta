@@ -68,6 +68,75 @@ const BLOB_2 = "rounded-[42%_58%_35%_65%/58%_36%_64%_42%]";
 const PAPER_TEXTURE =
   "radial-gradient(rgba(138,154,134,0.16) 0.5px, transparent 0.5px)";
 
+/* CSS reveal-on-scroll (gaya "halaman terbuka seperti helai"): blok masuk
+   dengan 3D ringan — berputar rotateY dari sisi buku menuju terbuka.
+   Kenapa kelasnya berakhiran "-reveal": rule global di app/preview/[key]/
+   page.tsx (?shot=1) menargetkan [class*="-reveal"] supaya elemen tetap
+   terlihat di thumbnail. Itu hanya bisa bekerja jika efek kita murni
+   opacity + transform (perspective & origin tidak perlu di-reset), karena
+   rule tersebut HANYA me-reset opacity/transform/animation.
+   Properti hover kartu (translate Tailwind v4, box-shadow, border, bg)
+   ikut dilist di transition karena shorthand kita unlayered dan akan
+   menimpa `transition-all` milik Tailwind. */
+const BO_REVEAL_CSS = `
+  .bo-reveal {
+    opacity: 0;
+    transform: perspective(700px) rotateY(-24deg) translateX(-30px);
+    transform-origin: 0 50%;
+    transition: opacity .8s ease,
+      transform .8s cubic-bezier(.22,1,.36,1),
+      translate .3s ease, rotate .3s ease, scale .3s ease,
+      box-shadow .3s ease, border-color .3s ease, background-color .3s ease;
+  }
+  .bo-reveal.bo-visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* Varian kanan: elemen di sisi kanan layout membuka ke arah sebaliknya
+     agar gerakan terasa keluar dari tengah, bukan semua searah */
+  .bo-reveal.bo-r {
+    transform: perspective(700px) rotateY(24deg) translateX(30px);
+    transform-origin: 100% 50%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Semua konten langsung tampil penuh tanpa transisi */
+    .bo-reveal, .bo-reveal.bo-r {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+`;
+
+/* Hook reveal tanpa deps (effect re-run tiap render) supaya section yang
+   baru dirender kondisional — mis. saat gerbang dibuka — tetap dipantau.
+   Fallback tanpa IntersectionObserver memunculkan semua node langsung. */
+function useReveal() {
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      document
+        .querySelectorAll(".bo-reveal:not(.bo-visible)")
+        .forEach((el) => el.classList.add("bo-visible"));
+      return;
+    }
+
+    const els = document.querySelectorAll(".bo-reveal:not(.bo-visible)");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("bo-visible");
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
+
 type GateProps = { gateOpen?: boolean; onGateOpen?: () => void };
 
 export default function BotanicalTemplate(props: TemplateProps) {
@@ -222,6 +291,9 @@ function BotanicalShell({
   onGateOpen,
   music,
 }: TemplateProps & GateProps & { music?: MusicController }) {
+  // Wajib sebelum early-return isPublished agar urutan hook antar render tetap.
+  useReveal();
+
   if (!isPublished) {
     return <DraftNotice />;
   }
@@ -254,6 +326,7 @@ function BotanicalShell({
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[#FAF7F2] font-[family-name:var(--font-sans)] text-[#4A473F]">
+      <style>{BO_REVEAL_CSS}</style>
       {/* Tekstur kertas botanical di seluruh halaman */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
@@ -471,10 +544,10 @@ function CountdownSection({ target }: { target: string }) {
   return (
     <section className="w-full border-y border-[#E2DAD0] bg-[#F4EFEA] px-6 py-14">
       <div className="mx-auto max-w-2xl text-center">
-        <p className="font-[family-name:var(--font-serif-elegant)] italic text-lg text-[#8C7A6B]">
+        <p className="bo-reveal font-[family-name:var(--font-serif-elegant)] italic text-lg text-[#8C7A6B]">
           Menghitung Hari Menuju Bahagia
         </p>
-        <h2 className="mt-1 font-[family-name:var(--font-serif-elegant)] text-3xl font-bold text-[#556B2F]">
+        <h2 className="bo-reveal bo-r mt-1 font-[family-name:var(--font-serif-elegant)] text-3xl font-bold text-[#556B2F]">
           Save The Date
         </h2>
         <div className="mt-8">
@@ -491,7 +564,7 @@ function CountdownSection({ target }: { target: string }) {
 
 function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="text-center">
+    <div className="text-center bo-reveal">
       <span className="text-xs font-semibold uppercase tracking-[0.35em] text-[#8A9A86]">
         {eyebrow}
       </span>
@@ -527,7 +600,7 @@ function Couple({
 
         <div className="mt-12 grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-8">
           <PersonCard person={groom} role="Mempelai Pria" blob={BLOB_1} />
-          <PersonCard person={bride} role="Mempelai Wanita" blob={BLOB_2} />
+          <PersonCard person={bride} role="Mempelai Wanita" blob={BLOB_2} r />
         </div>
       </div>
     </section>
@@ -538,13 +611,16 @@ function PersonCard({
   person,
   role,
   blob,
+  r = false,
 }: {
   person?: TemplateProps["data"]["groom"];
   role: string;
   blob: string;
+  // r: kartu membuka dari kanan (kartu kanan grid bergantian arah)
+  r?: boolean;
 }) {
   return (
-    <div className="group flex flex-col items-center rounded-3xl border border-[#E2DAD0] bg-white/70 p-8 text-center shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md">
+    <div className={`bo-reveal${r ? " bo-r" : ""} group flex flex-col items-center rounded-3xl border border-[#E2DAD0] bg-white/70 p-8 text-center shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md`}>
       <div className={`h-44 w-36 overflow-hidden border-2 border-[#8A9A86] shadow-md transition-transform duration-300 group-hover:scale-[1.02] sm:h-48 sm:w-40 ${blob}`}>
         {person?.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -605,7 +681,7 @@ function MainEvent({
             <InfoCard icon={<CalendarDays className="h-5 w-5" />} label={formatDate(eventDate)} />
           )}
           {eventTime && (
-            <InfoCard icon={<Clock className="h-5 w-5" />} label={formatTime(eventTime)} />
+            <InfoCard r icon={<Clock className="h-5 w-5" />} label={formatTime(eventTime)} />
           )}
           {(venueName || location) && (
             <InfoCard
@@ -615,7 +691,7 @@ function MainEvent({
           )}
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="bo-reveal bo-r mt-8 flex flex-wrap items-center justify-center gap-3">
           {eventDate && (
             <SaveToCalendarButton
               title="Pernikahan Kami"
@@ -642,9 +718,9 @@ function MainEvent({
   );
 }
 
-function InfoCard({ icon, label }: { icon: React.ReactNode; label: string }) {
+function InfoCard({ icon, label, r = false }: { icon: React.ReactNode; label: string; r?: boolean }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-[#E2DAD0] bg-white/70 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#8A9A86] hover:shadow-md">
+    <div className={`bo-reveal${r ? " bo-r" : ""} flex flex-col items-center gap-3 rounded-2xl border border-[#E2DAD0] bg-white/70 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#8A9A86] hover:shadow-md`}>
       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#8A9A86]/15 text-[#556B2F]">
         {icon}
       </span>
@@ -671,7 +747,7 @@ function AdditionalEvents({
           {events.map((e, i) => (
             <div
               key={e.id}
-              className="group flex flex-col items-center rounded-3xl border border-[#E2DAD0] bg-white/70 p-7 text-center shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#8A9A86] hover:shadow-md"
+              className={`bo-reveal${i % 2 === 1 ? " bo-r" : ""} group flex flex-col items-center rounded-3xl border border-[#E2DAD0] bg-white/70 p-7 text-center shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#8A9A86] hover:shadow-md`}
             >
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8A9A86]/15 text-[#556B2F]">
                 {i % 2 === 0 ? <Flower2 className="h-6 w-6" /> : <Leaf className="h-6 w-6" />}
@@ -736,7 +812,7 @@ function StorySection({
 
         <div className="relative ml-4 mt-12 space-y-10 border-l-2 border-[#8A9A86]/40 sm:ml-24">
           {story.map((item, index) => (
-            <div key={item.id} className="relative pl-8">
+            <div key={item.id} className={`bo-reveal${index % 2 === 1 ? " bo-r" : ""} relative pl-8`}>
               {/* Marker daun di garis timeline */}
               <span className="absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#556B2F] bg-white text-[#556B2F] shadow-sm">
                 <Leaf className="h-4 w-4" />
@@ -785,12 +861,12 @@ function GallerySection({
         <SectionHeading eyebrow="Galeri Foto" title="Momen Berharga" />
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {gallery.map((item) => (
+          {gallery.map((item, i) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setSelected(item.url)}
-              className="group cursor-pointer rounded-2xl border border-[#E2DAD0] bg-white/70 p-3 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+              className={`bo-reveal${i % 2 === 1 ? " bo-r" : ""} group cursor-pointer rounded-2xl border border-[#E2DAD0] bg-white/70 p-3 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-md`}
             >
               <div className="relative aspect-[4/5] overflow-hidden rounded-xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -859,10 +935,10 @@ function GiftsSection({
         </p>
 
         <div className="mx-auto mt-10 grid max-w-xl grid-cols-1 gap-5 sm:grid-cols-2">
-          {gifts.map((g) => (
+          {gifts.map((g, i) => (
             <div
               key={g.id}
-              className="flex flex-col items-center rounded-2xl border border-[#E2DAD0] bg-white/70 p-6 text-center shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#8A9A86] hover:shadow-md"
+              className={`bo-reveal${i % 2 === 1 ? " bo-r" : ""} flex flex-col items-center rounded-2xl border border-[#E2DAD0] bg-white/70 p-6 text-center shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#8A9A86] hover:shadow-md`}
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#8A9A86]/15 text-[#556B2F]">
                 <Landmark className="h-5 w-5" />
@@ -905,10 +981,10 @@ function RsvpSection({
     <section id="rsvp" className="w-full px-6 py-20">
       <div className="mx-auto max-w-md">
         <SectionHeading eyebrow="Kehadiran" title="Konfirmasi Kehadiran" />
-        <p className="mx-auto mt-4 max-w-sm text-center text-sm leading-relaxed text-[#705E52]">
+        <p className="bo-reveal mx-auto mt-4 max-w-sm text-center text-sm leading-relaxed text-[#705E52]">
           Mohon konfirmasi kehadiran Anda agar kami dapat menyiapkan segala sesuatunya.
         </p>
-        <div className="mt-8 rounded-3xl border border-[#E2DAD0] bg-white/70 p-7 text-left shadow-sm backdrop-blur-sm">
+        <div className="bo-reveal bo-r mt-8 rounded-3xl border border-[#E2DAD0] bg-white/70 p-7 text-left shadow-sm backdrop-blur-sm">
           <RsvpForm
             invitationId={invitationId}
             initialName={guestName}
@@ -925,7 +1001,7 @@ function MessageSection({ text }: { text: string }) {
   return (
     <section className="w-full px-6 py-20 text-center">
       <SectionHeading eyebrow="Ucapan & Doa" title="Pesana Kami" />
-      <div className="mx-auto mt-6 max-w-lg rounded-3xl border border-[#E2DAD0] bg-white/70 p-8 shadow-sm backdrop-blur-sm">
+      <div className="bo-reveal mx-auto mt-6 max-w-lg rounded-3xl border border-[#E2DAD0] bg-white/70 p-8 shadow-sm backdrop-blur-sm">
         <p className="whitespace-pre-line font-[family-name:var(--font-serif-elegant)] text-lg leading-relaxed text-[#4A473F]">
           {text}
         </p>
@@ -950,7 +1026,7 @@ function Wishes({
       <div className="mx-auto max-w-2xl">
         <SectionHeading eyebrow="Wedding Wall" title="Kirim Ucapan & Doa" />
 
-        <div className="mt-10">
+        <div className="bo-reveal mt-10">
           <WishList
             wishes={wishes ?? []}
             cardClass="border-[#E2DAD0] bg-white/70"
@@ -960,7 +1036,7 @@ function Wishes({
           />
         </div>
 
-        <div className="mt-10 rounded-3xl border border-[#E2DAD0] bg-white/70 p-7 text-left shadow-sm backdrop-blur-sm">
+        <div className="bo-reveal bo-r mt-10 rounded-3xl border border-[#E2DAD0] bg-white/70 p-7 text-left shadow-sm backdrop-blur-sm">
           <WishForm invitationId={invitationId} accentClass={accentClass} borderClass={borderClass} />
         </div>
       </div>
@@ -989,7 +1065,7 @@ function Footer({
         className="pointer-events-none absolute inset-0 opacity-30"
         style={{ backgroundImage: "radial-gradient(rgba(250,247,242,0.14) 0.5px, transparent 0.5px)" }}
       />
-      <div className="relative">
+      <div className="bo-reveal relative">
         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
           <Leaf className="h-6 w-6" />
         </span>
