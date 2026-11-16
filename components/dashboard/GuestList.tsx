@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Users, Check, X, Clock, Mail, MailOpen, RefreshCw, Phone } from "lucide-react";
+import { Trash2, Users, Check, X, Clock, Mail, MailOpen, RefreshCw, Phone, Loader2 } from "lucide-react";
 import { deleteGuest, updateGuestStatus } from "@/lib/actions/rsvp";
 import { resendGuestInvitation } from "@/lib/actions/guest";
 
@@ -35,6 +35,20 @@ export default function GuestList({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  // Menandai aksi mana yang sedang berjalan agar spinner hanya muncul di
+  // baris yang diklik, bukan di semua tombol sekaligus.
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+
+  function runWithPending(key: string, task: () => Promise<void>) {
+    setPendingKey(key);
+    startTransition(async () => {
+      try {
+        await task();
+      } finally {
+        setPendingKey(null);
+      }
+    });
+  }
 
   const statusBadge = (status: GuestRow["status"]) => {
     const map = {
@@ -64,16 +78,16 @@ export default function GuestList({
         : "bg-white text-zinc-600 hover:bg-zinc-50 border border-zinc-300"
     }`;
 
-  async function handleDelete(id: string) {
+  function handleDelete(id: string) {
     if (!confirm("Hapus tamu ini?")) return;
-    startTransition(async () => {
+    runWithPending(`delete:${id}`, async () => {
       await deleteGuest(id);
       router.refresh();
     });
   }
 
-  async function handleResend(guest: GuestRow) {
-    startTransition(async () => {
+  function handleResend(guest: GuestRow) {
+    runWithPending(`resend:${guest.id}`, async () => {
       const form = new FormData();
       form.set("appUrl", appUrl);
       await resendGuestInvitation(guest.id, form);
@@ -205,19 +219,32 @@ export default function GuestList({
                       className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
                       title="Kirim ulang email undangan"
                     >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Kirim Ulang
+                      {pendingKey === `resend:${guest.id}` ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3.5 w-3.5" />
+                      )}
+                      {pendingKey === `resend:${guest.id}` ? "Mengirim..." : "Kirim Ulang"}
                     </button>
+                  )}
+                  {pendingKey === `status:${guest.id}` && (
+                    <Loader2
+                      className="h-4 w-4 shrink-0 animate-spin text-rose-500"
+                      aria-label="Menyimpan status tamu"
+                    />
                   )}
                   <select
                     defaultValue={guest.status}
-                    className="rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-700 outline-none focus:border-rose-400"
-                    onChange={async (e) => {
+                    disabled={isPending}
+                    className="rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-700 outline-none focus:border-rose-400 disabled:opacity-60"
+                    onChange={(e) => {
                       const next = e.target.value as GuestRow["status"];
                       const form = new FormData();
                       form.set("status", next);
-                      await updateGuestStatus(guest.id, form);
-                      router.refresh();
+                      runWithPending(`status:${guest.id}`, async () => {
+                        await updateGuestStatus(guest.id, form);
+                        router.refresh();
+                      });
                     }}
                   >
                     <option value="PENDING">Menunggu</option>
@@ -231,8 +258,13 @@ export default function GuestList({
                     onClick={() => handleDelete(guest.id)}
                     className="rounded-md p-2 text-zinc-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                     aria-label="Hapus tamu"
+                    title={pendingKey === `delete:${guest.id}` ? "Menghapus..." : "Hapus tamu"}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {pendingKey === `delete:${guest.id}` ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>

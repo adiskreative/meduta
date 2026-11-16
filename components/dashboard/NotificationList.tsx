@@ -1,9 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCheck, ChevronRight, Mail, MessageSquare, CreditCard, Bell } from "lucide-react";
+import { CheckCheck, ChevronRight, Mail, MessageSquare, CreditCard, Bell, Loader2 } from "lucide-react";
 import {
   markAllNotificationsRead,
   markNotificationRead,
@@ -41,16 +41,30 @@ export default function NotificationList({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  // Key aksi yang sedang berjalan ("all" atau id notifikasi) supaya spinner
+  // muncul tepat pada tombol/baris yang diklik.
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+
+  function runWithPending(key: string, task: () => Promise<void>) {
+    setPendingKey(key);
+    startTransition(async () => {
+      try {
+        await task();
+      } finally {
+        setPendingKey(null);
+      }
+    });
+  }
 
   function handleRead(id: string) {
-    startTransition(async () => {
+    runWithPending(`read:${id}`, async () => {
       await markNotificationRead(id);
       router.refresh();
     });
   }
 
   function handleReadAll() {
-    startTransition(async () => {
+    runWithPending("all", async () => {
       await markAllNotificationsRead();
       router.refresh();
     });
@@ -81,8 +95,12 @@ export default function NotificationList({
           disabled={isPending}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-600 transition hover:text-rose-700 disabled:opacity-60"
         >
-          <CheckCheck className="h-3.5 w-3.5" />
-          Tandai semua dibaca
+          {pendingKey === "all" ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <CheckCheck className="h-3.5 w-3.5" />
+          )}
+          {pendingKey === "all" ? "Menandai..." : "Tandai semua dibaca"}
         </button>
       </div>
 
@@ -97,7 +115,11 @@ export default function NotificationList({
               <span
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${color}`}
               >
-                <Icon className="h-4 w-4" />
+                {pendingKey === `read:${notification.id}` ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Icon className="h-4 w-4" />
+                )}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

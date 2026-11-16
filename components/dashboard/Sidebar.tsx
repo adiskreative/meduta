@@ -22,9 +22,12 @@ import {
   CircleHelp,
   Mountain,
   DoorOpen,
+  Loader2,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { useTransition } from "react";
 import { LogoWithText } from "@/components/Logo";
+import LinkPendingIndicator from "@/components/dashboard/LinkPendingIndicator";
 
 type NavItem = {
   label: string;
@@ -111,6 +114,9 @@ export default function Sidebar({
   isAdmin?: boolean;
 }) {
   const pathname = usePathname();
+  // signOut butuh round-trip ke server; tanpa pending state tombol "Keluar"
+  // tampak tidak bereaksi saat koneksi lambat.
+  const [isSigningOut, startSignOut] = useTransition();
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -165,6 +171,7 @@ export default function Sidebar({
                       >
                         <Icon className="h-4.5 w-4.5 shrink-0" />
                         <span>{item.label}</span>
+                        <LinkPendingIndicator />
                       </Link>
                     </li>
                   );
@@ -190,6 +197,7 @@ export default function Sidebar({
                   >
                     <UserCog className="h-4.5 w-4.5 shrink-0" />
                     <span>Admin Panel</span>
+                    <LinkPendingIndicator />
                   </Link>
                 </li>
               </ul>
@@ -199,11 +207,20 @@ export default function Sidebar({
 
         <div className="border-t border-zinc-200 p-3">
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900"
+            onClick={() =>
+              startSignOut(async () => {
+                await signOut({ callbackUrl: "/" });
+              })
+            }
+            disabled={isSigningOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <X className="h-4.5 w-4.5 rotate-45" />
-            <span>Keluar</span>
+            {isSigningOut ? (
+              <Loader2 className="h-4.5 w-4.5 shrink-0 animate-spin" />
+            ) : (
+              <X className="h-4.5 w-4.5 rotate-45" />
+            )}
+            <span>{isSigningOut ? "Keluar..." : "Keluar"}</span>
           </button>
         </div>
       </aside>

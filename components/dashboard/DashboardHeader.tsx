@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Bell } from "lucide-react";
+import { Menu, Bell, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 type InvitationOption = {
@@ -40,19 +40,29 @@ export default function DashboardHeader({
       <div className="flex items-center gap-3">
         {/* Switcher undangan aktif (multi-undangan per akun) */}
         {invitations.length > 0 && onSwitchInvitation && (
-          <select
-            value={activeInvitationId ?? invitations[0]?.id ?? ""}
-            onChange={(event) => onSwitchInvitation(event.target.value)}
-            disabled={switching}
-            aria-label="Undangan aktif"
-            className="max-w-44 truncate rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-200 disabled:opacity-60 sm:max-w-64"
-          >
-            {invitations.map((inv) => (
-              <option key={inv.id} value={inv.id}>
-                {inv.label} | {inv.templateName}
-              </option>
-            ))}
-          </select>
+          <>
+            <select
+              value={activeInvitationId ?? invitations[0]?.id ?? ""}
+              onChange={(event) => onSwitchInvitation(event.target.value)}
+              disabled={switching}
+              aria-label="Undangan aktif"
+              className="max-w-44 truncate rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-200 disabled:opacity-60 sm:max-w-64"
+            >
+              {invitations.map((inv) => (
+                <option key={inv.id} value={inv.id}>
+                  {inv.label} | {inv.templateName}
+                </option>
+              ))}
+            </select>
+            {/* Ganti undangan aktif memicu server action; spinner kecil
+                memastikan pengguna tahu pilihannya sedang diproses. */}
+            {switching && (
+              <Loader2
+                className="h-4 w-4 shrink-0 animate-spin text-rose-500"
+                aria-label="Mengganti undangan"
+              />
+            )}
+          </>
         )}
         <Link
           href="/dashboard/notifikasi"

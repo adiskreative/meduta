@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Palette, Images, Mountain, Music, ArrowLeft, X } from "lucide-react";
+import { LayoutDashboard, Palette, Images, Mountain, Music, ArrowLeft, X, Loader2 } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { LogoMark } from "@/components/Logo";
+import LinkPendingIndicator from "@/components/dashboard/LinkPendingIndicator";
 
 type NavItem = { label: string; href: string; icon: React.ElementType };
 
@@ -20,6 +21,8 @@ const navItems: NavItem[] = [
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // Logout admin juga butuh round-trip; beri umpan balik agar tidak terasa macet.
+  const [isSigningOut, startSignOut] = useTransition();
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
@@ -76,6 +79,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               >
                 <Icon className="h-4.5 w-4.5 shrink-0" />
                 {item.label}
+                <LinkPendingIndicator />
               </Link>
             );
           })}
@@ -88,13 +92,23 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           >
             <ArrowLeft className="h-4.5 w-4.5" />
             Kembali ke Dashboard
+            <LinkPendingIndicator />
           </Link>
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition hover:bg-zinc-100"
+            onClick={() =>
+              startSignOut(async () => {
+                await signOut({ callbackUrl: "/" });
+              })
+            }
+            disabled={isSigningOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <X className="h-4.5 w-4.5 rotate-45" />
-            Keluar
+            {isSigningOut ? (
+              <Loader2 className="h-4.5 w-4.5 shrink-0 animate-spin" />
+            ) : (
+              <X className="h-4.5 w-4.5 rotate-45" />
+            )}
+            <span>{isSigningOut ? "Keluar..." : "Keluar"}</span>
           </button>
         </div>
       </aside>

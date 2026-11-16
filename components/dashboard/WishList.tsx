@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Trash2, MessageSquareHeart, Mail } from "lucide-react";
+import { Eye, EyeOff, Trash2, MessageSquareHeart, Mail, Loader2 } from "lucide-react";
 import { toggleHideWish, deleteWish } from "@/lib/actions/wish";
 
 type WishRow = {
@@ -27,6 +27,19 @@ export default function WishList({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  // Hanya baris yang sedang diproses yang menampilkan spinner.
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+
+  function runWithPending(key: string, task: () => Promise<void>) {
+    setPendingKey(key);
+    startTransition(async () => {
+      try {
+        await task();
+      } finally {
+        setPendingKey(null);
+      }
+    });
+  }
 
   const filterClass = (key: string | null, active: string | null) =>
     `rounded-lg px-3 py-1.5 text-sm font-medium transition ${
@@ -36,7 +49,7 @@ export default function WishList({
     }`;
 
   function runToogle(id: string, hidden: boolean) {
-    startTransition(async () => {
+    runWithPending(`toggle:${id}`, async () => {
       try {
         await toggleHideWish(id, hidden);
         router.refresh();
@@ -48,7 +61,7 @@ export default function WishList({
 
   function runDelete(id: string) {
     if (!confirm("Hapus ucapan ini?")) return;
-    startTransition(async () => {
+    runWithPending(`delete:${id}`, async () => {
       try {
         await deleteWish(id);
         router.refresh();
@@ -135,7 +148,12 @@ export default function WishList({
                   onClick={() => runToogle(wish.id, !wish.isHidden)}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-medium text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-50"
                 >
-                  {wish.isHidden ? (
+                  {pendingKey === `toggle:${wish.id}` ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      {wish.isHidden ? "Menampilkan..." : "Menyembunyikan..."}
+                    </>
+                  ) : wish.isHidden ? (
                     <>
                       <Eye className="h-3.5 w-3.5" />
                       Tampilkan
@@ -153,8 +171,13 @@ export default function WishList({
                   onClick={() => runDelete(wish.id)}
                   className="rounded-md p-2 text-zinc-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                   aria-label="Hapus ucapan"
+                  title={pendingKey === `delete:${wish.id}` ? "Menghapus..." : "Hapus ucapan"}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {pendingKey === `delete:${wish.id}` ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>

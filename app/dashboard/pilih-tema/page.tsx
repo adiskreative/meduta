@@ -8,6 +8,7 @@ import { createInvitation, useTemplate } from "@/lib/actions/template";
 import { isPremiumUser } from "@/lib/premium";
 import { getActiveInvitation } from "@/lib/invitations";
 import LiveTemplatePreview from "@/components/landing/LiveTemplatePreview";
+import SubmitButton from "@/components/SubmitButton";
 
 export const metadata = { title: "Pilih Tema | Meduta" };
 
@@ -87,13 +88,12 @@ export default async function PilihTemaPage() {
                   {/* Template premium terkunci untuk akun gratis */}
                   {canUsePremium ? (
                     <form action={useTemplate.bind(null, template.id)}>
-                      <button
-                        type="submit"
+                      <SubmitButton
+                        idleText={isActive ? "Template Aktif" : "Pakai Template Ini"}
+                        pendingText="Memakai template..."
                         disabled={isActive}
-                        className="w-full rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400"
-                      >
-                        {isActive ? "Template Aktif" : "Pakai Template Ini"}
-                      </button>
+                        className="w-full rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:bg-zinc-200 disabled:text-zinc-400"
+                      />
                     </form>
                   ) : (
                     <Link
@@ -108,15 +108,16 @@ export default async function PilihTemaPage() {
                       dengan template ini (premium = bayar per-undangan) */}
                   {!(isActive && invitationCount === 1) && (
                     <form action={createInvitation.bind(null, template.id)}>
-                      <button
-                        type="submit"
-                        className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700"
-                      >
-                        <Plus className="h-4 w-4" />
-                        {template.isPremium && !canUsePremium
-                          ? "Beli & Buat Undangan Baru"
-                          : "Buat Undangan Baru"}
-                      </button>
+                      <SubmitButton
+                        idleText={
+                          template.isPremium && !canUsePremium
+                            ? "Beli & Buat Undangan Baru"
+                            : "Buat Undangan Baru"
+                        }
+                        pendingText="Membuat undangan..."
+                        icon={<Plus className="h-4 w-4" />}
+                        className="w-full rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-60"
+                      />
                     </form>
                   )}
                 </div>

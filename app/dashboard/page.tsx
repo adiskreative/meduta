@@ -24,6 +24,7 @@ import { Clock } from "lucide-react";
 import { getEventName } from "@/lib/invitation-data";
 import CopyLinkButton from "@/components/dashboard/CopyLinkButton";
 import DeleteInvitationButton from "@/components/dashboard/DeleteInvitationButton";
+import SubmitButton from "@/components/SubmitButton";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -294,13 +295,12 @@ export default async function DashboardPage() {
                       </Link>
                     ) : (
                       <form action={setActiveInvitation.bind(null, inv.id)}>
-                        <button
-                          type="submit"
+                        <SubmitButton
+                          idleText={isActiveInv ? "Sedang Diedit" : "Kelola"}
+                          pendingText="Mengaktifkan..."
                           disabled={isActiveInv}
-                          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400"
-                        >
-                          {isActiveInv ? "Sedang Diedit" : "Kelola"}
-                        </button>
+                          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400"
+                        />
                       </form>
                     )}
                     <CopyLinkButton url={`${appUrl}/u/${inv.slug}`} />
