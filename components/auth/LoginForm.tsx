@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,11 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const [serverError, setServerError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
+  // Navigasi ke dashboard bisa memakan waktu (layout + data undangan dirender
+  // di server). Transisi ini menjaga spinner tetap tampil sampai halaman tujuan
+  // selesai dimuat, bukan berhenti tepat setelah signIn selesai.
+  const [isNavigating, startNavigation] = useTransition();
+  const busy = isLoading || isNavigating;
 
   const {
     register,
@@ -43,17 +48,20 @@ export default function LoginForm() {
       redirect: false,
     });
 
-    setIsLoading(false);
-
     if (res?.error) {
+      setIsLoading(false);
       setServerError(
         "Email atau password salah, email belum dikonfirmasi, atau akun terkunci selama 24 jam setelah tiga kali gagal.",
       );
       return;
     }
 
-    router.push(callbackUrl);
-    router.refresh();
+    // Login sukses: spinner TIDAK dimatikan. Pindah halaman lewat transition
+    // supaya tombol tetap terlihat "Memproses..." hingga dashboard siap.
+    setIsLoading(false);
+    startNavigation(() => {
+      router.push(callbackUrl);
+    });
   }
 
   const inputClass =
@@ -161,11 +169,11 @@ export default function LoginForm() {
 
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={busy}
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-        Masuk
+        {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+        {busy ? "Memproses..." : "Masuk"}
       </button>
 
       <p className="text-center text-sm text-zinc-500">
