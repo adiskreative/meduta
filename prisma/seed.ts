@@ -227,6 +227,15 @@ async function main() {
         gatePhotoUrl: "/design/roman/palace.webp",
       },
     },
+    {
+      name: "Dimensi Cinta",
+      thumbnailUrl: "/design/roman/villa-chapel.webp",
+      componentKey: "dimensi-cinta",
+      isPremium: true,
+      sampleData: {
+        backgroundUrl: "/design/roman/villa-chapel.webp",
+      },
+    },
   ];
 
   for (const template of templates) {

@@ -10,6 +10,10 @@ type Props = {
   avatarClass?: string;
   /** kelas teks kosong */
   emptyClass?: string;
+  /** Warna isi ucapan; override untuk tema gelap. */
+  messageClass?: string;
+  /** Warna tanggal; override untuk tema gelap. */
+  dateClass?: string;
 };
 
 export default function WishList({
@@ -18,6 +22,8 @@ export default function WishList({
   nameClass = "text-zinc-800",
   avatarClass = "bg-zinc-200 text-zinc-600",
   emptyClass = "text-zinc-400",
+  messageClass = "text-zinc-600",
+  dateClass = "text-zinc-400",
 }: Props) {
   if (!wishes || wishes.length === 0) {
     return (
@@ -42,10 +48,10 @@ export default function WishList({
             </span>
             <p className={`text-sm font-semibold ${nameClass}`}>{w.guestName}</p>
           </div>
-          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-600">
+          <p className={`mt-2 whitespace-pre-line text-sm leading-relaxed ${messageClass}`}>
             {w.message}
           </p>
-          <p className="mt-3 text-xs text-zinc-400">
+          <p className={`mt-3 text-xs ${dateClass}`}>
             {new Date(w.createdAt).toLocaleDateString("id-ID", {
               day: "numeric",
               month: "long",

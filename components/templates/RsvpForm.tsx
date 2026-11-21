@@ -9,6 +9,10 @@ type Props = {
   initialName?: string;
   accentClass?: string;
   borderClass?: string;
+  /** Warna label; override untuk tema gelap. */
+  labelClass?: string;
+  /** Gaya tombol "Tidak Bisa Hadir"; override untuk tema gelap. */
+  secondaryButtonClass?: string;
 };
 
 export default function RsvpForm({
@@ -16,6 +20,8 @@ export default function RsvpForm({
   initialName,
   accentClass = "bg-rose-600 hover:bg-rose-700",
   borderClass = "border-zinc-300 focus:border-rose-400 focus:ring-rose-100",
+  labelClass = "text-zinc-700",
+  secondaryButtonClass = "border border-zinc-300 text-zinc-700 hover:bg-zinc-50",
 }: Props) {
   const bound = submitRsvp.bind(null, invitationId);
   const [state, formAction, isPending] = useActionState<RsvpVisitorState | undefined, FormData>(
@@ -45,7 +51,7 @@ export default function RsvpForm({
         </div>
       )}
       <div>
-        <label htmlFor="guestName" className="mb-1.5 block text-sm font-medium text-zinc-700">
+        <label htmlFor="guestName" className={`mb-1.5 block text-sm font-medium ${labelClass}`}>
           Nama Anda
         </label>
         <input
@@ -61,7 +67,7 @@ export default function RsvpForm({
         )}
       </div>
       <div>
-        <label htmlFor="guestCount" className="mb-1.5 block text-sm font-medium text-zinc-700">
+        <label htmlFor="guestCount" className={`mb-1.5 block text-sm font-medium ${labelClass}`}>
           Jumlah Tamu
         </label>
         <input
@@ -92,7 +98,7 @@ export default function RsvpForm({
           name="status"
           value="DECLINED"
           disabled={isPending}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${secondaryButtonClass}`}
         >
           Tidak Bisa Hadir
         </button>

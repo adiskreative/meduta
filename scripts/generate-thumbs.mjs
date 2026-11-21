@@ -50,6 +50,7 @@ const KEYS = [
   "senja",
   "ruby",
   "rimba-zamrud",
+  "dimensi-cinta",
 ];
 
 function parseArgs() {

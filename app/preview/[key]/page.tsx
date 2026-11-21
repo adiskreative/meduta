@@ -19,7 +19,7 @@ type Props = {
   searchParams: Promise<{ embed?: string; shot?: string; frame?: string }>;
 };
 
-const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale", "onyx", "purple", "wedflix", "spotify", "wayang", "senja", "ruby", "rimba-zamrud", "roman"]);
+const VALID = new Set(["classic", "minimal", "floral", "rustic", "berkreative", "garden", "botanical", "zen", "vogue", "celestial", "scrapbook", "enchanted", "fairytale", "onyx", "purple", "wedflix", "spotify", "wayang", "senja", "ruby", "rimba-zamrud", "roman", "dimensi-cinta"]);
 
 // Judul & deskripsi unik per template untuk SEO (tiap halaman pratinjau
 // sebelumnya memakai judul yang sama sehingga sulit dibedakan di Google).
@@ -47,6 +47,7 @@ const TEMPLATE_SEO: Record<string, { name: string; style: string }> = {
   ruby: { name: "Ruby Royale", style: "nuansa merah ruby yang royal dan mewah" },
   "rimba-zamrud": { name: "Rimba Zamrud", style: "nuansa hijau zamrud, bunga watercolor, dan aksen emas yang anggun" },
   roman: { name: "Roman Romance", style: "keanggunan istana Romawi klasik, pilar marmer, lorong pelaminan mawar, dan segel lilin daun dafnah" },
+  "dimensi-cinta": { name: "Dimensi Cinta", style: "tampilan 3D kristal dengan portal bercahaya, kartu melayang, countdown kubus, kisah yang bisa dibalik, dan galeri coverflow" },
 };
 
 export async function generateMetadata({

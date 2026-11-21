@@ -20,6 +20,7 @@ import WedflixTemplate from "./WedflixTemplate";
 import SpotifyTemplate from "./SpotifyTemplate";
 import RimbaZamrudTemplate from "./RimbaZamrudTemplate";
 import RomanTemplate from "./RomanTemplate";
+import DimensiCintaTemplate from "./DimensiCintaTemplate";
 import DecorationLayer from "./DecorationLayer";
 import type { TemplateProps } from "./types";
 
@@ -46,6 +47,7 @@ const registry: Record<string, React.ComponentType<TemplateProps>> = {
   spotify: SpotifyTemplate,
   "rimba-zamrud": RimbaZamrudTemplate,
   roman: RomanTemplate,
+  "dimensi-cinta": DimensiCintaTemplate,
 };
 
 export default function TemplateRenderer({

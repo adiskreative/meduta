@@ -8,12 +8,15 @@ type Props = {
   invitationId: string;
   accentClass?: string;
   borderClass?: string;
+  /** Warna label; override untuk tema gelap. */
+  labelClass?: string;
 };
 
 export default function WishForm({
   invitationId,
   accentClass = "bg-rose-600 hover:bg-rose-700",
   borderClass = "border-zinc-300 focus:border-rose-400 focus:ring-rose-100",
+  labelClass = "text-zinc-700",
 }: Props) {
   const bound = submitWish.bind(null, invitationId);
   const [state, formAction, isPending] = useActionState<WishState | undefined, FormData>(
@@ -38,7 +41,7 @@ export default function WishForm({
         </div>
       )}
       <div>
-        <label htmlFor="guestName" className="mb-1.5 block text-sm font-medium text-zinc-700">
+        <label htmlFor="guestName" className={`mb-1.5 block text-sm font-medium ${labelClass}`}>
           Nama Anda
         </label>
         <input
@@ -53,7 +56,7 @@ export default function WishForm({
         )}
       </div>
       <div>
-        <label htmlFor="message" className="mb-1.5 block text-sm font-medium text-zinc-700">
+        <label htmlFor="message" className={`mb-1.5 block text-sm font-medium ${labelClass}`}>
           Ucapan &amp; Doa
         </label>
         <textarea

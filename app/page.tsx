@@ -194,6 +194,13 @@ const templates = [
     image: "/design/roman/palace.webp",
     premium: true,
   },
+  {
+    key: "dimensi-cinta",
+    name: "Dimensi Cinta",
+    desc: "Undangan 3D kristal: portal bercahaya, kartu melayang, countdown kubus, kisah yang bisa dibalik, galeri coverflow & gerbang sinematik.",
+    image: "/design/roman/villa-chapel.webp",
+    premium: true,
+  },
 ];
 
 export const metadata: Metadata = {
