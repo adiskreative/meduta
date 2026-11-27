@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Logo from "@/components/Logo";
+import FacebookIcon from "@/components/icons/FacebookIcon";
 
 /**
  * Layout bersama halaman legal (Syarat & Ketentuan, Kebijakan Privasi,
@@ -66,11 +67,30 @@ export default function LegalLayout({
             <span className="text-zinc-600" aria-hidden>
               |
             </span>
+            <Link href="https://adiskreative.github.io/Portfolio/" className="transition hover:text-white">
+              My Portfolio
+            </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
             <a
               href="mailto:admin@meduta.my.id"
               className="transition hover:text-white"
             >
               admin@meduta.my.id
+            </a>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
+            <a
+              href="https://www.facebook.com/meduta.undangan"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook Meduta"
+              title="Facebook Meduta"
+              className="inline-flex items-center transition hover:text-white"
+            >
+              <FacebookIcon className="h-3.5 w-3.5" />
             </a>
           </div>
         </div>

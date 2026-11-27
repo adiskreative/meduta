@@ -18,6 +18,7 @@ import {
   Crown,
 } from "lucide-react";
 import RingIcon from "@/components/icons/RingIcon";
+import FacebookIcon from "@/components/icons/FacebookIcon";
 import TemplateSlider from "@/components/landing/TemplateSlider";
 import ContactForm from "@/components/landing/ContactForm";
 import Navbar from "@/components/landing/Navbar";
@@ -348,7 +349,7 @@ function Hero() {
             Hari istimewa, undangan istimewa
           </p>
           <h1 className="mx-auto mt-6 max-w-2xl text-4xl font-bold leading-[1.12] tracking-tight text-white sm:text-5xl lg:mx-0 lg:text-6xl">
-            Undangan pernikahan digital yang{" "}
+            Meduta | Undangan pernikahan digital yang{" "}
             <span className="text-pink-300">elegan dan personal.</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-zinc-200 sm:text-lg sm:leading-8 lg:mx-0">
@@ -809,6 +810,16 @@ function Footer() {
             >
               <MessageCircle className="h-4.5 w-4.5" />
             </a>
+            <a
+              href="https://www.facebook.com/meduta.undangan"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook Meduta"
+              title="Facebook Meduta"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-zinc-300 transition hover:bg-blue-600 hover:text-white"
+            >
+              <FacebookIcon className="h-4.5 w-4.5" />
+            </a>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-zinc-400 sm:justify-end">
             <Link href="/syarat-ketentuan" className="transition hover:text-white">
@@ -837,6 +848,12 @@ function Footer() {
             </span>
             <Link href="/pusat-bantuan" className="transition hover:text-white">
               Pusat Bantuan
+            </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
+            <Link href="https://adiskreative.github.io/Portfolio/" className="transition hover:text-white">
+              My Portfolio
             </Link>
           </div>
           <p className="text-sm text-zinc-400">
